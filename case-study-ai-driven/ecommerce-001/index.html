@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paprika - Anime E-Commerce</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;700&family=Noto+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --surface: #1E1E1E;
+            --primary: #FF4500;
+            --secondary: #FF6347;
+            --accent: #FF1493;
+            --text-primary: rgba(255, 255, 255, 0.87);
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        body {
+            font-family: 'Noto Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        
+        /* Header Styles */
+        .header {
+            background-color: var(--surface);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            font-family: 'Oxanium', sans-serif;
+            font-weight: 700;
+            font-size: 2rem;
+            color: var(--primary);
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+        
+        .logo span {
+            color: var(--accent);
+        }
+        
+        .nav {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary);
+        }
+        
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--accent);
+            transition: width 0.3s;
+        }
+        
+        .nav-link:hover:after {
+            width: 100%;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.8), rgba(30, 30, 30, 0.5)), 
+                        url('https://images.unsplash.com/photo-1633613286848-e6f43bbafb8d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80');
+            background-size: cover;
+            background-position: center;
+            height: 70vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .hero-title {
+            font-family: 'Oxanium', sans-serif;
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            max-width: 600px;
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+        }
+        
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-family: 'Noto Sans', sans-serif;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #E03E00;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(255, 69, 0, 0.3);
+        }
+        
+        /* Product Grid */
+        .section-title {
+            font-family: 'Oxanium', sans-serif;
+            font-size: 2rem;
+            margin: 3rem 0 1.5rem;
+            padding-left: 2rem;
+            position: relative;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 2rem;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 0 2rem;
+            margin-bottom: 4rem;
+        }
+        
+        .product-card {
+            background-color: var(--surface);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .product-info {
+            padding: 1.5rem;
+        }
+        
+        .product-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .product-price {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .product-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: rgba(255, 69, 0, 0.1);
+        }
+        
+        .btn-icon {
+            background-color: transparent;
+            color: var(--text-secondary);
+            border: none;
+            font-size: 1.2rem;
+        }
+        
+        .btn-icon:hover {
+            color: var(--accent);
+        }
+        
+        /* Footer */
+        .footer {
+            background-color: var(--surface);
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-column h3 {
+            font-family: 'Oxanium', sans-serif;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .footer-link {
+            display: block;
+            color: var(--text-secondary);
+            margin-bottom: 0.8rem;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-link:hover {
+            color: var(--accent);
+        }
+        
+        .copyright {
+            text-align: center;
+            margin-top: 3rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 0 2rem;
+                height: 60vh;
+            }
+            
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+            
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="#" class="logo">PAPRI<span>KA</span></a>
+        <nav class="nav">
+            <a href="#" class="nav-link">Shop</a>
+            <a href="#" class="nav-link">Collections</a>
+            <a href="#" class="nav-link">Cosplay</a>
+            <a href="#" class="nav-link">Stream Gear</a>
+            <a href="#" class="nav-link">About</a>
+        </nav>
+        <div class="nav">
+            <a href="#" class="nav-link">Account</a>
+            <a href="#" class="nav-link">Cart (0)</a>
+        </div>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1 class="hero-title">ANIME CULTURE REDEFINED</h1>
+        <p class="hero-subtitle">Discover exclusive cosplay gear, limited edition apparel, and premium streaming accessories inspired by your favorite anime.</p>
+        <button class="btn btn-primary">SHOP NEW ARRIVALS</button>
+    </section>
+    
+    <!-- Featured Products -->
+    <h2 class="section-title">TRENDING NOW</h2>
+    <div class="product-grid">
+        <!-- Product 1 -->
+        <div class="product-card">
+            <img src="https://images.unsplash.com/photo-1617704548623-340376564e68?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Anime Graphic Tee" class="product-image">
+            <div class="product-info">
+                <h3 class="product-title">Demon Slayer Graphic Tee</h3>
+                <p class="product-price">$29.99</p>
+                <div class="product-actions">
+                    <button class="btn btn-secondary">Add to Cart</button>
+                    <button class="btn btn-icon">♡</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product 2 -->
+        <div class="product-card">
+            <img src="https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Anime Keyboard" class="product-image">
+            <div class="product-info">
+                <h3 class="product-title">Neon Anime Mechanical Keyboard</h3>
+                <p class="product-price">$89.99</p>
+                <div class="product-actions">
+                    <button class="btn btn-secondary">Add to Cart</button>
+                    <button class="btn btn-icon">♡</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product 3 -->
+        <div class="product-card">
+            <img src="https://images.unsplash.com/photo-1597200381847-30ec200eeb9a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1374&q=80" alt="Cosplay Sword" class="product-image">
+            <div class="product-info">
+                <h3 class="product-title">Ichigo's Zanpakuto Replica</h3>
+                <p class="product-price">$129.99</p>
+                <div class="product-actions">
+                    <button class="btn btn-secondary">Add to Cart</button>
+                    <button class="btn btn-icon">♡</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product 4 -->
+        <div class="product-card">
+            <img src="https://images.unsplash.com/photo-1591488320449-011701bb6704?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Anime Mug" class="product-image">
+            <div class="product-info">
+                <h3 class="product-title">Studio Ghibli Collectible Mug</h3>
+                <p class="product-price">$24.99</p>
+                <div class="product-actions">
+                    <button class="btn btn-secondary">Add to Cart</button>
+                    <button class="btn btn-icon">♡</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Collections Banner -->
+    <h2 class="section-title">OUR COLLECTIONS</h2>
+    <div style="padding: 0 2rem; margin-bottom: 4rem;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+            <div style="grid-column: span 2; background: linear-gradient(135deg, rgba(255, 69, 0, 0.8), rgba(255, 20, 147, 0.7)), url('https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1374&q=80'); height: 300px; border-radius: var(--border-radius); display: flex; flex-direction: column; justify-content: center; padding: 0 3rem; background-size: cover;">
+                <h3 style="font-family: 'Oxanium', sans-serif; font-size: 2rem; margin-bottom: 1rem;">COSPLAY COLLECTION</h3>
+                <p style="margin-bottom: 1.5rem; max-width: 500px;">Premium props and accessories to bring your favorite characters to life.</p>
+                <button class="btn btn-secondary" style="align-self: flex-start;">Explore</button>
+            </div>
+            <div style="background: linear-gradient(135deg, rgba(30, 30, 30, 0.8), rgba(30, 30, 30, 0.6)), url('https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1528&q=80'); height: 300px; border-radius: var(--border-radius); display: flex; flex-direction: column; justify-content: center; padding: 0 2rem; background-size: cover;">
+                <h3 style="font-family: 'Oxanium', sans-serif; font-size: 1.5rem; margin-bottom: 1rem;">STREAMER ESSENTIALS</h3>
+                <button class="btn btn-secondary" style="align-self: flex-start; margin-top: 1rem;">Explore</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-column">
+                <h3>SHOP</h3>
+                <a href="#" class="footer-link">All Products</a>
+                <a href="#" class="footer-link">New Arrivals</a>
+                <a href="#" class="footer-link">Best Sellers</a>
+                <a href="#" class="footer-link">Limited Editions</a>
+            </div>
+            <div class="footer-column">
+                <h3>CATEGORIES</h3>
+                <a href="#" class="footer-link">Apparel</a>
+                <a href="#" class="footer-link">Cosplay</a>
+                <a href="#" class="footer-link">Stream Gear</a>
+                <a href="#" class="footer-link">Accessories</a>
+            </div>
+            <div class="footer-column">
+                <h3>HELP</h3>
+                <a href="#" class="footer-link">Contact Us</a>
+                <a href="#" class="footer-link">Shipping Info</a>
+                <a href="#" class="footer-link">Returns & Exchanges</a>
+                <a href="#" class="footer-link">FAQ</a>
+            </div>
+            <div class="footer-column">
+                <h3>CONNECT</h3>
+                <a href="#" class="footer-link">Instagram</a>
+                <a href="#" class="footer-link">Twitter</a>
+                <a href="#" class="footer-link">TikTok</a>
+                <a href="#" class="footer-link">Discord</a>
+            </div>
+        </div>
+        <p class="copyright">© 2023 Paprika Anime Merch. All rights reserved.</p>
+    </footer>
+</body>
+</html>
