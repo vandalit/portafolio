@@ -1,0 +1,39 @@
+/* Additional theme-specific styles */
+.dark-theme {
+    --bg-primary: #121212;
+    --bg-secondary: #1e1e1e;
+    --text-primary: #f8f8f8;
+    --text-secondary: #cccccc;
+    --accent-primary: var(--magenta);
+    --accent-secondary: var(--yellow-green);
+    --border-color: #333;
+}
+
+.light-theme {
+    --bg-primary: #f8f8f8;
+    --bg-secondary: #ffffff;
+    --text-primary: #121212;
+    --text-secondary: #333333;
+    --accent-primary: var(--magenta);
+    --accent-secondary: var(--yellow-green);
+    --border-color: #e0e0e0;
+}
+
+/* Apply theme variables */
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.accordion {
+    border-color: var(--border-color);
+}
+
+.accordion-header {
+    background-color: var(--bg-secondary);
+}
+
+.skill-item {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}

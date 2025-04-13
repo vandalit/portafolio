@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Name | Portfolio</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/themes.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body class="dark-theme">
+    <header>
+        <div class="branding">
+            <h1>Your Name</h1>
+            <p>Industrial Designer & Web Developer</p>
+        </div>
+        <button id="theme-toggle" aria-label="Toggle theme">
+            <span class="toggle-icon">☀️</span>
+        </button>
+    </header>
+
+    <main>
+        <!-- Summary Section (Accordion - Expanded by default) -->
+        <section class="accordion expanded" id="summary">
+            <div class="accordion-header">
+                <h2>About Me</h2>
+                <span class="accordion-icon">−</span>
+            </div>
+            <div class="accordion-content">
+                <div class="profile-grid">
+                    <div class="profile-pic">
+                        <img src="assets/images/profile.jpg" alt="Your Name">
+                    </div>
+                    <div class="profile-bio">
+                        <p>Industrial designer turned web developer with expertise in UX/UI. Combining fabrication skills with digital creativity.</p>
+                        <div class="social-links">
+                            <!-- Add your social links here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section class="skills-section">
+            <h2>Skills Matrix</h2>
+            <div class="skills-grid">
+                <!-- Skills will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Experience Section (Accordion - Collapsed by default) -->
+        <section class="accordion" id="experience">
+            <div class="accordion-header">
+                <h2>Experience</h2>
+                <span class="accordion-icon">+</span>
+            </div>
+            <div class="accordion-content">
+                <div class="timeline">
+                    <!-- Timeline items will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Education Section (Accordion - Collapsed by default) -->
+        <section class="accordion" id="education">
+            <div class="accordion-header">
+                <h2>Education</h2>
+                <span class="accordion-icon">+</span>
+            </div>
+            <div class="accordion-content">
+                <div class="education-grid">
+                    <!-- Education items will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Portfolio Bento Grid -->
+        <section class="portfolio-showcase">
+            <h2>Specializations</h2>
+            <div class="bento-grid">
+                <!-- Bento items will be populated by JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2023 Your Name. All rights reserved.</p>
+    </footer>
+
+    <script src="js/projects.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
