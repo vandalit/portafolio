@@ -5,43 +5,43 @@ const projectsData = {
             "id": "web-design",
             "title": "Web Design",
             "color": "magenta",
-            "image": "https://vandalit.github.io/resources/web-design-placeholder.jpg"
+            "image": "https://placehold.co/600x400"
         },
         {
             "id": "development",
             "title": "Development",
             "color": "yellow-green",
-            "image": "https://vandalit.github.io/resources/dev-placeholder.jpg"
+            "image": "https://placehold.co/600x400"
         },
         {
             "id": "ux-ui",
             "title": "UX/UI Design",
             "color": "blue",
-            "image": "https://vandalit.github.io/resources/ux-ui-placeholder.jpg"
+            "image": "https://placehold.co/600x400"
         },
         {
             "id": "product-design",
             "title": "Product Design",
             "color": "orange-red",
-            "image": "https://vandalit.github.io/resources/product-design-placeholder.jpg"
+            "image": "https://placehold.co/600x400"
         },
         {
             "id": "graphic-design",
             "title": "Graphic Design",
             "color": "magenta",
-            "image": "https://vandalit.github.io/resources/graphic-design-placeholder.jpg"
+            "image": "https://placehold.co/600x400"
         },
         {
             "id": "marketing",
             "title": "Marketing & SEO",
             "color": "orange",
-            "image": "https://vandalit.github.io/resources/marketing-placeholder.jpg"
+            "image": "https://placehold.co/600x400"
         },
         {
             "id": "case-studies",
             "title": "Case Studies",
             "color": "purple",
-            "image": "https://vandalit.github.io/resources/case-studies-placeholder.jpg"
+            "image": "https://placehold.co/600x400"
         }
     ],
     "projects": [
@@ -51,7 +51,17 @@ const projectsData = {
             "description": "A fully responsive e-commerce platform with custom CMS",
             "categories": ["web-design", "development"],
             "skills": ["HTML", "CSS", "JavaScript", "Vue", "RoR"],
-            "image": "https://vandalit.github.io/resources/project1.jpg",
+            "image": "https://placehold.co/400x200",
+            "link": "https://example.com",
+            "tags": ["#ecommerce", "#responsive", "#vue"]
+        },
+        {
+            "id": "project-2",
+            "title": "blahblah Website",
+            "description": "A fully responsive e-commerce platform with custom CMS",
+            "categories": ["web-design", "development"],
+            "skills": ["HTML", "CSS", "JavaScript", "Vue", "RoR"],
+            "image": "https://placehold.co/400x100",
             "link": "https://example.com",
             "tags": ["#ecommerce", "#responsive", "#vue"]
         },
