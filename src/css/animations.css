@@ -1,0 +1,180 @@
+/* ==========================================================
+   ANIMATIONS.CSS — Keyframes, Parallax, Motion FX
+   ========================================================== */
+
+/* ── FLOATING DOODLES ────────────────────────────────────── */
+@keyframes floatA {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33%       { transform: translateY(-18px) rotate(3deg); }
+  66%       { transform: translateY(-8px) rotate(-2deg); }
+}
+
+@keyframes floatB {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  50%       { transform: translateY(-12px) rotate(-5deg) scale(1.04); }
+}
+
+@keyframes floatC {
+  0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+  40%       { transform: translateX(10px) translateY(-8px) rotate(4deg); }
+  80%       { transform: translateX(-6px) translateY(-14px) rotate(-3deg); }
+}
+
+@keyframes rotateSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes rotateSlowReverse {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+
+/* ── GRADIENT SHIFT (hero bg) ────────────────────────────── */
+@keyframes gradShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── GLOW PULSE ──────────────────────────────────────────── */
+@keyframes glowPulseMagenta {
+  0%, 100% { box-shadow: 0 0 20px var(--magenta-glow); }
+  50%       { box-shadow: 0 0 40px rgba(232,48,110,0.3); }
+}
+
+@keyframes glowPulseLime {
+  0%, 100% { box-shadow: 0 0 20px var(--lime-glow); }
+  50%       { box-shadow: 0 0 40px rgba(184,224,48,0.3); }
+}
+
+/* ── PARALLAX LAYERS ─────────────────────────────────────── */
+.parallax-layer {
+  will-change: transform;
+}
+
+/* ── HERO DOODLE ANIMATIONS ──────────────────────────────── */
+.doodle--float-a { animation: floatA 8s ease-in-out infinite; }
+.doodle--float-b { animation: floatB 11s ease-in-out infinite; }
+.doodle--float-c { animation: floatC 14s ease-in-out infinite; }
+.doodle--rotate  { animation: rotateSlow 30s linear infinite; }
+.doodle--rotate-r{ animation: rotateSlowReverse 22s linear infinite; }
+
+/* ── SCAN LINE EFFECT (lab section) ──────────────────────── */
+@keyframes scanLine {
+  0%   { top: -2px; opacity: 0; }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.2; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.lab-scanline::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--lime), transparent);
+  pointer-events: none;
+  animation: scanLine 4s ease-in-out infinite;
+  z-index: 10;
+}
+
+/* ── SECTION ENTRY ANIMATIONS ────────────────────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeSlideLeft {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── NOISE TEXTURE ANIMATION ─────────────────────────────── */
+@keyframes noiseShift {
+  0%   { background-position: 0 0; }
+  25%  { background-position: 10px -8px; }
+  50%  { background-position: -5px 12px; }
+  75%  { background-position: 8px 6px; }
+  100% { background-position: 0 0; }
+}
+
+/* ── MAGENTA ACCENT STRIP ────────────────────────────────── */
+@keyframes accentSlide {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); transform-origin: left; }
+}
+
+/* ── CURSOR GLOW (optional) ──────────────────────────────── */
+#cursor-glow {
+  position: fixed;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle, rgba(232,48,110,0.06) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  transition: opacity 300ms ease;
+  mix-blend-mode: screen;
+}
+
+/* ── THREE.JS CANVAS ─────────────────────────────────────── */
+#three-canvas {
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+#three-canvas.loaded { opacity: 1; }
+
+/* ── FEATURED CASE ENTRY ─────────────────────────────────── */
+.featured-case {
+  transform: translateY(20px);
+  opacity: 0;
+  transition: transform var(--dur-reveal) var(--ease-out),
+              opacity var(--dur-reveal) var(--ease-out);
+}
+
+.featured-case.revealed {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* ── TABS INDICATOR ──────────────────────────────────────── */
+.tabs-indicator {
+  position: absolute;
+  bottom: -1px;
+  height: 2px;
+  background: var(--magenta);
+  border-radius: 99px;
+  transition: left var(--dur-slow) var(--ease-out),
+              width var(--dur-slow) var(--ease-out);
+}
+
+/* ── MICRO GRID LINES (section bg decoration) ─────────────── */
+.section-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border-0) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-0) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ── HERO GRADIENT LINES ─────────────────────────────────── */
+.hero-lines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(135deg, transparent 0%, rgba(232,48,110,0.05) 50%, transparent 100%),
+    linear-gradient(225deg, transparent 0%, rgba(184,224,48,0.04) 50%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}

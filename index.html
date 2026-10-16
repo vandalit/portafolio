@@ -1,15 +1,461 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio Concepts Exploration</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Portafolio de vandalit — diseñador UX/UI y desarrollador front-end. Proyectos de clientes, casos de estudio y experimentos de diseño.">
+  <meta name="keywords" content="UX design, UI design, front-end developer, portafolio, diseño web, freelance, Chile">
+  <meta property="og:title" content="vandalit — UX/UI Designer & Front-end Developer">
+  <meta property="og:description" content="Diseño que comunica. Código que respira.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:creator" content="@vandalittt">
+  <title>vandalit — UX/UI Designer & Front-end Developer</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="./src/css/base.css">
+  <link rel="stylesheet" href="./src/css/layout.css">
+  <link rel="stylesheet" href="./src/css/components.css">
+  <link rel="stylesheet" href="./src/css/animations.css">
+
+  <style>
+    /* Inline critical: btn size variants */
+    .btn--sm { padding: 6px 14px; font-size: 0.65rem; }
+
+    /* Hero doodle SVG positions */
+    .hero__doodle--1 { top: 18%; right: 12%; width: 180px; opacity: 0.18; }
+    .hero__doodle--2 { top: 60%; right: 30%; width: 80px; opacity: 0.12; }
+    .hero__doodle--3 { top: 25%; left: 8%; width: 120px; opacity: 0.10; }
+    .hero__doodle--4 { bottom: 20%; left: 20%; width: 60px; opacity: 0.14; }
+
+    /* Cases section grid */
+    .cases-layout { display: grid; gap: clamp(2rem,4vw,3.5rem); }
+
+    /* Section micro-grid bg only on some sections */
+    #skills .section-grid-bg,
+    #lab .section-grid-bg { display: block; }
+
+    /* Footer specifics */
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 300;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      color: var(--text-0);
+      margin-bottom: var(--sp-6);
+    }
+    .footer-logo span { color: var(--magenta); }
+
+    .footer-tagline {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: var(--text-xl);
+      color: var(--text-1);
+      margin-bottom: var(--sp-8);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: var(--sp-6);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      letter-spacing: var(--tracking-wider);
+      text-transform: uppercase;
+      color: var(--text-2);
+      transition: color var(--transition-fast);
+    }
+    .footer-link:hover { color: var(--magenta); }
+
+    .footer-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--sp-4);
+    }
+
+    .footer-email {
+      font-family: var(--font-display);
+      font-size: var(--text-3xl);
+      font-weight: 300;
+      color: var(--text-0);
+      transition: color var(--transition-fast);
+    }
+    .footer-email:hover { color: var(--magenta); }
+
+    .footer-copy {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--text-3);
+      letter-spacing: var(--tracking-wider);
+    }
+
+    /* Doodle SVGs inline */
+    .svg-doodle { overflow: visible; }
+  </style>
 </head>
+
 <body>
-    <a href="./demos/cssaidriven_v1/index.html">css-ai-driven-v01</a>
-    <br>
-    <a href="./demos/cssaidriven-v2/index.html">wip</a>
-    <br>
-    <a href="./demos/case-study-ai-driven/ecommerce-001/index.html">Paprika - Anime E-Commerce</a>
+
+  <!-- ── CURSOR GLOW ─────────────────────────────────────── -->
+  <div id="cursor-glow" aria-hidden="true"></div>
+
+  <!-- ── NAV ────────────────────────────────────────────── -->
+  <nav id="nav" role="navigation" aria-label="Navegación principal">
+    <a href="#hero" class="nav__logo" aria-label="vandalit — inicio">
+      van<span>.</span>dalit
+    </a>
+    <ul class="nav__links" role="list">
+      <li><a href="#cases"  class="nav__link" aria-label="Casos de estudio">Cases</a></li>
+      <li><a href="#skills" class="nav__link" aria-label="Perfil técnico">Skills</a></li>
+      <li><a href="#work"   class="nav__link" aria-label="Trabajo de clientes">Trabajo</a></li>
+      <li><a href="#lab"    class="nav__link" aria-label="Experimentos">Lab</a></li>
+    </ul>
+    <a href="#contact" class="nav__cta">Contacto</a>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════
+       HERO
+  ══════════════════════════════════════════════════════════ -->
+  <section id="hero" aria-label="Presentación">
+    <!-- Three.js canvas -->
+    <canvas id="three-canvas" aria-hidden="true"></canvas>
+
+    <!-- BG layers -->
+    <div class="hero-lines" aria-hidden="true"></div>
+    <div class="hero__bg-gradient" aria-hidden="true"></div>
+
+    <!-- SVG Doodles — geometric primitives -->
+    <div class="hero__doodle hero__doodle--1 doodle--float-a" aria-hidden="true">
+      <svg class="svg-doodle" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="90" cy="90" r="80" stroke="#e8306e" stroke-width="1"/>
+        <circle cx="90" cy="90" r="55" stroke="#e8306e" stroke-width="0.5" stroke-dasharray="6 6"/>
+        <circle cx="90" cy="90" r="28" stroke="#e8306e" stroke-width="1.5"/>
+        <line x1="10" y1="90" x2="170" y2="90" stroke="#e8306e" stroke-width="0.5" opacity="0.4"/>
+        <line x1="90" y1="10" x2="90" y2="170" stroke="#e8306e" stroke-width="0.5" opacity="0.4"/>
+      </svg>
+    </div>
+
+    <div class="hero__doodle hero__doodle--2 doodle--float-b" aria-hidden="true">
+      <svg class="svg-doodle" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="4" width="72" height="72" stroke="#b8e030" stroke-width="1.5" transform="rotate(15 40 40)"/>
+        <rect x="18" y="18" width="44" height="44" stroke="#b8e030" stroke-width="0.75" transform="rotate(15 40 40)"/>
+        <circle cx="40" cy="40" r="6" fill="#b8e030" opacity="0.6"/>
+      </svg>
+    </div>
+
+    <div class="hero__doodle hero__doodle--3 doodle--float-c" aria-hidden="true">
+      <svg class="svg-doodle" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="60,8 114,92 6,92" stroke="#e8306e" stroke-width="1.5" fill="none"/>
+        <polygon points="60,28 94,82 26,82" stroke="#e8306e" stroke-width="0.75" fill="none" stroke-dasharray="5 5"/>
+        <circle cx="60" cy="68" r="5" fill="#e8306e" opacity="0.7"/>
+      </svg>
+    </div>
+
+    <div class="hero__doodle hero__doodle--4 doodle--rotate" aria-hidden="true">
+      <svg class="svg-doodle" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="4" width="52" height="52" stroke="#b8e030" stroke-width="1" transform="rotate(45 30 30)"/>
+        <rect x="14" y="14" width="32" height="32" stroke="#b8e030" stroke-width="0.5" transform="rotate(45 30 30)"/>
+      </svg>
+    </div>
+
+    <!-- Content -->
+    <div class="hero__content">
+      <p class="hero__eyebrow">
+        UX/UI Designer &amp; Front-end Developer
+      </p>
+
+      <h1 class="hero__name display">
+        <span class="line">van·</span>
+        <span class="line">dalit</span>
+      </h1>
+
+      <p class="hero__tagline">
+        Diseño que comunica. Código que respira.
+      </p>
+
+      <div class="hero__meta">
+        <a href="#cases" class="btn btn--primary">Ver trabajo <span class="btn__icon">↓</span></a>
+        <div class="status-badge">
+          <span class="status-badge__dot"></span>
+          Disponible
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="hero__scroll" aria-hidden="true">
+      <div class="hero__scroll-line"></div>
+      <span>scroll</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       CASOS DE ESTUDIO
+  ══════════════════════════════════════════════════════════ -->
+  <section id="cases" aria-label="Casos de estudio">
+    <div class="container">
+      <header class="section-header reveal">
+        <p class="eyebrow section-header__eyebrow">Proyectos seleccionados</p>
+        <h2 class="section-header__title display">Casos de Estudio</h2>
+        <p class="section-header__desc">
+          Proyectos donde el brief fue el punto de partida, no el límite.
+        </p>
+      </header>
+
+      <!-- Featured (Destacado) -->
+      <div id="featured-case" class="featured-case reveal" role="button" tabindex="0" aria-label="Ver caso destacado">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Carousel -->
+      <div id="cases-carousel" class="carousel-wrapper reveal" aria-label="Carrusel de casos de estudio">
+        <div class="carousel-track-container">
+          <div class="carousel-track" role="list">
+            <!-- Cards populated by JS -->
+          </div>
+        </div>
+        <div class="carousel-controls">
+          <div class="carousel-progress">
+            <div class="carousel-progress__fill" style="width: 0%"></div>
+          </div>
+          <button class="carousel-btn" data-carousel-prev aria-label="Anterior">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="carousel-btn" data-carousel-next aria-label="Siguiente">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SKILLS / PERFIL TÉCNICO
+  ══════════════════════════════════════════════════════════ -->
+  <section id="skills" aria-label="Perfil técnico y habilidades">
+    <div class="section-grid-bg" aria-hidden="true"></div>
+    <div class="container">
+      <div style="display:grid; grid-template-columns:1fr auto; align-items:end; gap:var(--sp-8); margin-bottom:clamp(3rem,6vw,5rem)">
+        <header class="reveal">
+          <p class="eyebrow" style="margin-bottom:var(--sp-4)">Habilidades</p>
+          <h2 class="section-header__title display">Perfil Técnico</h2>
+          <p class="section-header__desc" style="margin-top:var(--sp-4)">
+            No una lista de íconos. Un mapa de capacidades reales, con sus conexiones.
+          </p>
+        </header>
+        <!-- Legend -->
+        <aside class="reveal" aria-label="Leyenda de categorías">
+          <div style="display:flex;flex-direction:column;gap:var(--sp-3)">
+            <div style="display:flex;align-items:center;gap:var(--sp-3)">
+              <span style="width:10px;height:10px;border-radius:50%;background:var(--magenta);display:block"></span>
+              <span class="eyebrow" style="color:var(--text-2)">Multimedia / Design</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:var(--sp-3)">
+              <span style="width:10px;height:10px;border-radius:50%;background:var(--lime);display:block"></span>
+              <span class="eyebrow" style="color:var(--text-2)">Coding / Dev</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Skills Carousel -->
+      <div id="skills-carousel" class="carousel-wrapper reveal" aria-label="Carrusel de habilidades">
+        <div class="carousel-track-container">
+          <div class="carousel-track" role="list">
+            <!-- Skill cards populated by JS -->
+          </div>
+        </div>
+        <div class="carousel-controls">
+          <div class="carousel-progress">
+            <div class="carousel-progress__fill" style="width:0%"></div>
+          </div>
+          <button class="carousel-btn" data-carousel-prev aria-label="Anterior habilidad">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="carousel-btn" data-carousel-next aria-label="Siguiente habilidad">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       TRABAJO DE CLIENTES
+  ══════════════════════════════════════════════════════════ -->
+  <section id="work" aria-label="Trabajo de clientes">
+    <div class="container">
+      <header class="section-header reveal">
+        <p class="eyebrow section-header__eyebrow">Proyectos</p>
+        <h2 class="section-header__title display">Trabajo de Clientes</h2>
+        <p class="section-header__desc">
+          Proyectos reales, problemas reales. Desde el brief hasta el deploy.
+        </p>
+      </header>
+
+      <!-- Tabs -->
+      <nav class="tabs reveal" role="tablist" aria-label="Filtro de proyectos">
+        <button class="tab-btn active" data-tab="all"       role="tab" aria-selected="true">Todos</button>
+        <button class="tab-btn"        data-tab="wordpress" role="tab" aria-selected="false">Web &amp; WP</button>
+        <button class="tab-btn"        data-tab="ux"        role="tab" aria-selected="false">UX/UI</button>
+        <button class="tab-btn"        data-tab="multimedia"role="tab" aria-selected="false">Multimedia</button>
+        <button class="tab-btn"        data-tab="coding"    role="tab" aria-selected="false">Coding</button>
+      </nav>
+
+      <!-- Grid -->
+      <div id="clients-grid" class="projects-grid stagger" role="list" aria-label="Grid de proyectos">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       LAB — EXPERIMENTOS CODING
+  ══════════════════════════════════════════════════════════ -->
+  <section id="lab" aria-label="Experimentos de coding">
+    <div class="section-grid-bg" aria-hidden="true"></div>
+    <div class="container">
+      <header class="section-header reveal" style="display:grid;grid-template-columns:1fr auto;align-items:end;gap:var(--sp-8)">
+        <div>
+          <p class="eyebrow section-header__eyebrow">Experimentos</p>
+          <h2 class="section-header__title display">Lab</h2>
+          <p class="section-header__desc" style="margin-top:var(--sp-4)">
+            Exploración técnica como práctica. Prototipos, demos y curiosidades.
+          </p>
+        </div>
+        <!-- Doodle accent -->
+        <div aria-hidden="true" style="width:80px;opacity:0.25" class="doodle--rotate">
+          <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="40" cy="40" r="36" stroke="#b8e030" stroke-width="1"/>
+            <circle cx="40" cy="40" r="22" stroke="#b8e030" stroke-width="0.75" stroke-dasharray="5 5"/>
+            <circle cx="40" cy="40" r="8" stroke="#b8e030" stroke-width="1.5"/>
+          </svg>
+        </div>
+      </header>
+
+      <!-- Lab Grid -->
+      <div id="lab-grid" class="lab-grid stagger">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Note about AI -->
+      <div class="lab-note reveal">
+        <p>
+          <strong>Nota sobre estos proyectos:</strong>
+          Los experimentos en esta sección fueron desarrollados con asistencia de IA generativa como herramienta de flujo de trabajo.
+          La dirección creativa, las decisiones técnicas y el criterio de diseño son propios.
+          Los casos de estudio también utilizan IA como parte del proceso —
+          es el nuevo paradigma de producción y los resultados hablan por sí solos.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       FOOTER / CONTACTO
+  ══════════════════════════════════════════════════════════ -->
+  <footer id="contact" role="contentinfo" aria-label="Contacto">
+    <div class="container">
+      <div class="footer__grid">
+        <div>
+          <div class="footer-logo reveal">van<span>.</span>dalit</div>
+          <p class="footer-tagline reveal">
+            Diseño que comunica.<br>Código que respira.
+          </p>
+          <nav class="footer-links reveal" aria-label="Links sociales">
+            <a href="https://github.com/vandalit" class="footer-link" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://twitter.com/vandalittt" class="footer-link" target="_blank" rel="noopener">@vandalittt</a>
+            <a href="#cases" class="footer-link">Proyectos</a>
+            <a href="#skills" class="footer-link">Skills</a>
+          </nav>
+        </div>
+
+        <div class="footer-right reveal">
+          <p class="eyebrow" style="margin-bottom:var(--sp-2)">¿Trabajamos?</p>
+          <a href="mailto:hola@vandalit.com" class="footer-email">
+            hola@vandalit.com
+          </a>
+          <p class="footer-copy">© 2026 vandalit. Diseño + Código.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════════════
+       MODAL — SPLIT CANVAS
+  ══════════════════════════════════════════════════════════ -->
+  <div id="project-modal"
+       class="modal"
+       role="dialog"
+       aria-modal="true"
+       aria-hidden="true"
+       aria-label="Detalle de proyecto">
+
+    <div class="modal__backdrop"></div>
+
+    <div class="modal__inner">
+      <!-- Close -->
+      <button class="modal__close" aria-label="Cerrar detalle">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <!-- Sidebar -->
+      <aside class="modal__sidebar" role="complementary" aria-label="Información del proyecto">
+        <p class="modal__project-eyebrow"></p>
+        <h2 class="modal__project-title display"></h2>
+        <p class="modal__project-desc"></p>
+
+        <div class="modal__meta-sections">
+          <!-- Meta sections populated by JS -->
+        </div>
+
+        <div class="modal__tags" aria-label="Tags del proyecto">
+          <!-- Tags populated by JS -->
+        </div>
+
+        <div class="modal__actions">
+          <!-- Actions populated by JS -->
+        </div>
+      </aside>
+
+      <!-- Gallery -->
+      <main class="modal__gallery" aria-label="Galería del proyecto">
+        <div class="modal__masonry" role="list">
+          <!-- Images populated by JS -->
+        </div>
+      </main>
+    </div>
+
+    <!-- Scroll unlock hint -->
+    <div class="modal__scroll-hint" aria-live="polite">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M6 1L6 11M2 7L6 11L10 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      Continuar
+    </div>
+  </div>
+
+  <!-- ── SCRIPTS ────────────────────────────────────────── -->
+  <script type="module" src="./src/js/main.js"></script>
 </body>
 </html>

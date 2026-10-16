@@ -1,0 +1,283 @@
+{
+  "cases": [
+    {
+      "id": "syzygy",
+      "category": "coding",
+      "title": "Syzygy",
+      "subtitle": "Sistema de diseño astral",
+      "description": "Un sistema de diseño construido desde el concepto astral: reglas claras, pero espacio para lo inesperado. Componentes, tokens y motion integrados en un lenguaje visual coherente.",
+      "year": 2024,
+      "role": "Design System Lead",
+      "tags": ["design-systems", "coding", "motion"],
+      "accentColor": "#b6e030",
+      "featured": true,
+      "coverPlaceholder": "https://picsum.photos/seed/syzygy/1200/675",
+      "gallery": [
+        "https://picsum.photos/seed/syzygy-1/1200/800",
+        "https://picsum.photos/seed/syzygy-2/800/1000",
+        "https://picsum.photos/seed/syzygy-3/900/600",
+        "https://picsum.photos/seed/syzygy-4/800/1200",
+        "https://picsum.photos/seed/syzygy-5/1200/700"
+      ],
+      "links": { "github": "https://github.com/vandalit/Syzygy", "live": null },
+      "challenge": "Crear un sistema de diseño que pueda escalar sin perder su carácter propio, integrando motion como parte fundamental del lenguaje.",
+      "solution": "Tokens semánticos + motion principles documentados + biblioteca de componentes con estados animados.",
+      "result": "Sistema funcional desplegado, utilizable como base para proyectos futuros."
+    },
+    {
+      "id": "afk",
+      "category": "coding",
+      "title": "AFK",
+      "subtitle": "UX para quien no quiere parar",
+      "description": "Plataforma de gestión para streamers y jugadores. Investigación de usuarios, arquitectura de información y prototipado rápido en un sector que ignora el UX.",
+      "year": 2024,
+      "role": "UX Research + UI Design + Dev",
+      "tags": ["ux", "coding", "product"],
+      "accentColor": "#b6e030",
+      "featured": true,
+      "coverPlaceholder": "https://picsum.photos/seed/afk-cover/1200/675",
+      "gallery": [
+        "https://picsum.photos/seed/afk-1/1200/800",
+        "https://picsum.photos/seed/afk-2/800/1100",
+        "https://picsum.photos/seed/afk-3/1000/700"
+      ],
+      "links": { "github": "https://github.com/vandalit/AFK", "live": null },
+      "challenge": "El ecosistema gaming tiene interfaces complejas que priorizan funcionalidad sobre UX. Diseñar algo intuitivo para un usuario con alta exigencia técnica.",
+      "solution": "Research con streamers reales + sistema de navegación por comandos + dark UI con densidad controlada.",
+      "result": "Prototipo funcional con flujo completo de onboarding y gestión de sesiones."
+    },
+    {
+      "id": "kaktus",
+      "category": "multimedia",
+      "title": "Kaktus",
+      "subtitle": "Editorial mobile sin concesiones",
+      "description": "Aplicación móvil de diseño editorial. La restricción del formato como motor creativo: tipografía protagonista, imágenes a sangre, scrolling como narrativa.",
+      "year": 2023,
+      "role": "UI Design + Prototipado",
+      "tags": ["ui", "multimedia", "mobile"],
+      "accentColor": "#d4205a",
+      "featured": false,
+      "coverPlaceholder": "https://picsum.photos/seed/kaktus/1200/675",
+      "gallery": [
+        "https://picsum.photos/seed/kaktus-1/600/1200",
+        "https://picsum.photos/seed/kaktus-2/600/1000",
+        "https://picsum.photos/seed/kaktus-3/800/600"
+      ],
+      "links": { "github": "https://github.com/vandalit/Kaktus", "live": null },
+      "challenge": "Crear una experiencia editorial en mobile que no sea una versión empobrecida del desktop.",
+      "solution": "Sistema de gestos + tipografía variable + layouts dinámicos por tipo de contenido.",
+      "result": "UI exploratoria completa con 12 pantallas y sistema de componentes documentado."
+    },
+    {
+      "id": "twitch-redesign",
+      "category": "multimedia",
+      "title": "Twitch Redesign",
+      "subtitle": "Rediseño de una interfaz que olvidó a sus usuarios",
+      "description": "Ejercicio de auditoría heurística y rediseño completo de Twitch. Del diagnóstico claro a las soluciones propuestas: menos ruido, más contenido.",
+      "year": 2023,
+      "role": "UX Audit + UI Design",
+      "tags": ["ux", "multimedia", "redesign"],
+      "accentColor": "#d4205a",
+      "featured": false,
+      "coverPlaceholder": "https://picsum.photos/seed/twitch/1200/675",
+      "gallery": [
+        "https://picsum.photos/seed/twitch-1/1400/800",
+        "https://picsum.photos/seed/twitch-2/1200/900"
+      ],
+      "links": { "github": "https://github.com/vandalit/twitch-redesign", "live": null },
+      "challenge": "Twitch tiene una deuda de UX acumulada por años de crecimiento sin dirección de diseño unificada.",
+      "solution": "Auditoría heurística → identificación de 8 problemas críticos → propuesta de rediseño modular.",
+      "result": "Case study completo con 20+ pantallas rediseñadas y sistema de componentes."
+    },
+    {
+      "id": "multipip",
+      "category": "coding",
+      "title": "multiPiP",
+      "subtitle": "Múltiples ventanas, una sola experiencia",
+      "description": "Herramienta front-end para gestionar múltiples picture-in-picture en el navegador. Utilidad técnica con UX pensado: flujo mínimo, máximo control.",
+      "year": 2024,
+      "role": "Design + Development",
+      "tags": ["coding", "tool", "frontend"],
+      "accentColor": "#b6e030",
+      "featured": false,
+      "coverPlaceholder": "https://picsum.photos/seed/multipip/1200/675",
+      "gallery": [
+        "https://picsum.photos/seed/multipip-1/1400/800",
+        "https://picsum.photos/seed/multipip-2/900/700"
+      ],
+      "links": { "github": "https://github.com/vandalit/multiPiP", "live": null },
+      "challenge": "El navegador permite PiP nativo pero no gestión múltiple. Implementar sin APIs externas.",
+      "solution": "Vanilla JS + CSS Grid adaptativo + estado persistente en sessionStorage.",
+      "result": "Herramienta funcional deployada, usable sin instalación."
+    },
+    {
+      "id": "card-tools",
+      "category": "coding",
+      "title": "Card Tools",
+      "subtitle": "Las tarjetas como sistema",
+      "description": "Sistema de componentes de tarjetas interactivas. Exploración profunda de estados, variantes, micro-animaciones y composición modular.",
+      "year": 2024,
+      "role": "Design + Development",
+      "tags": ["coding", "ui-components", "css"],
+      "accentColor": "#b6e030",
+      "featured": false,
+      "coverPlaceholder": "https://picsum.photos/seed/cardtools/1200/675",
+      "gallery": [
+        "https://picsum.photos/seed/cardtools-1/1400/800",
+        "https://picsum.photos/seed/cardtools-2/1000/700"
+      ],
+      "links": { "github": "https://github.com/vandalit/Card-Tools", "live": null },
+      "challenge": "Las librerías de componentes sacrifican flexibilidad por conveniencia. ¿Se puede tener ambas?",
+      "solution": "CSS Custom Properties como API de componente + variantes via data-attributes.",
+      "result": "Biblioteca de 8 variantes de card con documentación y demos interactivos."
+    }
+  ],
+  "clients": [
+    {
+      "id": "lickancoy",
+      "category": "wordpress",
+      "title": "Turismo Lickancoy",
+      "client": "Turismo Lickancoy",
+      "description": "Sitio web de turismo para la comunidad atacameña del norte de Chile. Diseño que honra el territorio: tonalidades del desierto, fotografía protagonista.",
+      "year": 2023,
+      "role": "UX/UI Design + WordPress Dev",
+      "tags": ["wordpress", "ux", "web"],
+      "coverPlaceholder": "https://picsum.photos/seed/lickancoy/800/450",
+      "challenge": "Crear presencia digital que transmitiera la magnitud del paisaje atacameño sin perder la calidez humana de la comunidad local.",
+      "solution": "Sistema visual basado en las tonalidades del desierto (ocres, terracotas, azules nocturnos) con tipografía generosa y fotografía protagonista.",
+      "result": "Sitio WordPress funcional con identidad visual coherente y experiencia mobile optimizada.",
+      "stack": ["WordPress", "Custom CSS", "Photography Direction"],
+      "gallery": [
+        "https://picsum.photos/seed/lickancoy-1/1200/800",
+        "https://picsum.photos/seed/lickancoy-2/800/1100",
+        "https://picsum.photos/seed/lickancoy-3/900/600",
+        "https://picsum.photos/seed/lickancoy-4/800/1200",
+        "https://picsum.photos/seed/lickancoy-5/1200/700",
+        "https://picsum.photos/seed/lickancoy-6/900/600"
+      ],
+      "links": { "live": null }
+    },
+    {
+      "id": "infinito",
+      "category": "wordpress",
+      "title": "Infinito Ingeniería",
+      "client": "Infinito Ingeniería",
+      "description": "Sitio corporativo para empresa de ingeniería. Profesionalismo con carácter: el sector ingeniería tiende a lo genérico; aquí no.",
+      "year": 2023,
+      "role": "UX/UI Design + WordPress Dev",
+      "tags": ["wordpress", "corporate", "web"],
+      "coverPlaceholder": "https://picsum.photos/seed/infinito/800/450",
+      "challenge": "El sector ingeniería tiende a sitios genéricos. Crear presencia con personalidad propia que transmita confianza técnica.",
+      "solution": "Layout estructurado con paleta sobria, pero con micro-interacciones y tipografía con carácter propio.",
+      "result": "Sitio corporativo diferenciado del estándar del sector, con buen rendimiento SEO.",
+      "stack": ["WordPress", "Custom Theme", "CSS", "Optimización"],
+      "gallery": [
+        "https://picsum.photos/seed/infinito-1/1400/800",
+        "https://picsum.photos/seed/infinito-2/800/1000",
+        "https://picsum.photos/seed/infinito-3/1000/700",
+        "https://picsum.photos/seed/infinito-4/900/1200"
+      ],
+      "links": { "live": null }
+    }
+  ],
+  "skills": [
+    {
+      "id": "ux",
+      "category": "ux",
+      "filterTag": "ux",
+      "title": "UX Research & Strategy",
+      "description": "Investigación de usuarios, síntesis de hallazgos, journey maps y definición de problemas de diseño. Del caos del brief a la claridad del problema.",
+      "skills": ["User Interviews", "Usability Testing", "Journey Mapping", "Heuristic Evaluation", "Wireframing", "Information Architecture"],
+      "accentColor": "#d4205a",
+      "icon": "circle"
+    },
+    {
+      "id": "ui",
+      "category": "ui",
+      "filterTag": "multimedia",
+      "title": "UI Design & Systems",
+      "description": "Figma, design tokens, sistemas de componentes. Tipografía, grillas, color como sistema. Interfaces que funcionan y se sienten bien.",
+      "skills": ["Figma", "Design Systems", "Component Libraries", "Responsive Design", "Typography", "Color Theory"],
+      "accentColor": "#d4205a",
+      "icon": "square"
+    },
+    {
+      "id": "frontend",
+      "category": "frontend",
+      "filterTag": "coding",
+      "title": "Front-end Development",
+      "description": "HTML/CSS/JS nativos sin miedo. Three.js, GSAP, animaciones CSS, rendimiento web. El código como herramienta de diseño.",
+      "skills": ["HTML/CSS/JS", "Three.js", "GSAP", "CSS Animations", "GitHub", "Web Performance"],
+      "accentColor": "#b6e030",
+      "icon": "triangle"
+    },
+    {
+      "id": "motion",
+      "category": "motion",
+      "filterTag": "multimedia",
+      "title": "Motion & Visual Design",
+      "description": "Micro-animaciones con propósito, parallax, CSS art, motion principles. El movimiento como parte del lenguaje de diseño, no decoración.",
+      "skills": ["CSS Animations", "GSAP", "Parallax", "Micro-interactions", "After Effects", "Lottie"],
+      "accentColor": "#d4205a",
+      "icon": "circle"
+    },
+    {
+      "id": "content",
+      "category": "content",
+      "filterTag": "ux",
+      "title": "Contenido & SEO",
+      "description": "Copywriting UX, arquitectura de contenido, SEO técnico on-page, métricas. El contenido como componente del diseño.",
+      "skills": ["UX Writing", "SEO On-page", "SEM Básico", "GA4", "Content Architecture", "A/B Testing"],
+      "accentColor": "#d4205a",
+      "icon": "square"
+    },
+    {
+      "id": "ai",
+      "category": "ai",
+      "filterTag": "coding",
+      "title": "AI-Assisted Workflows",
+      "description": "Prompting visual y técnico, flujos de trabajo con IA, CSS y código generativo, experimentación. La IA como herramienta, no como sustituto del criterio.",
+      "skills": ["Prompt Engineering", "AI Image Direction", "CSS Generativo", "LLM Workflows", "Midjourney", "GitHub Copilot"],
+      "accentColor": "#b6e030",
+      "icon": "triangle"
+    }
+  ],
+  "lab": [
+    {
+      "id": "cssdriven-v1",
+      "title": "CSS AI-Driven v1",
+      "subtitle": "Exploración CSS generativo",
+      "description": "Primera exploración de CSS generativo dirigido por prompts. Límites y posibilidades del stack web cuando la IA actúa como co-piloto técnico.",
+      "tags": ["css", "coding", "ai-workflow"],
+      "coverPlaceholder": "https://picsum.photos/seed/cssv1/800/450",
+      "links": {
+        "demo": "./demos/cssaidriven_v1/index.html",
+        "github": "https://github.com/vandalit/portafolio"
+      }
+    },
+    {
+      "id": "cssdriven-v2",
+      "title": "CSS AI-Driven v2",
+      "subtitle": "Segunda iteración — WIP",
+      "description": "Segunda iteración profundizando en animaciones CSS puras, variables dinámicas y composición generativa. Trabajo en progreso.",
+      "tags": ["css", "coding", "ai-workflow", "wip"],
+      "coverPlaceholder": "https://picsum.photos/seed/cssv2/800/450",
+      "links": {
+        "demo": "./demos/cssaidriven-v2/index.html",
+        "github": "https://github.com/vandalit/portafolio"
+      }
+    },
+    {
+      "id": "paprika",
+      "title": "Paprika",
+      "subtitle": "Anime E-Commerce — Case Study",
+      "description": "Caso de estudio conceptual de e-commerce con estética anime. UI completa con sistema de diseño propio, flujos de compra y exploración de paleta de color inusual para el sector.",
+      "tags": ["ui", "coding", "e-commerce"],
+      "coverPlaceholder": "https://picsum.photos/seed/paprika/800/450",
+      "links": {
+        "demo": "./demos/case-study-ai-driven/ecommerce-001/index.html",
+        "github": "https://github.com/vandalit/portafolio"
+      }
+    }
+  ]
+}
