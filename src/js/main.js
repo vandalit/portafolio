@@ -216,7 +216,16 @@ function initReveal() {
 function initNav() {
   const nav = document.getElementById('nav');
   const sections = document.querySelectorAll('section[id]');
-  const navLinks = document.querySelectorAll('.nav__link[href^="#"]');
+  const navLinks = document.querySelectorAll('.nav__link[href^="#"], .nav__cta[href^="#"]');
+  const logo = document.querySelector('.nav__logo');
+
+  // Logo click -> always scroll smoothly to point 0 (top of page)
+  if (logo) {
+    logo.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
 
   // Scrolled state
   const onScroll = () => {
@@ -242,8 +251,13 @@ function initNav() {
   // Smooth scroll on click
   navLinks.forEach(link => {
     link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
       e.preventDefault();
-      const target = document.querySelector(link.getAttribute('href'));
+      if (href === '#hero' || href === '#top' || href === '#') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      const target = document.querySelector(href);
       target?.scrollIntoView({ behavior: 'smooth' });
     });
   });

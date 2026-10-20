@@ -132,10 +132,10 @@ section {
   color: var(--magenta);
 }
 
-/* ── HERO SCROLL CONTAINER (Pinned Scrollytelling Stage) ── */
+/* ── HERO SCROLL CONTAINER (Pinned Scrollytelling Stage: 600px) ── */
 .hero-scroll-container {
   position: relative;
-  height: calc(100vh + 300px);
+  height: calc(100vh + 600px);
 }
 
 #hero {
@@ -154,6 +154,7 @@ section {
   inset: 0;
   width: 100%;
   height: 100%;
+  display: block;
   z-index: 2;
   pointer-events: none;
 }
@@ -174,9 +175,21 @@ section {
   pointer-events: none;
 }
 
+/* Contrast overlay: separates 3D/doodles layer from typography for maximum text contrast */
+.hero__contrast-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 75% 65% at 25% 75%, rgba(8, 8, 16, 0.88) 0%, rgba(8, 8, 16, 0.6) 45%, rgba(8, 8, 16, 0.1) 75%, transparent 100%),
+    linear-gradient(to top, rgba(8, 8, 16, 0.8) 0%, rgba(8, 8, 16, 0.3) 50%, transparent 80%);
+  z-index: 3;
+  pointer-events: none;
+  transition: opacity 0.12s ease-out;
+}
+
 .hero__content {
   position: relative;
-  z-index: 3;
+  z-index: 4;
   width: 100%;
   padding-inline: var(--section-px);
   max-width: var(--container-max);

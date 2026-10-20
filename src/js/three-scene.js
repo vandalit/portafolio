@@ -209,16 +209,23 @@ export class HeroScene {
       const container = document.getElementById('hero-scroll-container') || document.getElementById('hero');
       if (!container) return;
       const rect = container.getBoundingClientRect();
-      // Total scrollable range of the stage = 300px
+      // Total scrollable range of the stage = 600px
       const scrolled = Math.max(0, -rect.top);
-      const progress = Math.min(1, scrolled / 300);
+      const progress = Math.min(1, scrolled / 600);
       this.scrollProgress = progress;
 
-      // Visual reaction on DOM elements
+      // Matizado rápido del overlay para apreciar las geometrías en los primeros ~180px
+      const contrastOverlay = document.getElementById('hero-contrast-overlay');
+      if (contrastOverlay) {
+        contrastOverlay.style.opacity = Math.max(0, 1 - (scrolled / 180));
+      }
+
+      // Reacción visual del contenido: el texto se mantiene firme y luego transiciona hacia arriba
       const heroContent = document.querySelector('.hero__content');
       if (heroContent) {
-        heroContent.style.opacity = Math.max(0, 1 - progress * 1.5);
-        heroContent.style.transform = `translateY(${-progress * 35}px)`;
+        const textProgress = Math.max(0, (scrolled - 180) / 420);
+        heroContent.style.opacity = Math.max(0, 1 - textProgress * 1.4);
+        heroContent.style.transform = `translateY(${-textProgress * 45}px)`;
       }
       const scrollIndicator = document.querySelector('.hero__scroll');
       if (scrollIndicator) {
@@ -226,13 +233,13 @@ export class HeroScene {
       }
       const heroDoodles = document.querySelectorAll('.hero__doodle');
       heroDoodles.forEach((d, i) => {
-        const factor = (i + 1) * 25;
-        d.style.transform = `translateY(${-progress * factor}px) scale(${1 + progress * 0.12})`;
-        d.style.opacity = Math.max(0, 1 - progress * 1.2);
+        const factor = (i + 1) * 28;
+        d.style.transform = `translateY(${-progress * factor}px) scale(${1 + progress * 0.15})`;
+        d.style.opacity = Math.max(0, 1 - progress * 1.3);
       });
     }, { passive: true });
 
-    console.log('[HeroScene] Mouse and scroll event listeners bound.');
+    console.log('[HeroScene] Mouse and 600px scroll event listeners bound.');
   }
 
   _onResize() {
@@ -250,40 +257,40 @@ export class HeroScene {
     this.mouse.x += (this.targetMouse.x - this.mouse.x) * 0.05;
     this.mouse.y += (this.targetMouse.y - this.mouse.y) * 0.05;
 
-    const sp = this.scrollProgress; // 0.0 to 1.0 during 300px
+    const sp = this.scrollProgress; // 0.0 to 1.0 during 600px
 
     // Camera responds to mouse + subtle depth pull during scrollytelling
     this.camera.position.x = this.mouse.x * 1.5 * (1 - sp * 0.5);
-    this.camera.position.y = this.mouse.y * 1.0 * (1 - sp * 0.5) - sp * 0.6;
-    this.camera.position.z = 9 + sp * 2.5;
-    this.camera.lookAt(0, -sp * 0.4, 0);
+    this.camera.position.y = this.mouse.y * 1.0 * (1 - sp * 0.5) - sp * 0.7;
+    this.camera.position.z = 9 + sp * 3.0;
+    this.camera.lookAt(0, -sp * 0.5, 0);
 
-    // Float & rotate each polygon + scrollytelling choreography
+    // Float & rotate each polygon + scrollytelling choreography over 600px
     this.objects.forEach((obj, idx) => {
       const { floatPhase, floatSpeed, rotSpeedX, rotSpeedY, rotSpeedZ, basePosition } = obj.userData;
 
-      // Acceleration multiplier with scroll progress
-      const spinBoost = 1 + sp * 3.0;
+      // Acceleration multiplier with scroll progress across 600px
+      const spinBoost = 1 + sp * 3.5;
       obj.rotation.x += rotSpeedX * spinBoost;
       obj.rotation.y += rotSpeedY * spinBoost;
       obj.rotation.z += rotSpeedZ * spinBoost;
 
       // Expansion and convergence choreography during scrollytelling
       const expandDir = idx % 2 === 0 ? 1 : -1;
-      const targetX = basePosition[0] + expandDir * sp * 1.8;
-      const targetY = basePosition[1] + (idx > 2 ? -1 : 1) * sp * 1.2;
-      const targetZ = basePosition[2] + sp * 1.5;
+      const targetX = basePosition[0] + expandDir * sp * 2.2;
+      const targetY = basePosition[1] + (idx > 2 ? -1 : 1) * sp * 1.4;
+      const targetZ = basePosition[2] + sp * 1.8;
 
       obj.position.x = targetX + Math.cos(t * floatSpeed * 0.8 + floatPhase) * 0.2;
       obj.position.y = targetY + Math.sin(t * floatSpeed + floatPhase) * 0.35;
       obj.position.z = targetZ;
 
-      // Smooth fade-out at the end of the 300px stage
+      // Smooth fade-out at the end of the 600px stage
       if (obj.userData.mat) {
-        obj.userData.mat.opacity = Math.max(0.1, 0.92 - sp * 0.45);
+        obj.userData.mat.opacity = Math.max(0.1, 0.92 - Math.max(0, sp - 0.75) * 3.5);
       }
       if (obj.userData.lineMat) {
-        obj.userData.lineMat.opacity = Math.max(0.15, 0.95 - sp * 0.4);
+        obj.userData.lineMat.opacity = Math.max(0.15, 0.95 - Math.max(0, sp - 0.75) * 3.0);
       }
     });
 
