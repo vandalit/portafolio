@@ -149,13 +149,43 @@ section {
   overflow: hidden;
 }
 
-#three-canvas {
+/* ── CAPA 0: VIDEO AMBIENT (z-index: 0) ── */
+.hero__layer-video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  display: block;
-  z-index: 2;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero__layer-video.is-ready {
+  opacity: 0.22;
+}
+
+.hero__video-iframe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 177.77777778vh;
+  min-width: 100%;
+  height: 56.25vw;
+  min-height: 100%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  border: 0;
+  filter: saturate(1.25) contrast(1.15) brightness(0.9);
+  mix-blend-mode: screen;
+}
+
+/* ── CAPA 1: ATMÓSFERA & GRADIENTES BASE (z-index: 1) ── */
+.hero__layer-ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   pointer-events: none;
 }
 
@@ -165,31 +195,72 @@ section {
   background: 
     radial-gradient(ellipse 80% 60% at 70% 30%, rgba(232,48,110,0.12) 0%, transparent 60%),
     radial-gradient(ellipse 60% 50% at 20% 70%, rgba(184,224,48,0.08) 0%, transparent 60%);
-  z-index: 1;
-}
-
-/* Doodle SVG primitives */
-.hero__doodle {
-  position: absolute;
-  z-index: 2;
   pointer-events: none;
 }
 
-/* Contrast overlay: separates 3D/doodles layer from typography for maximum text contrast */
-.hero__contrast-overlay {
+/* ── CAPA 2: ELEMENTOS DINÁMICOS / SANDWICH (Rango z-index: 10 a 19) ── */
+.hero__layer-dynamic {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* 2.a: Canvas 3D de fondo (z-index: 11) */
+.hero__canvas-back {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 11;
+  pointer-events: none;
+}
+
+/* 2.b: Contenedor Bento Frames (z-index: 12) */
+.hero__bento-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 12;
+  pointer-events: none;
+}
+
+/* 2.c: Canvas 3D de primer plano (z-index: 14) */
+.hero__canvas-front {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 14;
+  pointer-events: none;
+}
+
+/* 2.d: Doodles vectoriales (z-index: 15-16) */
+.hero__doodle {
+  position: absolute;
+  z-index: 15;
+  pointer-events: none;
+}
+
+/* ── CAPA 3: OVERLAY DE CONTRASTE TIPOGRÁFICO (z-index: 20) ── */
+.hero__layer-contrast {
   position: absolute;
   inset: 0;
   background:
     radial-gradient(ellipse 75% 65% at 25% 75%, rgba(8, 8, 16, 0.88) 0%, rgba(8, 8, 16, 0.6) 45%, rgba(8, 8, 16, 0.1) 75%, transparent 100%),
     linear-gradient(to top, rgba(8, 8, 16, 0.8) 0%, rgba(8, 8, 16, 0.3) 50%, transparent 80%);
-  z-index: 3;
+  z-index: 20;
   pointer-events: none;
   transition: opacity 0.12s ease-out;
 }
 
-.hero__content {
+/* ── CAPA 4: CONTENIDO TIPOGRÁFICO & UI (z-index: 21) ── */
+.hero__layer-content {
   position: relative;
-  z-index: 4;
+  z-index: 21;
   width: 100%;
   padding-inline: var(--section-px);
   max-width: var(--container-max);

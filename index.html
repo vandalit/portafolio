@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="./src/css/layout.css">
   <link rel="stylesheet" href="./src/css/components.css">
   <link rel="stylesheet" href="./src/css/animations.css">
+  <link rel="stylesheet" href="./src/components/bentos/bento-card-1/bento-card-1.css">
 
   <style>
     /* Inline critical: btn size variants */
@@ -135,56 +136,81 @@
   </nav>
 
   <!-- ═══════════════════════════════════════════════════════
-       HERO (Pinned Scrollytelling Stage)
+       HERO (Pinned Scrollytelling Stage: 600px)
+       Factorización de Capas:
+       - Capa 0: Video Ambient Background (z-index: 0)
+       - Capa 1: Atmósfera Base / Gradientes & Líneas (z-index: 1)
+       - Capa 2: Elementos Dinámicos en Sandwich (Rango z-index: 10 a 19):
+           * z-index: 11 -> Geometrías 3D de Fondo (Canvas Back)
+           * z-index: 12 -> Contenedor Bento Frames (Componentes Modulares)
+           * z-index: 14 -> Geometrías 3D Frontales (Canvas Front)
+           * z-index: 15-16 -> Doodles Vectoriales
+       - Capa 3: Overlay de Contraste Tipográfico (z-index: 20)
+       - Capa 4: Contenido UI & Tipografía (z-index: 21)
   ══════════════════════════════════════════════════════════ -->
   <div id="hero-scroll-container" class="hero-scroll-container">
     <section id="hero" aria-label="Presentación">
-      <!-- Three.js canvas -->
-      <canvas id="three-canvas" aria-hidden="true"></canvas>
 
-      <!-- BG layers -->
-      <div class="hero-lines" aria-hidden="true"></div>
-      <div class="hero__bg-gradient" aria-hidden="true"></div>
+      <!-- ── CAPA 0: VIDEO AMBIENT (z-index: 0) ── -->
+      <div id="hero-layer-video" class="hero__layer-video" aria-hidden="true"></div>
 
-      <!-- SVG Doodles — geometric primitives -->
-      <div class="hero__doodle hero__doodle--1 doodle--float-a" aria-hidden="true">
-        <svg class="svg-doodle" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="90" cy="90" r="80" stroke="#e8306e" stroke-width="1"/>
-          <circle cx="90" cy="90" r="55" stroke="#e8306e" stroke-width="0.5" stroke-dasharray="6 6"/>
-          <circle cx="90" cy="90" r="28" stroke="#e8306e" stroke-width="1.5"/>
-          <line x1="10" y1="90" x2="170" y2="90" stroke="#e8306e" stroke-width="0.5" opacity="0.4"/>
-          <line x1="90" y1="10" x2="90" y2="170" stroke="#e8306e" stroke-width="0.5" opacity="0.4"/>
-        </svg>
+      <!-- ── CAPA 1: ATMÓSFERA & GRADIENTES BASE (z-index: 1) ── -->
+      <div id="hero-layer-ambient" class="hero__layer-ambient" aria-hidden="true">
+        <div class="hero-lines" aria-hidden="true"></div>
+        <div class="hero__bg-gradient" aria-hidden="true"></div>
       </div>
 
-      <div class="hero__doodle hero__doodle--2 doodle--float-b" aria-hidden="true">
-        <svg class="svg-doodle" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="4" y="4" width="72" height="72" stroke="#b8e030" stroke-width="1.5" transform="rotate(15 40 40)"/>
-          <rect x="18" y="18" width="44" height="44" stroke="#b8e030" stroke-width="0.75" transform="rotate(15 40 40)"/>
-          <circle cx="40" cy="40" r="6" fill="#b8e030" opacity="0.6"/>
-        </svg>
+      <!-- ── CAPA 2: ELEMENTOS DINÁMICOS / SANDWICH (Rango z: 10 a 19) ── -->
+      <div id="hero-layer-dynamic" class="hero__layer-dynamic">
+        <!-- 2.a: 3D Geometrías de Fondo (z-index: 11) -->
+        <canvas id="three-canvas-back" class="hero__canvas-back" aria-hidden="true"></canvas>
+
+        <!-- 2.b: Contenedor de Marcos Bento Modulares (z-index: 12) -->
+        <div id="hero-bento-container" class="hero__bento-container" aria-hidden="true"></div>
+
+        <!-- 2.c: 3D Geometrías de Primer Plano (z-index: 14) -->
+        <canvas id="three-canvas-front" class="hero__canvas-front" aria-hidden="true"></canvas>
+
+        <!-- 2.d: Doodles Vectoriales (z-index: 15) -->
+        <div class="hero__doodle hero__doodle--1 doodle--float-a" aria-hidden="true">
+          <svg class="svg-doodle" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="90" cy="90" r="80" stroke="#e8306e" stroke-width="1"/>
+            <circle cx="90" cy="90" r="55" stroke="#e8306e" stroke-width="0.5" stroke-dasharray="6 6"/>
+            <circle cx="90" cy="90" r="28" stroke="#e8306e" stroke-width="1.5"/>
+            <line x1="10" y1="90" x2="170" y2="90" stroke="#e8306e" stroke-width="0.5" opacity="0.4"/>
+            <line x1="90" y1="10" x2="90" y2="170" stroke="#e8306e" stroke-width="0.5" opacity="0.4"/>
+          </svg>
+        </div>
+
+        <div class="hero__doodle hero__doodle--2 doodle--float-b" aria-hidden="true">
+          <svg class="svg-doodle" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="72" height="72" stroke="#b8e030" stroke-width="1.5" transform="rotate(15 40 40)"/>
+            <rect x="18" y="18" width="44" height="44" stroke="#b8e030" stroke-width="0.75" transform="rotate(15 40 40)"/>
+            <circle cx="40" cy="40" r="6" fill="#b8e030" opacity="0.6"/>
+          </svg>
+        </div>
+
+        <div class="hero__doodle hero__doodle--3 doodle--float-c" aria-hidden="true">
+          <svg class="svg-doodle" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="60,8 114,92 6,92" stroke="#e8306e" stroke-width="1.5" fill="none"/>
+            <polygon points="60,28 94,82 26,82" stroke="#e8306e" stroke-width="0.75" fill="none" stroke-dasharray="5 5"/>
+            <circle cx="60" cy="68" r="5" fill="#e8306e" opacity="0.7"/>
+          </svg>
+        </div>
+
+        <div class="hero__doodle hero__doodle--4 doodle--rotate" aria-hidden="true">
+          <svg class="svg-doodle" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="52" height="52" stroke="#b8e030" stroke-width="1" transform="rotate(45 30 30)"/>
+            <rect x="14" y="14" width="32" height="32" stroke="#b8e030" stroke-width="0.5" transform="rotate(45 30 30)"/>
+          </svg>
+        </div>
       </div>
 
-      <div class="hero__doodle hero__doodle--3 doodle--float-c" aria-hidden="true">
-        <svg class="svg-doodle" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="60,8 114,92 6,92" stroke="#e8306e" stroke-width="1.5" fill="none"/>
-          <polygon points="60,28 94,82 26,82" stroke="#e8306e" stroke-width="0.75" fill="none" stroke-dasharray="5 5"/>
-          <circle cx="60" cy="68" r="5" fill="#e8306e" opacity="0.7"/>
-        </svg>
-      </div>
+      <!-- ── CAPA 3: OVERLAY DE CONTRASTE TIPOGRÁFICO (z-index: 20) ── -->
+      <div id="hero-layer-contrast" class="hero__layer-contrast" aria-hidden="true"></div>
 
-      <div class="hero__doodle hero__doodle--4 doodle--rotate" aria-hidden="true">
-        <svg class="svg-doodle" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="4" y="4" width="52" height="52" stroke="#b8e030" stroke-width="1" transform="rotate(45 30 30)"/>
-          <rect x="14" y="14" width="32" height="32" stroke="#b8e030" stroke-width="0.5" transform="rotate(45 30 30)"/>
-        </svg>
-      </div>
-
-      <!-- Contrast Overlay for Typography (matizado on scroll) -->
-      <div id="hero-contrast-overlay" class="hero__contrast-overlay" aria-hidden="true"></div>
-
-      <!-- Content -->
-      <div class="hero__content">
+      <!-- ── CAPA 4: CONTENIDO TIPOGRÁFICO & UI (z-index: 21) ── -->
+      <div id="hero-layer-content" class="hero__layer-content">
         <p class="hero__eyebrow">
           UX/UI Designer &amp; Front-end Developer
         </p>
@@ -483,6 +509,6 @@
   </div>
 
   <!-- ── SCRIPTS ────────────────────────────────────────── -->
-  <script type="module" src="./src/js/main.js?v=debug2"></script>
+  <script type="module" src="./src/js/main.js?v=sandwich1"></script>
 </body>
 </html>

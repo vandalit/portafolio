@@ -1,0 +1,195 @@
+/* ==========================================================
+   BENTO-CARD-1.CSS — Componente Modular Bento #1
+   Ratio vertical: 9/16 | Glassmorphism & Micro-interacciones
+   Capa 2 Dinámica (z-index: 12 en el sandwich 3D)
+   ========================================================== */
+
+.bento-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(260px, 24vw, 340px);
+  aspect-ratio: 9 / 16;
+  max-height: 80vh;
+  transform: translate(-50%, calc(-50% + 150px)) scale(0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out, transform 0.15s ease-out;
+  z-index: 12;
+  will-change: transform, opacity;
+}
+
+.bento-frame.is-active {
+  pointer-events: auto;
+}
+
+.bento-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 28px;
+  background: rgba(13, 13, 24, 0.72);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 24px 60px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(232, 48, 110, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  padding: clamp(1.2rem, 2.5vw, 1.8rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  color: var(--text-0, #f0f0f5);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.bento-card:hover {
+  border-color: rgba(232, 48, 110, 0.35);
+  box-shadow: 
+    0 30px 70px rgba(0, 0, 0, 0.7),
+    0 0 25px rgba(232, 48, 110, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Accent corner reflection */
+.bento-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  border-radius: 28px 28px 0 0;
+}
+
+/* Card Header */
+.bento-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+}
+
+.bento-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #b8e030;
+  background: rgba(184, 224, 48, 0.12);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(184, 224, 48, 0.25);
+}
+
+.bento-card__badge-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #b8e030;
+  box-shadow: 0 0 8px #b8e030;
+  animation: bento-pulse 2s infinite ease-in-out;
+}
+
+@keyframes bento-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+.bento-card__index {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7rem;
+  color: rgba(240, 240, 245, 0.4);
+  letter-spacing: 0.08em;
+}
+
+/* Card Media / Visual Core */
+.bento-card__visual {
+  position: relative;
+  flex: 1;
+  margin-block: 1rem;
+  border-radius: 18px;
+  background: radial-gradient(circle at 50% 40%, rgba(232, 48, 110, 0.22) 0%, rgba(13, 13, 24, 0.8) 75%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-align: center;
+  padding: 1.2rem;
+}
+
+.bento-card__visual-graphic {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 0.8rem;
+  filter: drop-shadow(0 6px 14px rgba(232, 48, 110, 0.45));
+  transition: transform 0.4s var(--ease-out, ease-out);
+}
+
+.bento-card:hover .bento-card__visual-graphic {
+  transform: scale(1.08) rotate(6deg);
+}
+
+.bento-card__visual-tag {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(240, 240, 245, 0.7);
+}
+
+/* Card Footer / Typography */
+.bento-card__footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bento-card__title {
+  font-family: var(--font-display, sans-serif);
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--text-0, #ffffff);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.bento-card__desc {
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: rgba(240, 240, 245, 0.65);
+  margin: 0;
+}
+
+.bento-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 0.3rem;
+}
+
+.bento-card__pill {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(240, 240, 245, 0.8);
+}

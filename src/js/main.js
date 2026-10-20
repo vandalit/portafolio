@@ -8,6 +8,8 @@ import { HeroScene } from './three-scene.js';
 import { Carousel } from './carousel.js';
 import { GridFilter } from './grid-filter.js';
 import { ProjectModal } from './project-modal.js';
+import { initVideoBackground } from './video-bg.js';
+import { bentoManager } from '../components/bentos/bento-manager.js';
 
 // ── DATA ──────────────────────────────────────────────────
 let projectsData = null;
@@ -380,16 +382,25 @@ function initSkillLinks() {
 async function init() {
   console.log('%c[Portafolio:Main] ⏳ init() running, readyState:', 'color: #b8e030; font-weight: bold;', document.readyState);
 
-  // 1. Init Hero 3D scene immediately
-  const canvas = document.getElementById('three-canvas');
-  console.log('[Portafolio:Main] Canvas element check:', canvas ? 'FOUND #three-canvas' : 'MISSING #three-canvas');
-  if (canvas) {
+  // 1. Capa 0: Video Ambient Background (Lazyload + bandwidth check)
+  initVideoBackground();
+
+  // 2. Capa 2.b: Montar componentes Bento modulares
+  const bentoContainer = document.getElementById('hero-bento-container');
+  if (bentoContainer) {
+    bentoManager.mount(bentoContainer);
+  }
+
+  // 3. Capa 2.a & 2.c: Inicializar Sandwich 3D (canvas-back z:11, canvas-front z:14)
+  const canvasBack = document.getElementById('three-canvas-back');
+  const canvasFront = document.getElementById('three-canvas-front');
+  if (canvasBack || canvasFront) {
     try {
-      console.log('[Portafolio:Main] Instantiating HeroScene...');
-      const scene = new HeroScene(canvas);
+      console.log('[Portafolio:Main] Instantiating dual-canvas HeroScene sandwich...');
+      const scene = new HeroScene({ canvasBack, canvasFront });
       window.__heroSceneInstance = scene;
       scene.init();
-      console.log('[Portafolio:Main] HeroScene.init() executed.');
+      console.log('[Portafolio:Main] HeroScene dual-canvas initialized.');
     } catch (err) {
       console.error('%c[Portafolio:Main] HeroScene init error:', 'background: red; color: white;', err);
     }
