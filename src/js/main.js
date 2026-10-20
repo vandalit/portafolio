@@ -2,6 +2,8 @@
    MAIN.JS — Bootstrap, Render, Observers
    ========================================================== */
 
+console.log('%c[Portafolio:Main] 🚀 main.js loaded', 'background: #080810; color: #b8e030; font-weight: bold; border: 1px solid #b8e030; padding: 2px 6px; border-radius: 3px;');
+
 import { HeroScene } from './three-scene.js';
 import { Carousel } from './carousel.js';
 import { GridFilter } from './grid-filter.js';
@@ -362,19 +364,24 @@ function initSkillLinks() {
 
 // ── INIT ──────────────────────────────────────────────────
 async function init() {
-  // Load data first
-  await loadData();
+  console.log('%c[Portafolio:Main] ⏳ init() running, readyState:', 'color: #b8e030; font-weight: bold;', document.readyState);
 
-  // Render content
-  if (projectsData) {
-    renderFeatured(projectsData.cases);
-    renderCaseCards(projectsData.cases);
-    renderSkillCards(projectsData.skills);
-    renderClientGrid(projectsData.clients, projectsData.cases);
-    renderLabGrid(projectsData.lab);
+  // 1. Init Hero 3D scene immediately
+  const canvas = document.getElementById('three-canvas');
+  console.log('[Portafolio:Main] Canvas element check:', canvas ? 'FOUND #three-canvas' : 'MISSING #three-canvas');
+  if (canvas) {
+    try {
+      console.log('[Portafolio:Main] Instantiating HeroScene...');
+      const scene = new HeroScene(canvas);
+      window.__heroSceneInstance = scene;
+      scene.init();
+      console.log('[Portafolio:Main] HeroScene.init() executed.');
+    } catch (err) {
+      console.error('%c[Portafolio:Main] HeroScene init error:', 'background: red; color: white;', err);
+    }
   }
 
-  // Init components
+  // 2. Init UI listeners & navigation
   initNav();
   initHero();
   initCursorGlow();
@@ -383,23 +390,33 @@ async function init() {
   initModal();
   initSkillLinks();
 
-  // Carousels
+  // 3. Load projects data & render dynamic sections
+  try {
+    await loadData();
+    if (projectsData) {
+      renderFeatured(projectsData.cases);
+      renderCaseCards(projectsData.cases);
+      renderSkillCards(projectsData.skills);
+      renderClientGrid(projectsData.clients, projectsData.cases);
+      renderLabGrid(projectsData.lab);
+    }
+  } catch (err) {
+    console.error('[Main] loadData error:', err);
+  }
+
+  // 4. Carousels & Grid Filter
   const casesCarousel = document.getElementById('cases-carousel');
   if (casesCarousel) new Carousel(casesCarousel);
 
   const skillsCarousel = document.getElementById('skills-carousel');
   if (skillsCarousel) new Carousel(skillsCarousel, { activeClass: '' });
 
-  // Grid filter
   const workSection = document.getElementById('work');
   if (workSection) new GridFilter(workSection);
-
-  // Three.js hero (deferred)
-  const canvas = document.getElementById('three-canvas');
-  if (canvas) {
-    const scene = new HeroScene(canvas);
-    scene.init();
-  }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}

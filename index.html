@@ -12,6 +12,17 @@
   <meta name="twitter:creator" content="@vandalittt">
   <title>vandalit — UX/UI Designer & Front-end Developer</title>
 
+  <!-- Console Diagnostics & Error Trap -->
+  <script>
+    console.log('%c[PORTAFOLIO BOOTSTRAP] HTML parsing started', 'background: #080810; color: #e8306e; font-weight: bold; font-size: 13px; border: 1px solid #e8306e; padding: 2px 6px; border-radius: 3px;');
+    window.addEventListener('error', function(e) {
+      console.error('%c[GLOBAL ERROR CAPTURED]', 'background: #e8306e; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;', e.message, 'in', e.filename, 'line:', e.lineno, e.error);
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('%c[PROMISE REJECTION CAPTURED]', 'background: #e8306e; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;', e.reason);
+    });
+  </script>
+
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -124,80 +135,93 @@
   </nav>
 
   <!-- ═══════════════════════════════════════════════════════
-       HERO
+       HERO (Pinned Scrollytelling Stage)
   ══════════════════════════════════════════════════════════ -->
-  <section id="hero" aria-label="Presentación">
-    <!-- Three.js canvas -->
-    <canvas id="three-canvas" aria-hidden="true"></canvas>
+  <div id="hero-scroll-container" class="hero-scroll-container">
+    <section id="hero" aria-label="Presentación">
+      <!-- Three.js canvas -->
+      <canvas id="three-canvas" aria-hidden="true"></canvas>
 
-    <!-- BG layers -->
-    <div class="hero-lines" aria-hidden="true"></div>
-    <div class="hero__bg-gradient" aria-hidden="true"></div>
+      <!-- BG layers -->
+      <div class="hero-lines" aria-hidden="true"></div>
+      <div class="hero__bg-gradient" aria-hidden="true"></div>
 
-    <!-- SVG Doodles — geometric primitives -->
-    <div class="hero__doodle hero__doodle--1 doodle--float-a" aria-hidden="true">
-      <svg class="svg-doodle" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="90" cy="90" r="80" stroke="#e8306e" stroke-width="1"/>
-        <circle cx="90" cy="90" r="55" stroke="#e8306e" stroke-width="0.5" stroke-dasharray="6 6"/>
-        <circle cx="90" cy="90" r="28" stroke="#e8306e" stroke-width="1.5"/>
-        <line x1="10" y1="90" x2="170" y2="90" stroke="#e8306e" stroke-width="0.5" opacity="0.4"/>
-        <line x1="90" y1="10" x2="90" y2="170" stroke="#e8306e" stroke-width="0.5" opacity="0.4"/>
-      </svg>
-    </div>
+      <!-- SVG Doodles — geometric primitives -->
+      <div class="hero__doodle hero__doodle--1 doodle--float-a" aria-hidden="true">
+        <svg class="svg-doodle" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="90" cy="90" r="80" stroke="#e8306e" stroke-width="1"/>
+          <circle cx="90" cy="90" r="55" stroke="#e8306e" stroke-width="0.5" stroke-dasharray="6 6"/>
+          <circle cx="90" cy="90" r="28" stroke="#e8306e" stroke-width="1.5"/>
+          <line x1="10" y1="90" x2="170" y2="90" stroke="#e8306e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="90" y1="10" x2="90" y2="170" stroke="#e8306e" stroke-width="0.5" opacity="0.4"/>
+        </svg>
+      </div>
 
-    <div class="hero__doodle hero__doodle--2 doodle--float-b" aria-hidden="true">
-      <svg class="svg-doodle" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="4" y="4" width="72" height="72" stroke="#b8e030" stroke-width="1.5" transform="rotate(15 40 40)"/>
-        <rect x="18" y="18" width="44" height="44" stroke="#b8e030" stroke-width="0.75" transform="rotate(15 40 40)"/>
-        <circle cx="40" cy="40" r="6" fill="#b8e030" opacity="0.6"/>
-      </svg>
-    </div>
+      <div class="hero__doodle hero__doodle--2 doodle--float-b" aria-hidden="true">
+        <svg class="svg-doodle" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="72" height="72" stroke="#b8e030" stroke-width="1.5" transform="rotate(15 40 40)"/>
+          <rect x="18" y="18" width="44" height="44" stroke="#b8e030" stroke-width="0.75" transform="rotate(15 40 40)"/>
+          <circle cx="40" cy="40" r="6" fill="#b8e030" opacity="0.6"/>
+        </svg>
+      </div>
 
-    <div class="hero__doodle hero__doodle--3 doodle--float-c" aria-hidden="true">
-      <svg class="svg-doodle" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="60,8 114,92 6,92" stroke="#e8306e" stroke-width="1.5" fill="none"/>
-        <polygon points="60,28 94,82 26,82" stroke="#e8306e" stroke-width="0.75" fill="none" stroke-dasharray="5 5"/>
-        <circle cx="60" cy="68" r="5" fill="#e8306e" opacity="0.7"/>
-      </svg>
-    </div>
+      <div class="hero__doodle hero__doodle--3 doodle--float-c" aria-hidden="true">
+        <svg class="svg-doodle" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="60,8 114,92 6,92" stroke="#e8306e" stroke-width="1.5" fill="none"/>
+          <polygon points="60,28 94,82 26,82" stroke="#e8306e" stroke-width="0.75" fill="none" stroke-dasharray="5 5"/>
+          <circle cx="60" cy="68" r="5" fill="#e8306e" opacity="0.7"/>
+        </svg>
+      </div>
 
-    <div class="hero__doodle hero__doodle--4 doodle--rotate" aria-hidden="true">
-      <svg class="svg-doodle" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="4" y="4" width="52" height="52" stroke="#b8e030" stroke-width="1" transform="rotate(45 30 30)"/>
-        <rect x="14" y="14" width="32" height="32" stroke="#b8e030" stroke-width="0.5" transform="rotate(45 30 30)"/>
-      </svg>
-    </div>
+      <div class="hero__doodle hero__doodle--4 doodle--rotate" aria-hidden="true">
+        <svg class="svg-doodle" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="52" height="52" stroke="#b8e030" stroke-width="1" transform="rotate(45 30 30)"/>
+          <rect x="14" y="14" width="32" height="32" stroke="#b8e030" stroke-width="0.5" transform="rotate(45 30 30)"/>
+        </svg>
+      </div>
 
-    <!-- Content -->
-    <div class="hero__content">
-      <p class="hero__eyebrow">
-        UX/UI Designer &amp; Front-end Developer
-      </p>
+      <!-- Content -->
+      <div class="hero__content">
+        <p class="hero__eyebrow">
+          UX/UI Designer &amp; Front-end Developer
+        </p>
 
-      <h1 class="hero__name display">
-        <span class="line">van·</span>
-        <span class="line">dalit</span>
-      </h1>
+        <h1 class="hero__name display">
+          <span class="line">van·</span>
+          <span class="line">dalit</span>
+        </h1>
 
-      <p class="hero__tagline">
-        Diseño que comunica. Código que respira.
-      </p>
+        <p class="hero__tagline">
+          Diseño que comunica. Código que respira.
+        </p>
 
-      <div class="hero__meta">
-        <a href="#cases" class="btn btn--primary">Ver trabajo <span class="btn__icon">↓</span></a>
-        <div class="status-badge">
-          <span class="status-badge__dot"></span>
-          Disponible
+        <div class="hero__meta">
+          <a href="#cases" class="btn btn--primary">Ver trabajo <span class="btn__icon">↓</span></a>
+          <a href="mailto:vandalit@metamedia.cl" class="btn btn--ghost">Contacto <span class="btn__icon">✉</span></a>
+          <div class="hero__socials">
+            <a href="https://github.com/vandalit" target="_blank" rel="noopener noreferrer" class="social-badge" aria-label="GitHub de vandalit">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+              </svg>
+              <span>GitHub</span>
+            </a>
+            <a href="https://behance.net/vandalit" target="_blank" rel="noopener noreferrer" class="social-badge" aria-label="Behance de vandalit">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-5.171 3-3.455 0-5.555-2.529-5.555-5.941 0-3.328 2.05-6.059 5.516-6.059 3.424 0 5.253 2.502 5.034 5.766h-7.669c.071 1.637 1.118 2.684 2.697 2.684 1.206 0 2.051-.555 2.451-1.45h2.697zm-5.171-4.706c-1.328 0-2.12.871-2.261 2.062h4.436c-.059-1.127-.728-2.062-2.175-2.062zm-12.555 4.706h-3v-10h3.582c2.086 0 3.418 1.094 3.418 2.871 0 1.171-.624 2.124-1.637 2.556 1.341.442 2.055 1.564 2.055 2.923 0 1.954-1.517 3.65-4.418 3.65zm-3-4.294h2.464c1.171 0 1.839-.569 1.839-1.469 0-.962-.733-1.474-1.839-1.474h-2.464v2.943zm0-4.412h2.245c1.071 0 1.706-.522 1.706-1.353 0-.853-.635-1.353-1.706-1.353h-2.245v2.706z"/>
+              </svg>
+              <span>Behance</span>
+            </a>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Scroll indicator -->
-    <div class="hero__scroll" aria-hidden="true">
-      <div class="hero__scroll-line"></div>
-      <span>scroll</span>
-    </div>
-  </section>
+      <!-- Scroll indicator -->
+      <div class="hero__scroll" aria-hidden="true">
+        <div class="hero__scroll-line"></div>
+        <span>scroll</span>
+      </div>
+    </section>
+  </div>
 
   <!-- ═══════════════════════════════════════════════════════
        CASOS DE ESTUDIO
@@ -456,6 +480,6 @@
   </div>
 
   <!-- ── SCRIPTS ────────────────────────────────────────── -->
-  <script type="module" src="./src/js/main.js"></script>
+  <script type="module" src="./src/js/main.js?v=debug2"></script>
 </body>
 </html>

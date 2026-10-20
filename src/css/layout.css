@@ -132,11 +132,17 @@ section {
   color: var(--magenta);
 }
 
-/* ── HERO ────────────────────────────────────────────────── */
-#hero {
+/* ── HERO SCROLL CONTAINER (Pinned Scrollytelling Stage) ── */
+.hero-scroll-container {
   position: relative;
+  height: calc(100vh + 300px);
+}
+
+#hero {
+  position: sticky;
+  top: 0;
   height: 100vh;
-  min-height: 700px;
+  min-height: 100vh;
   display: flex;
   align-items: flex-end;
   padding-bottom: clamp(3rem, 8vh, 6rem);
@@ -148,7 +154,8 @@ section {
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 0;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .hero__bg-gradient {

@@ -89,6 +89,46 @@
   50% { opacity: 0.4; }
 }
 
+/* ── HERO SOCIALS & BADGES ───────────────────────────────── */
+.hero__socials {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.social-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-1);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  transition: all var(--transition);
+}
+
+.social-badge svg {
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+}
+
+.social-badge:hover {
+  border-color: var(--magenta);
+  color: var(--text-0);
+  background: var(--magenta-fade);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px var(--magenta-glow);
+}
+
+.social-badge:hover svg {
+  transform: scale(1.1);
+}
+
 /* ── FEATURED CASE (Destacado) ───────────────────────────── */
 .featured-case {
   position: relative;
@@ -496,9 +536,7 @@
 }
 
 .project-thumb.hidden {
-  opacity: 0;
-  transform: scale(0.94) translateY(8px);
-  pointer-events: none;
+  display: none !important;
 }
 
 .project-thumb__img {

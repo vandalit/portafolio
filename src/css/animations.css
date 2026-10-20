@@ -126,11 +126,8 @@
 
 /* ── THREE.JS CANVAS ─────────────────────────────────────── */
 #three-canvas {
-  opacity: 0;
-  transition: opacity 1.2s ease;
+  opacity: 1;
 }
-
-#three-canvas.loaded { opacity: 1; }
 
 /* ── FEATURED CASE ENTRY ─────────────────────────────────── */
 .featured-case {

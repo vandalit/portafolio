@@ -1,11 +1,15 @@
 /* ==========================================================
-   THREE-SCENE.JS — Hero 3D with Cel-Shading
+   THREE-SCENE.JS — Hero 3D with Cel-Shading & Edges
    ========================================================== */
+
+import * as THREE from '../vendor/three.module.js';
+
+console.log('%c[HeroScene] module loaded | THREE revision:', 'color: #e8306e; font-weight: bold;', THREE.REVISION);
 
 export class HeroScene {
   constructor(canvas) {
     this.canvas = canvas;
-    this.three = null;
+    this.three = THREE;
     this.renderer = null;
     this.scene = null;
     this.camera = null;
@@ -15,156 +19,128 @@ export class HeroScene {
     this.scrollProgress = 0;
     this.animFrame = null;
     this.initialized = false;
+    this._firstRenderLogged = false;
+    console.log('[HeroScene] Constructor instantiated with canvas:', canvas);
   }
 
-  async init() {
-    // Dynamic import Three.js
+  init() {
+    console.log('%c[HeroScene] init() starting...', 'color: #e8306e; font-weight: bold;');
     try {
-      this.three = await import('https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js');
       this._setup();
       this._createGeometries();
       this._bindEvents();
       this._animate();
-      this.canvas.classList.add('loaded');
       this.initialized = true;
+      console.log('%c[HeroScene] Three.js scene successfully initialized and active!', 'background: #b8e030; color: #080810; font-weight: bold; padding: 2px 6px; border-radius: 3px;');
     } catch (e) {
-      console.warn('[HeroScene] Three.js failed to load:', e);
+      console.error('%c[HeroScene] Three.js init FAILED with exception:', 'background: red; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;', e);
     }
   }
 
   _setup() {
-    const THREE = this.three;
-    const { width, height } = this.canvas.getBoundingClientRect();
+    const width = window.innerWidth;
+    const height = window.innerHeight;
 
-    this.renderer = new THREE.WebGLRenderer({
-      canvas: this.canvas,
-      alpha: true,
-      antialias: false,  // Intentional: hard edges for cel look
-      powerPreference: 'low-power'
-    });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    console.log('[HeroScene] Window dimensions:', width, 'x', height, '| devicePixelRatio:', window.devicePixelRatio);
+
+    // 1. Diagnostic: check WebGL context
+    const glTest = this.canvas.getContext('webgl2') || this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
+    if (!glTest) {
+      console.error('%c[HeroScene] WebGL context is NOT available on this canvas element! Browser hardware acceleration might be disabled or blocked.', 'background: red; color: white; font-size: 13px; font-weight: bold; padding: 4px;');
+    } else {
+      console.log('[HeroScene] WebGL context verified. Renderer string:', glTest.getParameter(glTest.RENDERER));
+    }
+
+    // 2. Create WebGLRenderer with fallback
+    try {
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: this.canvas,
+        alpha: true,
+        antialias: true
+      });
+      console.log('[HeroScene] WebGLRenderer created with antialias: true');
+    } catch (errAntialias) {
+      console.warn('[HeroScene] Failed to create WebGLRenderer with antialias, retrying without antialias...', errAntialias);
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: this.canvas,
+        alpha: true,
+        antialias: false
+      });
+      console.log('[HeroScene] WebGLRenderer created with antialias: false');
+    }
+
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(width, height);
     this.renderer.setClearColor(0x000000, 0);
 
+    // 3. Inspect DOM canvas state
+    const rect = this.canvas.getBoundingClientRect();
+    const style = window.getComputedStyle(this.canvas);
+    console.log('[HeroScene] Canvas DOM inspect -> rect:', rect.width, 'x', rect.height, '| opacity:', style.opacity, '| zIndex:', style.zIndex, '| display:', style.display, '| visibility:', style.visibility);
+
     this.scene = new THREE.Scene();
 
-    this.camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 100);
-    this.camera.position.set(0, 0, 8);
+    this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
+    this.camera.position.set(0, 0, 9);
 
-    // Ambient light
-    const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+    // Ambient light - gives base visibility to toon shading
+    const ambient = new THREE.AmbientLight(0xffffff, 0.7);
     this.scene.add(ambient);
 
-    // Key light — magenta-ish
-    const keyLight = new THREE.DirectionalLight(0xe8306e, 1.2);
-    keyLight.position.set(3, 4, 5);
+    // Key light (warm magenta/pink tint)
+    const keyLight = new THREE.DirectionalLight(0xff609a, 1.8);
+    keyLight.position.set(5, 6, 6);
     this.scene.add(keyLight);
 
-    // Fill light — lime
-    const fillLight = new THREE.DirectionalLight(0xb8e030, 0.6);
-    fillLight.position.set(-4, -2, 3);
+    // Fill light (lime tint from lower opposite side)
+    const fillLight = new THREE.DirectionalLight(0xb8e030, 1.4);
+    fillLight.position.set(-6, -3, 4);
     this.scene.add(fillLight);
 
-    // Back light — cool blue
-    const backLight = new THREE.DirectionalLight(0x2040ff, 0.2);
-    backLight.position.set(0, -5, -4);
+    // Back rim light (cool lavender/cyan)
+    const backLight = new THREE.DirectionalLight(0x8080ff, 0.8);
+    backLight.position.set(0, -6, -4);
     this.scene.add(backLight);
+
+    console.log('[HeroScene] Scene, Camera, and Lights added successfully.');
   }
 
-  _celShaderMaterial(color, outlineColor) {
-    const THREE = this.three;
-    return new THREE.ShaderMaterial({
-      uniforms: {
-        uColor:    { value: new THREE.Color(color) },
-        uLightDir: { value: new THREE.Vector3(0.6, 0.8, 0.5).normalize() },
-        uLightDir2:{ value: new THREE.Vector3(-0.5, -0.3, 0.4).normalize() },
-        uBands:    { value: 4.0 },
-        uTime:     { value: 0 },
-        uAlpha:    { value: 1 },
-      },
-      vertexShader: `
-        varying vec3 vNormal;
-        varying vec3 vPosition;
-        uniform float uTime;
-        void main() {
-          vNormal = normalize(normalMatrix * normal);
-          vPosition = position;
-          vec3 pos = position;
-          pos.x += sin(uTime * 0.4 + position.y * 1.2) * 0.04;
-          pos.y += cos(uTime * 0.3 + position.x * 0.8) * 0.04;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 uColor;
-        uniform vec3 uLightDir;
-        uniform vec3 uLightDir2;
-        uniform float uBands;
-        uniform float uAlpha;
-        varying vec3 vNormal;
-        void main() {
-          vec3 n = normalize(vNormal);
-          float diff  = max(dot(n, uLightDir),  0.0);
-          float diff2 = max(dot(n, uLightDir2), 0.0) * 0.3;
-          float total = diff + diff2;
-          // Posterize
-          float toon = floor(total * uBands) / uBands;
-          toon = max(toon, 0.15);
-          vec3 finalColor = uColor * toon;
-          // Rim light hint
-          float rim = 1.0 - max(dot(n, vec3(0.0,0.0,1.0)), 0.0);
-          finalColor += uColor * rim * rim * 0.12;
-          gl_FragColor = vec4(finalColor, uAlpha);
-        }
-      `,
-      transparent: true,
-    });
-  }
-
-  _outlineMaterial(color) {
-    const THREE = this.three;
-    return new THREE.ShaderMaterial({
-      uniforms: { uColor: { value: new THREE.Color(color) }, uAlpha: { value: 0.35 } },
-      vertexShader: `
-        void main() {
-          vec3 n = normalize(normalMatrix * normal);
-          vec4 pos = modelViewMatrix * vec4(position, 1.0);
-          pos.xyz += n * 0.06;
-          gl_Position = projectionMatrix * pos;
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 uColor;
-        uniform float uAlpha;
-        void main() { gl_FragColor = vec4(uColor, uAlpha); }
-      `,
-      side: this.three.BackSide,
-      transparent: true,
-    });
-  }
-
-  _createMesh(geometry, color, outlineColor, pos, scale = 1) {
+  _createMesh(geometry, faceColor, edgeColor, pos, scale = 1) {
     const THREE = this.three;
     const group = new THREE.Group();
 
-    const mat = this._celShaderMaterial(color);
+    // Cel-shaded / Toon face material
+    const mat = new THREE.MeshToonMaterial({
+      color: new THREE.Color(faceColor),
+      transparent: true,
+      opacity: 0.92,
+    });
     const mesh = new THREE.Mesh(geometry, mat);
     group.add(mesh);
 
-    const outlineMat = this._outlineMaterial(outlineColor);
-    const outline = new THREE.Mesh(geometry, outlineMat);
+    // Crisp ink outlines using EdgesGeometry
+    const edges = new THREE.EdgesGeometry(geometry, 15);
+    const lineMat = new THREE.LineBasicMaterial({
+      color: new THREE.Color(edgeColor),
+      transparent: true,
+      opacity: 0.95,
+      linewidth: 2,
+    });
+    const outline = new THREE.LineSegments(edges, lineMat);
     group.add(outline);
 
     group.position.set(...pos);
     group.scale.setScalar(scale);
 
-    // Store for animation
     group.userData = {
-      mat,
       basePosition: [...pos],
       floatPhase: Math.random() * Math.PI * 2,
-      floatSpeed: 0.3 + Math.random() * 0.3,
-      rotSpeed: (Math.random() - 0.5) * 0.005,
+      floatSpeed: 0.4 + Math.random() * 0.4,
+      rotSpeedX: (Math.random() - 0.5) * 0.008,
+      rotSpeedY: (Math.random() - 0.5) * 0.012,
+      rotSpeedZ: (Math.random() - 0.5) * 0.006,
+      mat,
+      lineMat,
     };
 
     this.scene.add(group);
@@ -174,110 +150,153 @@ export class HeroScene {
 
   _createGeometries() {
     const THREE = this.three;
+    console.log('[HeroScene] Generating 3D geometries...');
 
-    // Large icosahedron — center-left, magenta tones
+    // 1. Large Icosahedron — center-left, vivid magenta
     this._createMesh(
-      new THREE.IcosahedronGeometry(1.4, 0),
-      '#c4205a', '#ff5090',
-      [-2.5, -0.5, -1], 1
+      new THREE.IcosahedronGeometry(1.5, 0),
+      '#e8306e', '#ffa0c4',
+      [-3.0, 0.2, -0.5], 1.0
     );
 
-    // Octahedron — upper right, lime
+    // 2. Octahedron — upper right, lime / yellowgreen
     this._createMesh(
-      new THREE.OctahedronGeometry(1.0, 0),
-      '#6a9010', '#b8e030',
-      [3.2, 1.5, -2], 1
+      new THREE.OctahedronGeometry(1.2, 0),
+      '#b8e030', '#f0ff90',
+      [3.6, 1.8, -1.5], 1.0
     );
 
-    // Tetrahedron — right, magenta
+    // 3. Tetrahedron — lower right, magenta reddish
     this._createMesh(
-      new THREE.TetrahedronGeometry(0.9, 0),
-      '#8a1040', '#e8306e',
-      [4.0, -1.5, -0.5], 1
+      new THREE.TetrahedronGeometry(1.1, 0),
+      '#d4205a', '#ff80a0',
+      [4.2, -1.8, 0], 1.0
     );
 
-    // Small icosahedron — left floating
+    // 4. Small Icosahedron — top left floating
     this._createMesh(
-      new THREE.IcosahedronGeometry(0.6, 0),
-      '#4a6010', '#b8e030',
-      [-4.0, 2.0, 0.5], 1
+      new THREE.IcosahedronGeometry(0.7, 0),
+      '#ccf020', '#ffffff',
+      [-4.2, 2.5, 0.5], 0.9
     );
 
-    // Box — far back, subtle
+    // 5. Box — lower left floating
     this._createMesh(
-      new THREE.BoxGeometry(1, 1, 1),
-      '#3a0820', '#e8306e',
-      [1.5, 3.0, -4], 0.8
+      new THREE.BoxGeometry(1.1, 1.1, 1.1),
+      '#8a1040', '#ff6090',
+      [-2.0, -2.4, -1.0], 0.85
     );
 
-    // Dodecahedron — background
+    // 6. Dodecahedron — deep right background
     this._createMesh(
-      new THREE.DodecahedronGeometry(1.2, 0),
-      '#1a3008', '#8ab820',
-      [-3.5, -2.5, -3], 0.9
+      new THREE.DodecahedronGeometry(1.3, 0),
+      '#6a8010', '#d8ff40',
+      [2.0, -3.0, -3.0], 0.9
     );
+
+    console.log('[HeroScene] Geometries generated. Total objects in scene:', this.objects.length);
   }
 
   _bindEvents() {
     window.addEventListener('mousemove', (e) => {
       this.targetMouse.x = (e.clientX / window.innerWidth - 0.5) * 2;
       this.targetMouse.y = -(e.clientY / window.innerHeight - 0.5) * 2;
-    });
+    }, { passive: true });
 
     window.addEventListener('resize', () => this._onResize());
 
     window.addEventListener('scroll', () => {
-      const hero = document.getElementById('hero');
-      if (!hero) return;
-      const rect = hero.getBoundingClientRect();
-      this.scrollProgress = Math.max(0, Math.min(1, -rect.top / rect.height));
-    });
+      const container = document.getElementById('hero-scroll-container') || document.getElementById('hero');
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      // Total scrollable range of the stage = 300px
+      const scrolled = Math.max(0, -rect.top);
+      const progress = Math.min(1, scrolled / 300);
+      this.scrollProgress = progress;
+
+      // Visual reaction on DOM elements
+      const heroContent = document.querySelector('.hero__content');
+      if (heroContent) {
+        heroContent.style.opacity = Math.max(0, 1 - progress * 1.5);
+        heroContent.style.transform = `translateY(${-progress * 35}px)`;
+      }
+      const scrollIndicator = document.querySelector('.hero__scroll');
+      if (scrollIndicator) {
+        scrollIndicator.style.opacity = Math.max(0, 1 - progress * 2.5);
+      }
+      const heroDoodles = document.querySelectorAll('.hero__doodle');
+      heroDoodles.forEach((d, i) => {
+        const factor = (i + 1) * 25;
+        d.style.transform = `translateY(${-progress * factor}px) scale(${1 + progress * 0.12})`;
+        d.style.opacity = Math.max(0, 1 - progress * 1.2);
+      });
+    }, { passive: true });
+
+    console.log('[HeroScene] Mouse and scroll event listeners bound.');
   }
 
   _onResize() {
-    const { width, height } = this.canvas.parentElement?.getBoundingClientRect()
-      || { width: window.innerWidth, height: window.innerHeight };
+    const width = window.innerWidth;
+    const height = window.innerHeight;
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
   }
 
   _animate() {
-    const THREE = this.three;
     const t = performance.now() * 0.001;
 
-    // Smooth mouse
-    this.mouse.x += (this.targetMouse.x - this.mouse.x) * 0.06;
-    this.mouse.y += (this.targetMouse.y - this.mouse.y) * 0.06;
+    // Smooth mouse inertia
+    this.mouse.x += (this.targetMouse.x - this.mouse.x) * 0.05;
+    this.mouse.y += (this.targetMouse.y - this.mouse.y) * 0.05;
 
-    // Camera parallax
-    this.camera.position.x += (this.mouse.x * 0.8 - this.camera.position.x) * 0.04;
-    this.camera.position.y += (this.mouse.y * 0.5 - this.camera.position.y) * 0.04;
-    this.camera.lookAt(0, 0, 0);
+    const sp = this.scrollProgress; // 0.0 to 1.0 during 300px
 
-    // Fade out on scroll
-    const heroAlpha = 1 - this.scrollProgress * 1.5;
-    this.scene.children.forEach(child => {
-      if (child.userData?.mat?.uniforms?.uAlpha) {
-        child.userData.mat.uniforms.uAlpha.value = Math.max(0, heroAlpha);
-        child.userData.mat.uniforms.uTime.value = t;
+    // Camera responds to mouse + subtle depth pull during scrollytelling
+    this.camera.position.x = this.mouse.x * 1.5 * (1 - sp * 0.5);
+    this.camera.position.y = this.mouse.y * 1.0 * (1 - sp * 0.5) - sp * 0.6;
+    this.camera.position.z = 9 + sp * 2.5;
+    this.camera.lookAt(0, -sp * 0.4, 0);
+
+    // Float & rotate each polygon + scrollytelling choreography
+    this.objects.forEach((obj, idx) => {
+      const { floatPhase, floatSpeed, rotSpeedX, rotSpeedY, rotSpeedZ, basePosition } = obj.userData;
+
+      // Acceleration multiplier with scroll progress
+      const spinBoost = 1 + sp * 3.0;
+      obj.rotation.x += rotSpeedX * spinBoost;
+      obj.rotation.y += rotSpeedY * spinBoost;
+      obj.rotation.z += rotSpeedZ * spinBoost;
+
+      // Expansion and convergence choreography during scrollytelling
+      const expandDir = idx % 2 === 0 ? 1 : -1;
+      const targetX = basePosition[0] + expandDir * sp * 1.8;
+      const targetY = basePosition[1] + (idx > 2 ? -1 : 1) * sp * 1.2;
+      const targetZ = basePosition[2] + sp * 1.5;
+
+      obj.position.x = targetX + Math.cos(t * floatSpeed * 0.8 + floatPhase) * 0.2;
+      obj.position.y = targetY + Math.sin(t * floatSpeed + floatPhase) * 0.35;
+      obj.position.z = targetZ;
+
+      // Smooth fade-out at the end of the 300px stage
+      if (obj.userData.mat) {
+        obj.userData.mat.opacity = Math.max(0.1, 0.92 - sp * 0.45);
+      }
+      if (obj.userData.lineMat) {
+        obj.userData.lineMat.opacity = Math.max(0.15, 0.95 - sp * 0.4);
       }
     });
 
-    // Float objects
-    this.objects.forEach((obj) => {
-      const { floatPhase, floatSpeed, rotSpeed, basePosition } = obj.userData;
-      obj.position.y = basePosition[1] + Math.sin(t * floatSpeed + floatPhase) * 0.25;
-      obj.position.x = basePosition[0] + Math.cos(t * floatSpeed * 0.7 + floatPhase) * 0.1;
-      obj.rotation.x += rotSpeed;
-      obj.rotation.y += rotSpeed * 1.3;
-      obj.rotation.z += rotSpeed * 0.7;
-    });
+    try {
+      this.renderer.render(this.scene, this.camera);
+      if (!this._firstRenderLogged) {
+        this._firstRenderLogged = true;
+        console.log('%c[HeroScene] 🎬 FIRST FRAME RENDERED SUCCESSFULLY TO WEBGL CANVAS!', 'background: #b8e030; color: #080810; font-weight: bold; font-size: 13px; padding: 4px 8px; border-radius: 4px;');
+      }
+    } catch (renderErr) {
+      console.error('%c[HeroScene] Error during renderer.render():', 'background: red; color: white;', renderErr);
+    }
 
-    // Scale + pull camera back on scroll
-    this.camera.position.z = 8 + this.scrollProgress * 3;
-
-    this.renderer.render(this.scene, this.camera);
     this.animFrame = requestAnimationFrame(() => this._animate());
   }
 

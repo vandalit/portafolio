@@ -24,50 +24,15 @@ export class ProjectModal {
 
     this.closeBtn?.addEventListener('click', () => this.close());
     this.backdrop?.addEventListener('click', () => this.close());
+    this.scrollHint?.addEventListener('click', () => this.close());
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.modal.classList.contains('is-open')) this.close();
     });
 
-    // Wheel intercept
-    this.modal.addEventListener('wheel', (e) => this._onWheel(e), { passive: false });
-
-    // Touch
-    let touchStartY = 0;
-    this.modal.addEventListener('touchstart', (e) => {
-      touchStartY = e.touches[0].clientY;
-    }, { passive: true });
-    this.modal.addEventListener('touchmove', (e) => {
-      const delta = touchStartY - e.touches[0].clientY;
-      touchStartY = e.touches[0].clientY;
-      this._scroll(e.target, delta);
-    }, { passive: false });
-
-    // Scroll state tracking
-    this.sidebar?.addEventListener('scroll', () => this._checkBottoms());
-    this.gallery?.addEventListener('scroll', () => this._checkBottoms());
-  }
-
-  _onWheel(e) {
-    if (this.pageUnlocked) return;
-    e.preventDefault();
-    e.stopPropagation();
-
-    const target = e.target.closest('.modal__sidebar') ? 'sidebar'
-                 : e.target.closest('.modal__gallery') ? 'gallery'
-                 : null;
-
-    if (!target) return;
-    this._scroll(e.target, e.deltaY);
-  }
-
-  _scroll(target, delta) {
-    const el = target.closest('.modal__sidebar') ? this.sidebar
-             : target.closest('.modal__gallery') ? this.gallery
-             : null;
-    if (!el) return;
-
-    el.scrollTop += delta;
-    this._checkBottoms();
+    // Native scrolling: sidebar and gallery each have overflow-y: auto in CSS.
+    // Scroll state tracking for dual-bottom hint
+    this.sidebar?.addEventListener('scroll', () => this._checkBottoms(), { passive: true });
+    this.gallery?.addEventListener('scroll', () => this._checkBottoms(), { passive: true });
   }
 
   _checkBottoms() {
@@ -79,13 +44,6 @@ export class ProjectModal {
 
     if (sidebarAtBottom && galleryAtBottom) {
       this.scrollHint?.classList.add('visible');
-      // After brief delay, allow page scroll
-      if (!this.pageUnlocked) {
-        setTimeout(() => {
-          this.pageUnlocked = true;
-          document.body.style.overflow = '';
-        }, 600);
-      }
     } else {
       this.scrollHint?.classList.remove('visible');
     }
