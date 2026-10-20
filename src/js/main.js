@@ -10,13 +10,13 @@ import { GridFilter } from './grid-filter.js';
 import { ProjectModal } from './project-modal.js';
 import { initVideoBackground } from './video-bg.js';
 import { bentoManager } from '../components/bentos/bento-manager.js';
+import { loadAllContent } from './content-loader.js';
 
 // ── DATA ──────────────────────────────────────────────────
 let projectsData = null;
 
 async function loadData() {
-  const res = await fetch('./src/data/projects.json');
-  projectsData = await res.json();
+  projectsData = await loadAllContent();
 }
 
 // ── RENDER ────────────────────────────────────────────────
@@ -372,9 +372,15 @@ function initModal() {
 
     let project;
     if (type === 'case') {
-      project = projectsData.cases.find(c => c.id === id);
+      project = projectsData.cases?.find(c => c.id === id);
+    } else if (type === 'client') {
+      project = projectsData.clients?.find(c => c.id === id);
+    } else if (type === 'lab') {
+      project = projectsData.lab?.find(c => c.id === id);
     } else {
-      project = projectsData.clients.find(c => c.id === id);
+      project = projectsData.cases?.find(c => c.id === id) ||
+                projectsData.clients?.find(c => c.id === id) ||
+                projectsData.lab?.find(c => c.id === id);
     }
 
     if (project) modalInstance.open(project);

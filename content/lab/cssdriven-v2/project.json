@@ -1,0 +1,18 @@
+{
+  "id": "cssdriven-v2",
+  "title": "CSS AI-Driven v2",
+  "subtitle": "Segunda iteración — WIP",
+  "description": "Segunda iteración profundizando en animaciones CSS puras, variables dinámicas y composición generativa. Trabajo en progreso.",
+  "tags": [
+    "css",
+    "coding",
+    "ai-workflow",
+    "wip"
+  ],
+  "coverPlaceholder": "https://picsum.photos/seed/cssv2/800/450",
+  "links": {
+    "demo": "./demos/cssaidriven-v2/index.html",
+    "github": "https://github.com/vandalit/portafolio"
+  },
+  "cover": "https://picsum.photos/seed/cssv2/800/450"
+}

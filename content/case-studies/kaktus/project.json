@@ -1,0 +1,30 @@
+{
+  "id": "kaktus",
+  "category": "multimedia",
+  "title": "Kaktus",
+  "subtitle": "Editorial mobile sin concesiones",
+  "description": "Aplicación móvil de diseño editorial. La restricción del formato como motor creativo: tipografía protagonista, imágenes a sangre, scrolling como narrativa.",
+  "year": 2023,
+  "role": "UI Design + Prototipado",
+  "tags": [
+    "ui",
+    "multimedia",
+    "mobile"
+  ],
+  "accentColor": "#d4205a",
+  "featured": false,
+  "coverPlaceholder": "https://picsum.photos/seed/kaktus/1200/675",
+  "gallery": [
+    "https://picsum.photos/seed/kaktus-1/600/1200",
+    "https://picsum.photos/seed/kaktus-2/600/1000",
+    "https://picsum.photos/seed/kaktus-3/800/600"
+  ],
+  "links": {
+    "github": "https://github.com/vandalit/Kaktus",
+    "live": null
+  },
+  "challenge": "Crear una experiencia editorial en mobile que no sea una versión empobrecida del desktop.",
+  "solution": "Sistema de gestos + tipografía variable + layouts dinámicos por tipo de contenido.",
+  "result": "UI exploratoria completa con 12 pantallas y sistema de componentes documentado.",
+  "cover": "https://picsum.photos/seed/kaktus/1200/675"
+}

@@ -1,0 +1,34 @@
+{
+  "id": "infinito",
+  "category": "wordpress",
+  "title": "Infinito Ingeniería",
+  "client": "Infinito Ingeniería",
+  "description": "Sitio corporativo para empresa de ingeniería. Profesionalismo con carácter: el sector ingeniería tiende a lo genérico; aquí no.",
+  "year": 2023,
+  "role": "UX/UI Design + WordPress Dev",
+  "tags": [
+    "wordpress",
+    "corporate",
+    "web"
+  ],
+  "coverPlaceholder": "https://picsum.photos/seed/infinito/800/450",
+  "challenge": "El sector ingeniería tiende a sitios genéricos. Crear presencia con personalidad propia que transmita confianza técnica.",
+  "solution": "Layout estructurado con paleta sobria, pero con micro-interacciones y tipografía con carácter propio.",
+  "result": "Sitio corporativo diferenciado del estándar del sector, con buen rendimiento SEO.",
+  "stack": [
+    "WordPress",
+    "Custom Theme",
+    "CSS",
+    "Optimización"
+  ],
+  "gallery": [
+    "https://picsum.photos/seed/infinito-1/1400/800",
+    "https://picsum.photos/seed/infinito-2/800/1000",
+    "https://picsum.photos/seed/infinito-3/1000/700",
+    "https://picsum.photos/seed/infinito-4/900/1200"
+  ],
+  "links": {
+    "live": null
+  },
+  "cover": "https://picsum.photos/seed/infinito/800/450"
+}

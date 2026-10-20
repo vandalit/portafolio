@@ -1,0 +1,17 @@
+{
+  "id": "paprika",
+  "title": "Paprika",
+  "subtitle": "Anime E-Commerce — Case Study",
+  "description": "Caso de estudio conceptual de e-commerce con estética anime. UI completa con sistema de diseño propio, flujos de compra y exploración de paleta de color inusual para el sector.",
+  "tags": [
+    "ui",
+    "coding",
+    "e-commerce"
+  ],
+  "coverPlaceholder": "https://picsum.photos/seed/paprika/800/450",
+  "links": {
+    "demo": "./demos/case-study-ai-driven/ecommerce-001/index.html",
+    "github": "https://github.com/vandalit/portafolio"
+  },
+  "cover": "https://picsum.photos/seed/paprika/800/450"
+}

@@ -14,6 +14,7 @@ export class Carousel {
     this.options = {
       snap: true,
       activeClass: 'is-active',
+      align: options.activeClass === '' ? 'start' : 'center',
       gap: 24,
       ...options
     };
@@ -35,7 +36,15 @@ export class Carousel {
     if (!this.track || this.items.length === 0) return;
 
     this._updateActive(0);
+    this._updateProgress();
     this._bindEvents();
+  }
+
+  refresh() {
+    if (!this.track) return;
+    this.items = [...this.container.querySelectorAll('.carousel-track > *')];
+    this._updateActive(this.currentIndex);
+    this._updateProgress();
   }
 
   _bindEvents() {
@@ -44,8 +53,12 @@ export class Carousel {
     this.track.addEventListener('touchmove',  (e) => this._onMove(e.touches[0].clientX), { passive: true });
     this.track.addEventListener('touchend',   () => this._onEnd());
 
-    // Mouse
-    this.track.addEventListener('mousedown',  (e) => { e.preventDefault(); this._onStart(e.clientX); });
+    // Mouse — do not prevent default on interactive elements (buttons, links)
+    this.track.addEventListener('mousedown',  (e) => {
+      if (e.target.closest('button, a')) return;
+      e.preventDefault();
+      this._onStart(e.clientX);
+    });
     window.addEventListener('mousemove', (e) => { if (this.isDragging) this._onMove(e.clientX); });
     window.addEventListener('mouseup',   () => { if (this.isDragging) this._onEnd(); });
 
@@ -109,16 +122,19 @@ export class Carousel {
   }
 
   _snapToNearest() {
-    const trackRect = this.track.getBoundingClientRect();
     const containerRect = this.container.getBoundingClientRect();
-    const center = containerRect.left + containerRect.width / 2;
+    const referencePos = this.options.align === 'center'
+      ? containerRect.left + containerRect.width / 2
+      : containerRect.left;
 
     let closest = 0;
     let minDist = Infinity;
     this.items.forEach((item, i) => {
       const rect = item.getBoundingClientRect();
-      const itemCenter = rect.left + rect.width / 2;
-      const dist = Math.abs(center - itemCenter);
+      const itemPos = this.options.align === 'center'
+        ? rect.left + rect.width / 2
+        : rect.left;
+      const dist = Math.abs(referencePos - itemPos);
       if (dist < minDist) { minDist = dist; closest = i; }
     });
 
@@ -135,12 +151,14 @@ export class Carousel {
 
     const itemWidth = item.offsetWidth;
     const itemLeft = item.offsetLeft;
-    const target = -(itemLeft - (containerWidth - itemWidth) / 2);
+    const target = this.options.align === 'center'
+      ? -(itemLeft - (containerWidth - itemWidth) / 2)
+      : -itemLeft;
 
     // Clamp
     const maxTranslate = 0;
     const trackWidth = this.track.scrollWidth;
-    const minTranslate = -(trackWidth - containerWidth);
+    const minTranslate = Math.min(0, -(trackWidth - containerWidth));
     this.currentTranslate = Math.min(maxTranslate, Math.max(minTranslate, target));
 
     this.track.style.transition = 'transform 550ms cubic-bezier(0.16, 1, 0.3, 1)';

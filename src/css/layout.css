@@ -193,10 +193,10 @@ section {
   border-color: var(--border-2);
 }
 
-/* ── HERO SCROLL CONTAINER (Pinned Scrollytelling Stage: 600px) ── */
+/* ── HERO SCROLL CONTAINER (Pinned Scrollytelling Stage: 600px + 100px colchón = 700px) ── */
 .hero-scroll-container {
   position: relative;
-  height: calc(100vh + 600px);
+  height: calc(100vh + 700px);
 }
 
 #hero {

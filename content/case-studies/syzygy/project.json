@@ -1,0 +1,32 @@
+{
+  "id": "syzygy",
+  "category": "coding",
+  "title": "Syzygy",
+  "subtitle": "Sistema de diseño astral",
+  "description": "Un sistema de diseño construido desde el concepto astral: reglas claras, pero espacio para lo inesperado. Componentes, tokens y motion integrados en un lenguaje visual coherente.",
+  "year": 2024,
+  "role": "Design System Lead",
+  "tags": [
+    "design-systems",
+    "coding",
+    "motion"
+  ],
+  "accentColor": "#b6e030",
+  "featured": true,
+  "coverPlaceholder": "https://picsum.photos/seed/syzygy/1200/675",
+  "gallery": [
+    "https://picsum.photos/seed/syzygy-1/1200/800",
+    "https://picsum.photos/seed/syzygy-2/800/1000",
+    "https://picsum.photos/seed/syzygy-3/900/600",
+    "https://picsum.photos/seed/syzygy-4/800/1200",
+    "https://picsum.photos/seed/syzygy-5/1200/700"
+  ],
+  "links": {
+    "github": "https://github.com/vandalit/Syzygy",
+    "live": null
+  },
+  "challenge": "Crear un sistema de diseño que pueda escalar sin perder su carácter propio, integrando motion como parte fundamental del lenguaje.",
+  "solution": "Tokens semánticos + motion principles documentados + biblioteca de componentes con estados animados.",
+  "result": "Sistema funcional desplegado, utilizable como base para proyectos futuros.",
+  "cover": "https://picsum.photos/seed/syzygy/1200/675"
+}

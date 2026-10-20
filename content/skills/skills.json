@@ -1,0 +1,104 @@
+[
+  {
+    "id": "ux",
+    "category": "ux",
+    "filterTag": "ux",
+    "title": "UX Research & Strategy",
+    "description": "Investigación de usuarios, síntesis de hallazgos, journey maps y definición de problemas de diseño. Del caos del brief a la claridad del problema.",
+    "skills": [
+      "User Interviews",
+      "Usability Testing",
+      "Journey Mapping",
+      "Heuristic Evaluation",
+      "Wireframing",
+      "Information Architecture"
+    ],
+    "accentColor": "#d4205a",
+    "icon": "circle"
+  },
+  {
+    "id": "ui",
+    "category": "ui",
+    "filterTag": "multimedia",
+    "title": "UI Design & Systems",
+    "description": "Figma, design tokens, sistemas de componentes. Tipografía, grillas, color como sistema. Interfaces que funcionan y se sienten bien.",
+    "skills": [
+      "Figma",
+      "Design Systems",
+      "Component Libraries",
+      "Responsive Design",
+      "Typography",
+      "Color Theory"
+    ],
+    "accentColor": "#d4205a",
+    "icon": "square"
+  },
+  {
+    "id": "frontend",
+    "category": "frontend",
+    "filterTag": "coding",
+    "title": "Front-end Development",
+    "description": "HTML/CSS/JS nativos sin miedo. Three.js, GSAP, animaciones CSS, rendimiento web. El código como herramienta de diseño.",
+    "skills": [
+      "HTML/CSS/JS",
+      "Three.js",
+      "GSAP",
+      "CSS Animations",
+      "GitHub",
+      "Web Performance"
+    ],
+    "accentColor": "#b6e030",
+    "icon": "triangle"
+  },
+  {
+    "id": "motion",
+    "category": "motion",
+    "filterTag": "multimedia",
+    "title": "Motion & Visual Design",
+    "description": "Micro-animaciones con propósito, parallax, CSS art, motion principles. El movimiento como parte del lenguaje de diseño, no decoración.",
+    "skills": [
+      "CSS Animations",
+      "GSAP",
+      "Parallax",
+      "Micro-interactions",
+      "After Effects",
+      "Lottie"
+    ],
+    "accentColor": "#d4205a",
+    "icon": "circle"
+  },
+  {
+    "id": "content",
+    "category": "content",
+    "filterTag": "ux",
+    "title": "Contenido & SEO",
+    "description": "Copywriting UX, arquitectura de contenido, SEO técnico on-page, métricas. El contenido como componente del diseño.",
+    "skills": [
+      "UX Writing",
+      "SEO On-page",
+      "SEM Básico",
+      "GA4",
+      "Content Architecture",
+      "A/B Testing"
+    ],
+    "accentColor": "#d4205a",
+    "icon": "square"
+  },
+  {
+    "id": "ai",
+    "category": "ai",
+    "filterTag": "coding",
+    "title": "AI-Assisted Workflows",
+    "description": "Prompting visual y técnico, flujos de trabajo con IA, CSS y código generativo, experimentación. La IA como herramienta, no como sustituto del criterio.",
+    "skills": [
+      "Prompt Engineering",
+      "AI Image Direction",
+      "CSS Generativo",
+      "LLM Workflows",
+      "Midjourney",
+      "GitHub Copilot"
+    ],
+    "accentColor": "#b6e030",
+    "icon": "triangle"
+  }
+]

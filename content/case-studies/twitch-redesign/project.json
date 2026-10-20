@@ -1,0 +1,29 @@
+{
+  "id": "twitch-redesign",
+  "category": "multimedia",
+  "title": "Twitch Redesign",
+  "subtitle": "Rediseño de una interfaz que olvidó a sus usuarios",
+  "description": "Ejercicio de auditoría heurística y rediseño completo de Twitch. Del diagnóstico claro a las soluciones propuestas: menos ruido, más contenido.",
+  "year": 2023,
+  "role": "UX Audit + UI Design",
+  "tags": [
+    "ux",
+    "multimedia",
+    "redesign"
+  ],
+  "accentColor": "#d4205a",
+  "featured": false,
+  "coverPlaceholder": "https://picsum.photos/seed/twitch/1200/675",
+  "gallery": [
+    "https://picsum.photos/seed/twitch-1/1400/800",
+    "https://picsum.photos/seed/twitch-2/1200/900"
+  ],
+  "links": {
+    "github": "https://github.com/vandalit/twitch-redesign",
+    "live": null
+  },
+  "challenge": "Twitch tiene una deuda de UX acumulada por años de crecimiento sin dirección de diseño unificada.",
+  "solution": "Auditoría heurística → identificación de 8 problemas críticos → propuesta de rediseño modular.",
+  "result": "Case study completo con 20+ pantallas rediseñadas y sistema de componentes.",
+  "cover": "https://picsum.photos/seed/twitch/1200/675"
+}

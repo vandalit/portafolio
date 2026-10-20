@@ -18,6 +18,11 @@ let currentStage = 1; // 1: Hse_HTX6KGs, 2: GKq9nKZpmu0
 const VIDEO_1_ID = 'Hse_HTX6KGs';
 const VIDEO_2_ID = 'GKq9nKZpmu0';
 
+// Altura de scroll donde se dispara el crossfade
+// Adelantado 200px (a 300px, justo en el ecuador del scrollytelling de 600px del hero)
+export const VIDEO_TRANSITION_PX = 300;
+export const VIDEO_PRELOAD_PX = 80;
+
 function getEmbedUrl(videoId) {
   return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&showinfo=0&rel=0&iv_load_policy=3&disablekb=1&fs=0&playsinline=1&enablejsapi=1`;
 }
@@ -88,34 +93,34 @@ export function initVideoBackground() {
   // Programación perezosa
   if ('requestIdleCallback' in window) {
     window.addEventListener('load', () => {
-      requestIdleCallback(injectVideo1, { timeout: 3500 });
+      requestIdleCallback(injectVideo1, { timeout: 2500 });
       // Pre-cargar Video 2 tras un breve respiro para que esté listo al scrollear
-      requestIdleCallback(injectVideo2, { timeout: 6000 });
+      requestIdleCallback(injectVideo2, { timeout: 4500 });
     });
   } else {
     window.addEventListener('load', () => {
-      setTimeout(injectVideo1, 1500);
-      setTimeout(injectVideo2, 4500);
+      setTimeout(injectVideo1, 1000);
+      setTimeout(injectVideo2, 2500);
     });
   }
 
-  // 4. Listener de scroll para transición a los 500px
+  // 4. Listener de scroll para transición a los 300px
   const handleScrollTransition = () => {
     const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
 
     // Si el usuario scrollea antes de idle, asegurar que Video 2 empieza a cargar
-    if (scrollY >= 150 && !isVideo2Injected) {
+    if (scrollY >= VIDEO_PRELOAD_PX && !isVideo2Injected) {
       injectVideo2();
     }
 
-    if (scrollY >= 500) {
+    if (scrollY >= VIDEO_TRANSITION_PX) {
       if (currentStage !== 2) {
         currentStage = 2;
         containerEl.classList.add('is-video2-active');
         if (!isPaused && iframeV2) {
           sendIframeCommand(iframeV2, 'playVideo');
         }
-        console.log('%c[VideoBG] 🎬 500px reached: crossfade to Video 2 (GKq9nKZpmu0)', 'color: #b8e030; font-weight: bold;');
+        console.log(`%c[VideoBG] 🎬 ${VIDEO_TRANSITION_PX}px reached: crossfade to Video 2 (GKq9nKZpmu0)`, 'color: #b8e030; font-weight: bold;');
       }
     } else {
       if (currentStage !== 1) {
@@ -124,7 +129,7 @@ export function initVideoBackground() {
         if (!isPaused && iframeV1) {
           sendIframeCommand(iframeV1, 'playVideo');
         }
-        console.log('%c[VideoBG] 🎬 <500px: crossfade back to Video 1 (Hse_HTX6KGs)', 'color: #e8306e; font-weight: bold;');
+        console.log(`%c[VideoBG] 🎬 <${VIDEO_TRANSITION_PX}px: crossfade back to Video 1 (Hse_HTX6KGs)`, 'color: #e8306e; font-weight: bold;');
       }
     }
   };
