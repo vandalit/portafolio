@@ -5,17 +5,29 @@
    ========================================================== */
 
 import { bentoCard1 } from './bento-card-1/bento-card-1.js';
+import { bentoCard2 } from './bento-card-2/bento-card-2.js';
+import { bentoCard3 } from './bento-card-3/bento-card-3.js';
+import { bentoCard4 } from './bento-card-4/bento-card-4.js';
+import { bentoCard5 } from './bento-card-5/bento-card-5.js';
+import { bentoCard6 } from './bento-card-6/bento-card-6.js';
 
 class BentoManager {
   constructor() {
-    this.bentos = [bentoCard1]; // Registro ampliable a futuro: [bentoCard1, bentoCard2, ...]
+    this.bentos = [
+      bentoCard1,
+      bentoCard2,
+      bentoCard3,
+      bentoCard4,
+      bentoCard5,
+      bentoCard6
+    ];
     this.mountedElements = new Map();
     this.container = null;
   }
 
   /**
    * Monta todos los bentos registrados dentro del contenedor dinámico
-   * @param {HTMLElement} containerEl - Contenedor con z-index: 12
+   * @param {HTMLElement} containerEl - Contenedor en Capa 2
    */
   mount(containerEl) {
     if (!containerEl) {
@@ -23,7 +35,7 @@ class BentoManager {
       return;
     }
     this.container = containerEl;
-    this.container.innerHTML = ''; // Limpiar previo
+    this.container.innerHTML = '';
 
     this.bentos.forEach((bento) => {
       const domEl = bento.render();
@@ -34,13 +46,13 @@ class BentoManager {
       this.mountedElements.set(bento.id, { def: bento, el: domEl });
     });
 
-    console.log(`[BentoManager] ${this.bentos.length} Bento(s) montado(s) exitosamente.`);
+    console.log(`[BentoManager] ${this.bentos.length} Bento interfaces montadas exitosamente.`);
   }
 
   /**
-   * Actualiza los bentos según la posición de scroll
+   * Actualiza los bentos según la posición de scroll en el stage
    * @param {number} progress - Progreso normalizado de 0 a 1
-   * @param {number} scrolledPx - Pixels scrolleados
+   * @param {number} scrolledPx - Pixels scrolleados (0 a 600px)
    */
   updateScroll(progress, scrolledPx) {
     this.mountedElements.forEach(({ def, el }) => {

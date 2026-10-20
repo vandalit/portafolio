@@ -1,0 +1,158 @@
+/* ==========================================================
+   BENTOS.CSS — Estilos Base para Marcos Bento (Interfaces)
+   Colores planos sólidos, ratios industriales, sin fade, barrido 2D
+   Capa 2 Dinámica (Rango z-index: 10 a 19)
+   ========================================================== */
+
+.bento-frame {
+  position: absolute;
+  /* El barrido es puramente 2D: siempre 100% opaco */
+  opacity: 1 !important;
+  will-change: transform;
+  pointer-events: auto;
+  user-select: none;
+  /* Posición inicial por defecto: fuera de canvas abajo */
+  transform: translate(-50%, -50%) translateY(115vh);
+}
+
+.bento-card-flat {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.bento-card-flat:hover {
+  border-color: rgba(232, 48, 110, 0.6);
+  transform: scale(1.02);
+}
+
+/* Micro-barra superior para identificar cada interfaz */
+.bento-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.bento-card__id {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.bento-card__ratio {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.55rem;
+  letter-spacing: 0.05em;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Área central plana limpia para futuros contenidos */
+.bento-card__body-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bento-card__indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+/* ── CONFIGURACIÓN DE COLORES PLANOS Y RATIOS ESPECÍFICOS ── */
+
+/* Bento #1 — Ratio 9:16 (Instagram Story / Reels) */
+#bento-card-1 {
+  width: 110px;
+  height: 195px;
+  left: 18%;
+  top: 48%;
+}
+#bento-card-1 .bento-card-flat {
+  background: #121324; /* Color plano grafito violeta */
+  border-color: rgba(232, 48, 110, 0.3);
+}
+#bento-card-1 .bento-card__indicator { background: #e8306e; }
+
+/* Bento #2 — Ratio 16:9 (Desktop Widescreen) */
+#bento-card-2 {
+  width: 180px;
+  height: 101px;
+  left: 74%;
+  top: 32%;
+}
+#bento-card-2 .bento-card-flat {
+  background: #141726; /* Color plano slate dark */
+  border-color: rgba(184, 224, 48, 0.3);
+}
+#bento-card-2 .bento-card__indicator { background: #b8e030; }
+
+/* Bento #3 — Ratio 1:1 (Instagram Post Square) */
+#bento-card-3 {
+  width: 130px;
+  height: 130px;
+  left: 48%;
+  top: 46%;
+}
+#bento-card-3 .bento-card-flat {
+  background: #181424; /* Color plano berry */
+  border-color: rgba(255, 160, 196, 0.3);
+}
+#bento-card-3 .bento-card__indicator { background: #ffa0c4; }
+
+/* Bento #4 — Ratio 4:5 (Instagram Portrait Feed) */
+#bento-card-4 {
+  width: 120px;
+  height: 150px;
+  left: 78%;
+  top: 68%;
+}
+#bento-card-4 .bento-card-flat {
+  background: #111822; /* Color plano deep cyan-gray */
+  border-color: rgba(128, 128, 255, 0.35);
+}
+#bento-card-4 .bento-card__indicator { background: #8080ff; }
+
+/* Bento #5 — Ratio 4:3 (Tablet / iPad) */
+#bento-card-5 {
+  width: 150px;
+  height: 112px;
+  left: 24%;
+  top: 25%;
+}
+#bento-card-5 .bento-card-flat {
+  background: #1b1526; /* Color plano violeta intenso */
+  border-color: rgba(212, 32, 90, 0.3);
+}
+#bento-card-5 .bento-card__indicator { background: #d4205a; }
+
+/* Bento #6 — Ratio 21:9 (Ultrawide / Banner HUD) */
+#bento-card-6 {
+  width: 190px;
+  height: 81px;
+  left: 44%;
+  top: 76%;
+}
+#bento-card-6 .bento-card-flat {
+  background: #141916; /* Color plano dark olive */
+  border-color: rgba(200, 240, 64, 0.3);
+}
+#bento-card-6 .bento-card__indicator { background: #c8f040; }
