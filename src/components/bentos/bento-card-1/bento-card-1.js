@@ -2,6 +2,7 @@
    BENTO-CARD-1.JS — Componente Modular Bento #1
    Ratio 9:16 (Instagram Story / Reels)
    Estrategia Híbrida: Video HTML5 con Poster Instantáneo
+   Soporte Edge Autoplay & Brave WebGL
    ========================================================== */
 
 import { createBentoCard } from '../bento-base.js';
@@ -30,8 +31,23 @@ bentoCard1.renderContent = function() {
         disablepictureinpicture
         preload="metadata"
         aria-hidden="true"
-        oncanplay="this.muted=true; this.play();">
+        oncanplay="this.defaultMuted=true; this.muted=true; this.play().catch(()=>{});">
       </video>
     </div>
   `;
+};
+
+// Sobrescribimos updateScroll para que el scroll del usuario desbloquee el autoplay en Edge
+const baseUpdateScroll = bentoCard1.updateScroll.bind(bentoCard1);
+bentoCard1.updateScroll = function(el, progress, scrolledPx) {
+  baseUpdateScroll(el, progress, scrolledPx);
+  if (!el) return;
+
+  // En Edge / navegadores con políticas estrictas de media: el scroll es un gesto de usuario que activa el play
+  const video = el.querySelector('video');
+  if (video && video.paused) {
+    video.defaultMuted = true;
+    video.muted = true;
+    video.play().catch(() => {});
+  }
 };

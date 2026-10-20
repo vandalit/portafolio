@@ -20,6 +20,17 @@ export class HeroScene {
     this.three = THREE;
     this.bentoManager = manager || (typeof window !== 'undefined' ? window.__bentoManagerInstance : null) || bentoManager;
 
+    if (canvases instanceof HTMLElement) {
+      this.canvasBack = canvases;
+      this.canvasFront = null;
+    } else if (canvases && typeof canvases === 'object') {
+      this.canvasBack = canvases.canvasBack || canvases.back || null;
+      this.canvasFront = canvases.canvasFront || canvases.front || null;
+    } else {
+      this.canvasBack = document.getElementById('three-canvas-back');
+      this.canvasFront = document.getElementById('three-canvas-front');
+    }
+
     this.rendererBack = null;
     this.rendererFront = null;
     this.sceneBack = null;
@@ -31,6 +42,7 @@ export class HeroScene {
     this.scrollProgress = 0;
     this.animFrame = null;
     this.initialized = false;
+    this.paused = false;
     this._firstRenderLogged = false;
 
     console.log('[HeroScene] Constructor instantiated with canvasBack:', this.canvasBack, 'canvasFront:', this.canvasFront);
@@ -55,26 +67,35 @@ export class HeroScene {
     const width = window.innerWidth;
     const height = window.innerHeight;
 
-    let renderer;
+    let renderer = null;
+    const webglOptions = {
+      canvas,
+      alpha: true,
+      premultipliedAlpha: false,
+      preserveDrawingBuffer: true, // Evita que Brave/Windows ANGLE descarte el buffer del canvas
+      powerPreference: 'default',
+      failIfMajorPerformanceCaveat: false, // Permite renderizar incluso si Brave o el SO usa emulación de GPU por privacidad
+    };
+
     try {
-      renderer = new THREE.WebGLRenderer({
-        canvas,
-        alpha: true,
-        antialias: true
-      });
-      console.log(`[HeroScene] WebGLRenderer (${label}) created with antialias: true`);
+      renderer = new THREE.WebGLRenderer({ ...webglOptions, antialias: true });
+      console.log(`[HeroScene] WebGLRenderer (${label}) creado con antialias: true`);
     } catch (errAntialias) {
-      console.warn(`[HeroScene] Failed antialias for ${label}, retrying fallback...`, errAntialias);
-      renderer = new THREE.WebGLRenderer({
-        canvas,
-        alpha: true,
-        antialias: false
-      });
+      console.warn(`[HeroScene] Falló antialias en ${label}, reintentando modo compatible...`, errAntialias);
+      try {
+        renderer = new THREE.WebGLRenderer({ ...webglOptions, antialias: false });
+        console.log(`[HeroScene] WebGLRenderer (${label}) creado en modo fallback antialias: false`);
+      } catch (errFallback) {
+        console.error(`%c[HeroScene] WebGL bloqueado en ${label} (posible Brave Shield / Farbling o aceleración deshabilitada):`, 'color: orange; font-weight: bold;', errFallback);
+        return null;
+      }
     }
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(width, height);
-    renderer.setClearColor(0x000000, 0);
+    if (renderer) {
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(width, height);
+      renderer.setClearColor(0x000000, 0);
+    }
     return renderer;
   }
 
@@ -104,21 +125,24 @@ export class HeroScene {
 
     console.log('[HeroScene] Viewport dimensions:', width, 'x', height, '| DPR:', window.devicePixelRatio);
 
-    // 1. Renderers para ambas capas de sandwich
+    // 1. Renderers para capas sandwich
     this.rendererBack = this._createRenderer(this.canvasBack, 'Back Canvas [z:11]');
     if (this.canvasFront) {
       this.rendererFront = this._createRenderer(this.canvasFront, 'Front Canvas [z:14]');
     }
 
-    // 2. Escenas separadas que comparten la misma cámara y transformaciones
+    // 2. Escenas separadas con fallback inteligente:
+    // Si Brave o el navegador bloquea el segundo contexto WebGL, unificamos todo en sceneBack
     this.sceneBack = new THREE.Scene();
     this._addLightsToScene(this.sceneBack);
 
-    if (this.canvasFront) {
+    if (this.rendererFront) {
       this.sceneFront = new THREE.Scene();
       this._addLightsToScene(this.sceneFront);
     } else {
+      // Fallback: si no hay rendererFront, sceneFront apunta a sceneBack
       this.sceneFront = this.sceneBack;
+      console.log('[HeroScene] Modo fallback mono-canvas activo: todas las geometrías renderizadas en sceneBack.');
     }
 
     // 3. Cámara compartida con perspectiva cinemática
@@ -335,23 +359,57 @@ export class HeroScene {
       }
     });
 
+    if (this.paused) return;
+
     try {
-      if (this.rendererBack && this.sceneBack) {
+      const hasBack = !!(this.rendererBack && this.sceneBack);
+      const hasFront = !!(this.rendererFront && this.sceneFront);
+
+      if (hasBack) {
         this.rendererBack.render(this.sceneBack, this.camera);
       }
-      if (this.rendererFront && this.sceneFront) {
+      if (hasFront) {
         this.rendererFront.render(this.sceneFront, this.camera);
       }
 
-      if (!this._firstRenderLogged) {
+      if (!this._firstRenderLogged && (hasBack || hasFront)) {
         this._firstRenderLogged = true;
-        console.log('%c[HeroScene] 🎬 DUAL SCENE SANDWICH RENDERED FIRST FRAME!', 'background: #b8e030; color: #080810; font-weight: bold; font-size: 13px; padding: 4px 8px; border-radius: 4px;');
+        console.log(`%c[HeroScene] 🎬 DUAL SCENE SANDWICH RENDERED FIRST FRAME! (Back: ${hasBack}, Front: ${hasFront})`, 'background: #b8e030; color: #080810; font-weight: bold; font-size: 13px; padding: 4px 8px; border-radius: 4px;');
       }
     } catch (renderErr) {
       console.error('%c[HeroScene] Error during dual render:', 'background: red; color: white;', renderErr);
     }
 
     this.animFrame = requestAnimationFrame(() => this._animate());
+  }
+
+  pause() {
+    this.paused = true;
+    if (this.animFrame) {
+      cancelAnimationFrame(this.animFrame);
+      this.animFrame = null;
+    }
+    if (this.canvasBack) this.canvasBack.style.visibility = 'hidden';
+    if (this.canvasFront) this.canvasFront.style.visibility = 'hidden';
+    console.log('[HeroScene] Paused and canvases hidden');
+  }
+
+  resume() {
+    if (!this.paused) return;
+    this.paused = false;
+    if (this.canvasBack) this.canvasBack.style.visibility = 'visible';
+    if (this.canvasFront) this.canvasFront.style.visibility = 'visible';
+    this._animate();
+    console.log('[HeroScene] Resumed and render loop restarted');
+  }
+
+  toggle(enable) {
+    const shouldEnable = enable !== undefined ? enable : this.paused;
+    if (shouldEnable) {
+      this.resume();
+    } else {
+      this.pause();
+    }
   }
 
   destroy() {

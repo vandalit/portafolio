@@ -154,6 +154,7 @@ export class Carousel {
   }
 
   _updateActive(index) {
+    if (!this.options.activeClass) return;
     this.items.forEach((item, i) => {
       item.classList.toggle(this.options.activeClass, i === index);
     });

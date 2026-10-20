@@ -265,6 +265,35 @@ function initNav() {
   });
 }
 
+// ── FX TOGGLE (EFECTOS VISUALES 3D & VIDEO) ────────────────
+function initFxToggle() {
+  const fxBtn = document.getElementById('fx-toggle');
+  if (!fxBtn) return;
+
+  let fxActive = true;
+
+  fxBtn.addEventListener('click', () => {
+    fxActive = !fxActive;
+    fxBtn.setAttribute('aria-pressed', fxActive ? 'true' : 'false');
+    fxBtn.classList.toggle('is-off', !fxActive);
+
+    // Toggle global body class
+    document.body.classList.toggle('fx-off', !fxActive);
+
+    // Toggle Three.js scene
+    if (window.__heroSceneInstance && typeof window.__heroSceneInstance.toggle === 'function') {
+      window.__heroSceneInstance.toggle(fxActive);
+    }
+
+    // Toggle Video background
+    if (window.__videoBgInstance && typeof window.__videoBgInstance.toggle === 'function') {
+      window.__videoBgInstance.toggle(fxActive);
+    }
+
+    console.log(`[FX Toggle] FX visual effects switched ${fxActive ? 'ON' : 'OFF'}`);
+  });
+}
+
 // ── CURSOR GLOW ──────────────────────────────────────────
 function initCursorGlow() {
   const glow = document.getElementById('cursor-glow');
@@ -409,6 +438,7 @@ async function init() {
 
   // 2. Init UI listeners & navigation
   initNav();
+  initFxToggle();
   initHero();
   initCursorGlow();
   initReveal();

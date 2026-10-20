@@ -132,6 +132,67 @@ section {
   color: var(--magenta);
 }
 
+.nav__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+/* Toggle FX sobrio y compacto */
+.nav__fx-toggle {
+  background: transparent;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-pill);
+  padding: 3px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-1);
+  transition: color var(--transition-fast), border-color var(--transition-fast), opacity var(--transition-fast);
+  user-select: none;
+  line-height: 1;
+}
+
+.nav__fx-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--text-2);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), opacity var(--transition-fast);
+}
+
+.nav__fx-toggle:hover {
+  color: var(--text-0);
+  border-color: var(--border-1);
+}
+
+.nav__fx-toggle:hover .nav__fx-dot {
+  background-color: var(--text-1);
+}
+
+.nav__fx-toggle.is-off {
+  color: var(--text-3);
+  border-color: var(--border-0);
+  opacity: 0.65;
+}
+
+.nav__fx-toggle.is-off .nav__fx-dot {
+  background-color: transparent;
+  border: 1px solid var(--text-3);
+}
+
+.nav__fx-toggle.is-off:hover {
+  opacity: 0.9;
+  color: var(--text-2);
+  border-color: var(--border-2);
+}
+
 /* ── HERO SCROLL CONTAINER (Pinned Scrollytelling Stage: 600px) ── */
 .hero-scroll-container {
   position: relative;
@@ -179,6 +240,32 @@ section {
   border: 0;
   filter: saturate(1.25) contrast(1.15) brightness(0.9);
   mix-blend-mode: screen;
+  transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero__video-iframe--v1 {
+  opacity: 1;
+}
+
+.hero__video-iframe--v2 {
+  opacity: 0;
+}
+
+.hero__layer-video.is-video2-active .hero__video-iframe--v1 {
+  opacity: 0;
+}
+
+.hero__layer-video.is-video2-active .hero__video-iframe--v2 {
+  opacity: 1;
+}
+
+/* FX OFF State */
+body.fx-off .hero__layer-video,
+body.fx-off .hero__canvas-back,
+body.fx-off .hero__canvas-front {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 /* ── CAPA 1: ATMÓSFERA & GRADIENTES BASE (z-index: 1) ── */

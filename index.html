@@ -132,7 +132,13 @@
       <li><a href="#work"   class="nav__link" aria-label="Trabajo de clientes">Trabajo</a></li>
       <li><a href="#lab"    class="nav__link" aria-label="Experimentos">Lab</a></li>
     </ul>
-    <a href="#contact" class="nav__cta">Contacto</a>
+    <div class="nav__actions">
+      <button id="fx-toggle" class="nav__fx-toggle" type="button" aria-pressed="true" aria-label="Alternar efectos visuales (fondo de video y geometrías 3D)">
+        <span class="nav__fx-dot" aria-hidden="true"></span>
+        <span class="nav__fx-label">fx</span>
+      </button>
+      <a href="#contact" class="nav__cta">Contacto</a>
+    </div>
   </nav>
 
   <!-- ═══════════════════════════════════════════════════════
@@ -509,6 +515,6 @@
   </div>
 
   <!-- ── SCRIPTS ────────────────────────────────────────── -->
-  <script type="module" src="./src/js/main.js?v=v3_fix"></script>
+  <script type="module" src="./src/js/main.js?v=fx_video500"></script>
 </body>
 </html>
