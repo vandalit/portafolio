@@ -388,6 +388,7 @@ async function init() {
   // 2. Capa 2.b: Montar componentes Bento modulares
   const bentoContainer = document.getElementById('hero-bento-container');
   if (bentoContainer) {
+    window.__bentoManagerInstance = bentoManager;
     bentoManager.mount(bentoContainer);
   }
 
@@ -397,7 +398,7 @@ async function init() {
   if (canvasBack || canvasFront) {
     try {
       console.log('[Portafolio:Main] Instantiating dual-canvas HeroScene sandwich...');
-      const scene = new HeroScene({ canvasBack, canvasFront });
+      const scene = new HeroScene({ canvasBack, canvasFront }, bentoManager);
       window.__heroSceneInstance = scene;
       scene.init();
       console.log('[Portafolio:Main] HeroScene dual-canvas initialized.');

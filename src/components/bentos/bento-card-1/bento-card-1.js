@@ -1,57 +1,37 @@
 /* ==========================================================
    BENTO-CARD-1.JS — Componente Modular Bento #1
    Ratio 9:16 (Instagram Story / Reels)
-   Color plano, sin fade, barrido 2D desde bottom
+   Estrategia Híbrida: Video HTML5 con Poster Instantáneo
    ========================================================== */
 
-export const bentoCard1 = {
+import { createBentoCard } from '../bento-base.js';
+
+export const bentoCard1 = createBentoCard({
   id: 'bento-card-1',
   name: 'Bento #01',
   ratio: '9:16',
-  zIndex: 12,      // Capa 2 Dinámica (Sandwich)
-  startPx: 300,    // Comienza a subir a los 300px
-  endPx: 420,      // Ocupa su posición a los 420px
+  zIndex: 12,
+  startPx: 100,
+  endPx: 220
+});
 
-  render() {
-    const el = document.createElement('div');
-    el.id = this.id;
-    el.className = 'bento-frame';
-    el.setAttribute('data-bento-id', '1');
-    el.setAttribute('aria-label', `${this.name} (${this.ratio})`);
-
-    el.innerHTML = `
-      <article class="bento-card-flat">
-        <header class="bento-card__meta">
-          <span class="bento-card__id">${this.name}</span>
-          <span class="bento-card__ratio">${this.ratio}</span>
-        </header>
-        <div class="bento-card__body-placeholder">
-          <span class="bento-card__indicator"></span>
-        </div>
-      </article>
-    `;
-
-    return el;
-  },
-
-  updateScroll(el, progress, scrolledPx) {
-    if (!el) return;
-
-    if (scrolledPx < this.startPx) {
-      el.style.transform = 'translate(-50%, -50%) translateY(115vh)';
-      return;
-    }
-
-    if (scrolledPx >= this.endPx) {
-      el.style.transform = 'translate(-50%, -50%) translateY(0)';
-      return;
-    }
-
-    // Curva de barrido 2D rápida y enérgica
-    const p = (scrolledPx - this.startPx) / (this.endPx - this.startPx);
-    const easeOut = 1 - Math.pow(1 - p, 3);
-    const yOffset = (1 - easeOut) * 115;
-
-    el.style.transform = `translate(-50%, -50%) translateY(${yOffset.toFixed(1)}vh)`;
-  }
+bentoCard1.renderContent = function() {
+  return `
+    <div class="bento-video-wrapper">
+      <video 
+        class="bento-video-element"
+        src="https://turismolickancoy.cl/wp-content/uploads/2025/07/Duna-mayor-dentro-del-valle-de-la-luna.mp4"
+        poster="./assets/images/midjourney/vandalit_Blob_graphic_dopamine_design_abstract_modern_design__7ce2ff82-6ce2-4c99-ba8d-15649dcbe2c2_1.png"
+        autoplay
+        loop
+        muted
+        playsinline
+        webkit-playsinline
+        disablepictureinpicture
+        preload="metadata"
+        aria-hidden="true"
+        oncanplay="this.muted=true; this.play();">
+      </video>
+    </div>
+  `;
 };

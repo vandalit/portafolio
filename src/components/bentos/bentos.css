@@ -1,158 +1,282 @@
 /* ==========================================================
-   BENTOS.CSS — Estilos Base para Marcos Bento (Interfaces)
-   Colores planos sólidos, ratios industriales, sin fade, barrido 2D
+   BENTOS.CSS — Estilos & Design Tokens para Marcos Bento
+   12 Interfaces: Colores planos sólidos, sin texto, barrido 2D puro
    Capa 2 Dinámica (Rango z-index: 10 a 19)
    ========================================================== */
 
+:root {
+  /* ── TOKENS DE DISEÑO CENTRALIZADOS ── */
+  --bento-scale: 1.44;           /* Ajuste global de escala (+20% adicional: 1.44) */
+  --bento-radius: 20px;          /* Radio de curvatura de esquinas */
+  --bento-border-width: 1px;     /* Grosor de borde */
+  --bento-shadow: 0 18px 44px rgba(0, 0, 0, 0.7);
+}
+
 .bento-frame {
   position: absolute;
-  /* El barrido es puramente 2D: siempre 100% opaco */
-  opacity: 1 !important;
+  opacity: 1 !important; /* Siempre 100% visible: sin fade */
   will-change: transform;
   pointer-events: auto;
   user-select: none;
-  /* Posición inicial por defecto: fuera de canvas abajo */
-  transform: translate(-50%, -50%) translateY(115vh);
+  /* Posición por defecto: completamente fuera de canvas abajo */
+  transform: translate(-50%, -50%) translateY(115vh) scale(var(--bento-scale));
 }
 
 .bento-card-flat {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  border-radius: var(--bento-radius);
+  border: var(--bento-border-width) solid rgba(255, 255, 255, 0.14);
+  box-shadow: var(--bento-shadow);
   box-sizing: border-box;
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .bento-card-flat:hover {
-  border-color: rgba(232, 48, 110, 0.6);
-  transform: scale(1.02);
+  border-color: rgba(232, 48, 110, 0.65);
+  box-shadow: 0 24px 55px rgba(0, 0, 0, 0.85), 0 0 24px rgba(232, 48, 110, 0.3);
 }
 
-/* Micro-barra superior para identificar cada interfaz */
-.bento-card__meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.bento-card__id {
+/* Solo número sutil para identificación rápida */
+.bento-card__num {
+  position: absolute;
+  top: 10px;
+  left: 12px;
   font-family: var(--font-mono, monospace);
-  font-size: 0.62rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #ffffff;
-}
-
-.bento-card__ratio {
-  font-family: var(--font-mono, monospace);
-  font-size: 0.55rem;
   letter-spacing: 0.05em;
-  padding: 2px 5px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.75);
+  z-index: 4;
+  pointer-events: none;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
 }
 
-/* Área central plana limpia para futuros contenidos */
-.bento-card__body-placeholder {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Contenedor universal para componentes/contenido de cada bento */
+.bento-card__content {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  z-index: 1;
 }
 
-.bento-card__indicator {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  opacity: 0.6;
+/* ── ESTILOS PARA VIDEO EMBED EN BENTO (FILL 9:16 SIN CONTROLES) ── */
+.bento-video-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+  background: #000;
 }
 
-/* ── CONFIGURACIÓN DE COLORES PLANOS Y RATIOS ESPECÍFICOS ── */
+/* Video HTML5 nativo: fill perfecto, acelerado por hardware y sin controles */
+.bento-video-element {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  pointer-events: none;
+  display: block;
+}
 
-/* Bento #1 — Ratio 9:16 (Instagram Story / Reels) */
+/* Imagen en fill: adaptación perfecta al ratio de cada interfaz */
+.bento-image-fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+  pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+}
+
+.bento-card-flat:hover .bento-image-fill {
+  transform: scale(1.04);
+  filter: contrast(1.05) brightness(1.03);
+}
+
+/* 
+ * YouTube embed es nativamente un player 16:9 con barras negras laterales para Shorts (9:16).
+ * Al escalarlo a width: 325% y height: 105% centrado, el video vertical central llena al 100% el bento 9:16
+ * y empuja el título ("GREEN..."), botones y logo de YouTube completamente fuera de los bordes recortados.
+ */
+.bento-video-iframe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 325%;
+  height: 105%;
+  transform: translate(-50%, -50%);
+  border: 0;
+  pointer-events: none;
+  filter: contrast(1.05) saturate(1.1);
+}
+
+/* Escudo protector que intercepta clicks: impide que el usuario pause el video por error */
+.bento-video-shield {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  cursor: default;
+  z-index: 5;
+  background: transparent;
+}
+
+/* ══════════════════════════════════════════════════════════
+   12 BENTOS: POSICIONES SCATTERING, RATIOS & COLORES SÓLIDOS
+   ══════════════════════════════════════════════════════════ */
+
+/* Bento #1 — Ratio 9:16 (Instagram Story / Reel) */
 #bento-card-1 {
   width: 110px;
   height: 195px;
-  left: 18%;
+  left: 14%;
   top: 48%;
 }
 #bento-card-1 .bento-card-flat {
-  background: #121324; /* Color plano grafito violeta */
-  border-color: rgba(232, 48, 110, 0.3);
+  background: #111222;
+  border-color: rgba(232, 48, 110, 0.35);
 }
-#bento-card-1 .bento-card__indicator { background: #e8306e; }
 
 /* Bento #2 — Ratio 16:9 (Desktop Widescreen) */
 #bento-card-2 {
   width: 180px;
   height: 101px;
-  left: 74%;
-  top: 32%;
+  left: 78%;
+  top: 26%;
 }
 #bento-card-2 .bento-card-flat {
-  background: #141726; /* Color plano slate dark */
-  border-color: rgba(184, 224, 48, 0.3);
+  background: #141726;
+  border-color: rgba(184, 224, 48, 0.35);
 }
-#bento-card-2 .bento-card__indicator { background: #b8e030; }
 
-/* Bento #3 — Ratio 1:1 (Instagram Post Square) */
+/* Bento #3 — Ratio 1:1 (Instagram Square) */
 #bento-card-3 {
   width: 130px;
   height: 130px;
   left: 48%;
-  top: 46%;
+  top: 45%;
 }
 #bento-card-3 .bento-card-flat {
-  background: #181424; /* Color plano berry */
+  background: #181324;
   border-color: rgba(255, 160, 196, 0.3);
 }
-#bento-card-3 .bento-card__indicator { background: #ffa0c4; }
 
-/* Bento #4 — Ratio 4:5 (Instagram Portrait Feed) */
+/* Bento #4 — Ratio 4:5 (Instagram Portrait) */
 #bento-card-4 {
   width: 120px;
   height: 150px;
-  left: 78%;
-  top: 68%;
+  left: 82%;
+  top: 66%;
 }
 #bento-card-4 .bento-card-flat {
-  background: #111822; /* Color plano deep cyan-gray */
+  background: #101822;
   border-color: rgba(128, 128, 255, 0.35);
 }
-#bento-card-4 .bento-card__indicator { background: #8080ff; }
 
 /* Bento #5 — Ratio 4:3 (Tablet / iPad) */
 #bento-card-5 {
   width: 150px;
   height: 112px;
-  left: 24%;
-  top: 25%;
+  left: 22%;
+  top: 22%;
 }
 #bento-card-5 .bento-card-flat {
-  background: #1b1526; /* Color plano violeta intenso */
-  border-color: rgba(212, 32, 90, 0.3);
+  background: #1b1424;
+  border-color: rgba(212, 32, 90, 0.35);
 }
-#bento-card-5 .bento-card__indicator { background: #d4205a; }
 
-/* Bento #6 — Ratio 21:9 (Ultrawide / Banner HUD) */
+/* Bento #6 — Ratio 21:9 (Ultrawide HUD) */
 #bento-card-6 {
   width: 190px;
   height: 81px;
-  left: 44%;
-  top: 76%;
+  left: 52%;
+  top: 78%;
 }
 #bento-card-6 .bento-card-flat {
-  background: #141916; /* Color plano dark olive */
+  background: #131915;
   border-color: rgba(200, 240, 64, 0.3);
 }
-#bento-card-6 .bento-card__indicator { background: #c8f040; }
+
+/* Bento #7 — Ratio 9:16 (Story Vertical) */
+#bento-card-7 {
+  width: 105px;
+  height: 186px;
+  left: 88%;
+  top: 44%;
+}
+#bento-card-7 .bento-card-flat {
+  background: #171120;
+  border-color: rgba(232, 48, 110, 0.3);
+}
+
+/* Bento #8 — Ratio 16:10 (Laptop MacBook Display) */
+#bento-card-8 {
+  width: 160px;
+  height: 100px;
+  left: 32%;
+  top: 62%;
+}
+#bento-card-8 .bento-card-flat {
+  background: #121526;
+  border-color: rgba(184, 224, 48, 0.28);
+}
+
+/* Bento #9 — Ratio 3:2 (Classic Photo Frame) */
+#bento-card-9 {
+  width: 150px;
+  height: 100px;
+  left: 66%;
+  top: 18%;
+}
+#bento-card-9 .bento-card-flat {
+  background: #161225;
+  border-color: rgba(255, 120, 180, 0.3);
+}
+
+/* Bento #10 — Ratio 1:1 (Compact Square) */
+#bento-card-10 {
+  width: 110px;
+  height: 110px;
+  left: 12%;
+  top: 74%;
+}
+#bento-card-10 .bento-card-flat {
+  background: #0f1622;
+  border-color: rgba(100, 180, 255, 0.3);
+}
+
+/* Bento #11 — Ratio 4:5 (Editorial Card) */
+#bento-card-11 {
+  width: 125px;
+  height: 156px;
+  left: 38%;
+  top: 28%;
+}
+#bento-card-11 .bento-card-flat {
+  background: #191422;
+  border-color: rgba(232, 80, 130, 0.3);
+}
+
+/* Bento #12 — Ratio 2:1 (Cinema Banner) */
+#bento-card-12 {
+  width: 180px;
+  height: 90px;
+  left: 64%;
+  top: 84%;
+}
+#bento-card-12 .bento-card-flat {
+  background: #141819;
+  border-color: rgba(160, 230, 80, 0.3);
+}

@@ -14,17 +14,11 @@ console.log('%c[HeroScene] module loaded | THREE revision:', 'color: #e8306e; fo
 export class HeroScene {
   /**
    * @param {HTMLElement|Object} canvases - Un canvas único o un objeto { canvasBack, canvasFront }
+   * @param {Object} [manager] - Instancia de BentoManager
    */
-  constructor(canvases) {
+  constructor(canvases, manager = null) {
     this.three = THREE;
-
-    if (canvases instanceof HTMLElement) {
-      this.canvasBack = canvases;
-      this.canvasFront = null;
-    } else {
-      this.canvasBack = canvases.canvasBack || canvases.back || null;
-      this.canvasFront = canvases.canvasFront || canvases.front || null;
-    }
+    this.bentoManager = manager || (typeof window !== 'undefined' ? window.__bentoManagerInstance : null) || bentoManager;
 
     this.rendererBack = null;
     this.rendererFront = null;
@@ -260,7 +254,10 @@ export class HeroScene {
       }
 
       // 2. Transición del Bento Frame modular (Capa 2.b, z-index: 12)
-      bentoManager.updateScroll(progress, scrolled);
+      const bm = this.bentoManager || (typeof window !== 'undefined' ? window.__bentoManagerInstance : null) || bentoManager;
+      if (bm && typeof bm.updateScroll === 'function') {
+        bm.updateScroll(progress, scrolled);
+      }
 
       // 3. Reacción visual del contenido tipográfico (Capa 4, z-index: 21)
       const heroContent = document.getElementById('hero-layer-content') || document.querySelector('.hero__content');
