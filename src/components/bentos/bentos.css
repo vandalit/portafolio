@@ -12,18 +12,64 @@
   --bento-shadow: 0 18px 44px rgba(0, 0, 0, 0.7);
 }
 
-.bento-frame {
+.bento-frame,
+.bento-hud-frame {
   position: absolute;
   opacity: 1 !important; /* Siempre 100% visible: sin fade */
   will-change: transform;
-  pointer-events: auto;
   user-select: none;
   /* Posición por defecto: completamente fuera de canvas abajo */
   transform: translate(-50%, -50%) translateY(115vh) scale(var(--bento-scale));
 }
 
+.bento-frame {
+  pointer-events: auto;
+}
+
+.bento-hud-frame {
+  pointer-events: none;
+  z-index: 30;
+}
+
+/* Zona activa de interacción en el frente de todo (z-index: 31) */
+.bento-hud-trigger {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+  cursor: pointer;
+  border-radius: var(--bento-radius);
+  background: transparent;
+  z-index: 31;
+}
+
+/* ── BASE DE TRAZO AUDAZ POSTERIOR (STROKE POP EN YELLOW-GREEN) ── */
+.bento-hover-stroke {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--bento-radius);
+  background: var(--bento-accent, var(--lime-bright, #ccf020));
+  box-shadow: 0 0 28px rgba(204, 240, 32, 0.45), 0 0 56px rgba(204, 240, 32, 0.2);
+  z-index: 1;
+  pointer-events: none;
+  opacity: 1 !important; /* SIN FADE: siempre 100% visible */
+  transform: scale(0);   /* Crece desde el centro por detrás */
+  transform-origin: center center;
+  transition: transform 0.36s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+
+.bento-frame.is-hovered .bento-hover-stroke {
+  transform: scale(1.18); /* Mismo ratio exacto del bento, sobresale como stroke bold */
+}
+
+/* ── TARJETA BENTO FRONTAL (LA SOMBRA CAE DIRECTAMENTE SOBRE LA BASE) ── */
 .bento-card-flat {
   position: relative;
+  z-index: 2;
   width: 100%;
   height: 100%;
   border-radius: var(--bento-radius);
@@ -31,12 +77,137 @@
   box-shadow: var(--bento-shadow);
   box-sizing: border-box;
   overflow: hidden;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.bento-card-flat:hover {
-  border-color: rgba(232, 48, 110, 0.65);
-  box-shadow: 0 24px 55px rgba(0, 0, 0, 0.85), 0 0 24px rgba(232, 48, 110, 0.3);
+.bento-frame.is-hovered .bento-card-flat {
+  border-color: rgba(204, 240, 32, 0.65);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.9), 0 4px 14px rgba(0, 0, 0, 0.6);
+  transform: scale(1.03);
+}
+
+/* ── WIDGET CALLOUT INFORMATIVO FLOTANTE HUD (CAPA 5 FRONTAL) ── */
+.bento-hover-callout {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 220px;
+  z-index: 32;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease, visibility 0.22s ease;
+  will-change: opacity, transform;
+}
+
+.bento-hud-frame--left .bento-hover-callout {
+  right: calc(100% + 22px);
+  align-items: stretch;
+}
+
+.bento-hud-frame--right .bento-hover-callout {
+  left: calc(100% + 22px);
+  align-items: stretch;
+}
+
+.bento-hud-frame.is-hovered .bento-hover-callout {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Título de la obra: Justificado a la izquierda por encima de la línea */
+.bento-callout-title {
+  display: block;
+  text-align: left;
+  font-family: var(--font-heading, "Space Grotesk", sans-serif);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffffff;
+  white-space: nowrap;
+  line-height: 1.2;
+  margin-bottom: 3px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95), 0 0 4px rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+.bento-hud-frame.is-hovered .bento-callout-title {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.04s;
+}
+
+/* Contenedor SVG de la flecha / línea en Yellow-Green */
+.bento-callout-line-wrap {
+  width: 100%;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  color: var(--bento-accent, var(--lime-bright, #ccf020));
+  margin: 1px 0;
+}
+
+.bento-callout-svg {
+  width: 100%;
+  height: 14px;
+  overflow: visible;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.9));
+}
+
+.bento-callout-stem {
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  stroke: var(--bento-accent, var(--lime-bright, #ccf020));
+  transition: stroke-dashoffset 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bento-hud-frame.is-hovered .bento-callout-stem {
+  stroke-dashoffset: 0;
+  transition-delay: 0.02s;
+}
+
+.bento-callout-head {
+  opacity: 0;
+  fill: var(--bento-accent, var(--lime-bright, #ccf020));
+  transform-origin: center;
+  transform: scale(0.2);
+  transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bento-hud-frame.is-hovered .bento-callout-head {
+  opacity: 1;
+  transform: scale(1);
+  transition-delay: 0.16s;
+}
+
+/* Información técnica: Justificado a la derecha por debajo de la línea */
+.bento-callout-meta {
+  display: block;
+  text-align: right;
+  font-family: var(--font-mono, monospace);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bento-accent, var(--lime-bright, #ccf020));
+  white-space: nowrap;
+  line-height: 1.2;
+  margin-top: 3px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95), 0 0 4px rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+.bento-hud-frame.is-hovered .bento-callout-meta {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.08s;
 }
 
 /* Solo número sutil para identificación rápida */
@@ -138,7 +309,8 @@
    ══════════════════════════════════════════════════════════ */
 
 /* Bento #1 — Ratio 9:16 (Instagram Story / Reel) */
-#bento-card-1 {
+#bento-card-1,
+#bento-hud-1 {
   width: 110px;
   height: 195px;
   left: 14%;
@@ -150,7 +322,8 @@
 }
 
 /* Bento #2 — Ratio 16:9 (Desktop Widescreen) */
-#bento-card-2 {
+#bento-card-2,
+#bento-hud-2 {
   width: 180px;
   height: 101px;
   left: 78%;
@@ -162,7 +335,8 @@
 }
 
 /* Bento #3 — Ratio 1:1 (Instagram Square) */
-#bento-card-3 {
+#bento-card-3,
+#bento-hud-3 {
   width: 130px;
   height: 130px;
   left: 48%;
@@ -174,7 +348,8 @@
 }
 
 /* Bento #4 — Ratio 4:5 (Instagram Portrait) */
-#bento-card-4 {
+#bento-card-4,
+#bento-hud-4 {
   width: 120px;
   height: 150px;
   left: 82%;
@@ -186,7 +361,8 @@
 }
 
 /* Bento #5 — Ratio 4:3 (Tablet / iPad) */
-#bento-card-5 {
+#bento-card-5,
+#bento-hud-5 {
   width: 150px;
   height: 112px;
   left: 22%;
@@ -198,7 +374,8 @@
 }
 
 /* Bento #6 — Ratio 21:9 (Ultrawide HUD) */
-#bento-card-6 {
+#bento-card-6,
+#bento-hud-6 {
   width: 190px;
   height: 81px;
   left: 52%;
@@ -210,7 +387,8 @@
 }
 
 /* Bento #7 — Ratio 9:16 (Story Vertical) */
-#bento-card-7 {
+#bento-card-7,
+#bento-hud-7 {
   width: 105px;
   height: 186px;
   left: 88%;
@@ -222,7 +400,8 @@
 }
 
 /* Bento #8 — Ratio 16:10 (Laptop MacBook Display) */
-#bento-card-8 {
+#bento-card-8,
+#bento-hud-8 {
   width: 160px;
   height: 100px;
   left: 32%;
@@ -234,7 +413,8 @@
 }
 
 /* Bento #9 — Ratio 3:2 (Classic Photo Frame) */
-#bento-card-9 {
+#bento-card-9,
+#bento-hud-9 {
   width: 150px;
   height: 100px;
   left: 66%;
@@ -246,7 +426,8 @@
 }
 
 /* Bento #10 — Ratio 1:1 (Compact Square) */
-#bento-card-10 {
+#bento-card-10,
+#bento-hud-10 {
   width: 110px;
   height: 110px;
   left: 12%;
@@ -258,7 +439,8 @@
 }
 
 /* Bento #11 — Ratio 4:5 (Editorial Card) */
-#bento-card-11 {
+#bento-card-11,
+#bento-hud-11 {
   width: 125px;
   height: 156px;
   left: 38%;
@@ -270,7 +452,8 @@
 }
 
 /* Bento #12 — Ratio 2:1 (Cinema Banner) */
-#bento-card-12 {
+#bento-card-12,
+#bento-hud-12 {
   width: 180px;
   height: 90px;
   left: 64%;

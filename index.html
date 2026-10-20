@@ -32,7 +32,7 @@
   <link rel="stylesheet" href="./src/css/layout.css">
   <link rel="stylesheet" href="./src/css/components.css">
   <link rel="stylesheet" href="./src/css/animations.css">
-  <link rel="stylesheet" href="./src/components/bentos/bentos.css">
+  <link rel="stylesheet" href="./src/components/bentos/bentos.css?v=bento_hover_pop">
 
   <style>
     /* Inline critical: btn size variants */
@@ -249,6 +249,9 @@
           </div>
         </div>
       </div>
+
+      <!-- ── CAPA 5: HUD OVERLAY & ZONA ACTIVA DE INTERACCIÓN (z-index: 30) ── -->
+      <div id="hero-hud-container" class="hero__hud-container" aria-hidden="true"></div>
 
       <!-- Scroll indicator -->
       <div class="hero__scroll" aria-hidden="true">
@@ -515,6 +518,6 @@
   </div>
 
   <!-- ── SCRIPTS ────────────────────────────────────────── -->
-  <script type="module" src="./src/js/main.js?v=skills_carousel_fix"></script>
+  <script type="module" src="./src/js/main.js?v=bento_hover_pop"></script>
 </body>
 </html>

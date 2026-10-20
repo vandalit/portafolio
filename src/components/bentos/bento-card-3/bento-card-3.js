@@ -9,6 +9,11 @@ import { createBentoCard } from '../bento-base.js';
 export const bentoCard3 = createBentoCard({
   id: 'bento-card-3',
   name: 'Bento #03',
+  workTitle: 'Dopamine Organic Fluid',
+  workMeta: '2024 · AI EXPERIMENT',
+  targetAnchor: '#lab',
+  calloutDir: 'left',
+  accentColor: '#ccf020',
   ratio: '1:1',
   zIndex: 12,
   startPx: 170,

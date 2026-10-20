@@ -9,6 +9,11 @@ import { createBentoCard } from '../bento-base.js';
 export const bentoCard2 = createBentoCard({
   id: 'bento-card-2',
   name: 'Bento #02',
+  workTitle: 'Screens Mockup Web UI',
+  workMeta: '2024 · MULTIMEDIA',
+  targetAnchor: '#cases',
+  calloutDir: 'left',
+  accentColor: '#ccf020',
   ratio: '16:9',
   zIndex: 13,
   startPx: 135,

@@ -9,6 +9,11 @@ import { createBentoCard } from '../bento-base.js';
 export const bentoCard5 = createBentoCard({
   id: 'bento-card-5',
   name: 'Bento #05',
+  workTitle: 'Spatial Living Architecture',
+  workMeta: '2023 · CORPORATE UI',
+  targetAnchor: '#work',
+  calloutDir: 'right',
+  accentColor: '#ccf020',
   ratio: '4:3',
   zIndex: 13,
   startPx: 240,

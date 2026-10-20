@@ -9,6 +9,11 @@ import { createBentoCard } from '../bento-base.js';
 export const bentoCard4 = createBentoCard({
   id: 'bento-card-4',
   name: 'Bento #04',
+  workTitle: 'Fluor Street Punk Art',
+  workMeta: '2024 · MOTION & ART',
+  targetAnchor: '#cases',
+  calloutDir: 'left',
+  accentColor: '#ccf020',
   ratio: '4:5',
   zIndex: 15,
   startPx: 205,

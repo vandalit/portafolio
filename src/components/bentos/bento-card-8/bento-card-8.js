@@ -9,6 +9,11 @@ import { createBentoCard } from '../bento-base.js';
 export const bentoCard8 = createBentoCard({
   id: 'bento-card-8',
   name: 'Bento #08',
+  workTitle: 'Digital Neon Outline',
+  workMeta: '2024 · DESIGN SYSTEM',
+  targetAnchor: '#cases',
+  calloutDir: 'right',
+  accentColor: '#ccf020',
   ratio: '16:10',
   zIndex: 12,
   startPx: 345,

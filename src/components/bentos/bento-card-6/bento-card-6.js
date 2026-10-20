@@ -9,6 +9,11 @@ import { createBentoCard } from '../bento-base.js';
 export const bentoCard6 = createBentoCard({
   id: 'bento-card-6',
   name: 'Bento #06',
+  workTitle: 'Iridescent Paper Texture',
+  workMeta: '2024 · CSS GENERATIVE',
+  targetAnchor: '#lab',
+  calloutDir: 'left',
+  accentColor: '#ccf020',
   ratio: '21:9',
   zIndex: 12,
   startPx: 275,

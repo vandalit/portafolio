@@ -10,6 +10,11 @@ import { createBentoCard } from '../bento-base.js';
 export const bentoCard1 = createBentoCard({
   id: 'bento-card-1',
   name: 'Bento #01',
+  workTitle: 'Valle de la Luna — Atacama',
+  workMeta: '2023 · CLIENT WORK',
+  targetAnchor: '#work',
+  calloutDir: 'right',
+  accentColor: '#ccf020',
   ratio: '9:16',
   zIndex: 12,
   startPx: 100,

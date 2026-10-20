@@ -9,6 +9,11 @@ import { createBentoCard } from '../bento-base.js';
 export const bentoCard9 = createBentoCard({
   id: 'bento-card-9',
   name: 'Bento #09',
+  workTitle: 'Natales Food Lettering',
+  workMeta: '2023 · BRANDING & WEB',
+  targetAnchor: '#work',
+  calloutDir: 'left',
+  accentColor: '#ccf020',
   ratio: '3:2',
   zIndex: 13,
   startPx: 380,

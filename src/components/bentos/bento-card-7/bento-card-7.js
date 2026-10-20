@@ -9,6 +9,11 @@ import { createBentoCard } from '../bento-base.js';
 export const bentoCard7 = createBentoCard({
   id: 'bento-card-7',
   name: 'Bento #07',
+  workTitle: 'Rizoma Macro Biology',
+  workMeta: '2024 · MULTIMEDIA',
+  targetAnchor: '#lab',
+  calloutDir: 'left',
+  accentColor: '#ccf020',
   ratio: '9:16',
   zIndex: 14,
   startPx: 310,

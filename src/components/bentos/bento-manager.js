@@ -38,7 +38,7 @@ class BentoManager {
   }
 
   /**
-   * Monta todos los bentos registrados dentro del contenedor dinámico
+   * Monta todos los bentos registrados dentro del contenedor dinámico y el HUD frontal
    * @param {HTMLElement} containerEl - Contenedor en Capa 2
    */
   mount(containerEl) {
@@ -49,27 +49,40 @@ class BentoManager {
     this.container = containerEl;
     this.container.innerHTML = '';
 
+    const hudContainer = document.getElementById('hero-hud-container');
+    if (hudContainer) {
+      hudContainer.innerHTML = '';
+    }
+
     this.bentos.forEach((bento) => {
-      const domEl = bento.render();
+      const { bentoEl, hudEl } = typeof bento.renderPair === 'function'
+        ? bento.renderPair()
+        : { bentoEl: bento.render(), hudEl: null };
+
       if (bento.zIndex) {
-        domEl.style.zIndex = bento.zIndex;
+        bentoEl.style.zIndex = bento.zIndex;
       }
-      this.container.appendChild(domEl);
-      this.mountedElements.set(bento.id, { def: bento, el: domEl });
+      this.container.appendChild(bentoEl);
+
+      if (hudContainer && hudEl) {
+        hudContainer.appendChild(hudEl);
+      }
+
+      this.mountedElements.set(bento.id, { def: bento, el: bentoEl, hudEl });
     });
 
-    console.log(`[BentoManager] ${this.bentos.length} Bento interfaces montadas exitosamente.`);
+    console.log(`[BentoManager] ${this.bentos.length} Bento & HUD interfaces montadas exitosamente.`);
   }
 
   /**
-   * Actualiza los bentos según la posición de scroll en el stage
+   * Actualiza los bentos y sus HUDs según la posición de scroll en el stage
    * @param {number} progress - Progreso normalizado de 0 a 1
    * @param {number} scrolledPx - Pixels scrolleados (0 a 600px)
    */
   updateScroll(progress, scrolledPx) {
-    this.mountedElements.forEach(({ def, el }) => {
+    this.mountedElements.forEach(({ def, el, hudEl }) => {
       if (typeof def.updateScroll === 'function') {
-        def.updateScroll(el, progress, scrolledPx);
+        def.updateScroll(el, progress, scrolledPx, hudEl);
       }
     });
   }
