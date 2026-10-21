@@ -26,5 +26,5 @@
   "challenge": "Crear una experiencia editorial en mobile que no sea una versión empobrecida del desktop.",
   "solution": "Sistema de gestos + tipografía variable + layouts dinámicos por tipo de contenido.",
   "result": "UI exploratoria completa con 12 pantallas y sistema de componentes documentado.",
-  "cover": "https://picsum.photos/seed/kaktus/1200/675"
+  "cover": "./Cactus-en-flor-bajo-un-sol-vibrante.png"
 }
