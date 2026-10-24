@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vandalit // Backoffice & Content Studio</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/icons/favicon.svg">
+  <link rel="stylesheet" href="../src/css/base.css">
+  <link rel="stylesheet" href="../src/css/components.css">
+  <link rel="stylesheet" href="./backoffice.css">
+</head>
+<body class="bo-body">
+  <!-- Top App Bar -->
+  <header class="bo-header">
+    <div class="bo-header__brand">
+      <a href="../index.html" class="bo-header__logo" title="Ir al portafolio">
+        <span class="bo-header__logo-dot"></span>
+        <span class="bo-header__logo-text">vandalit</span>
+        <span class="bo-header__tag">STUDIO // BACKOFFICE</span>
+      </a>
+      <div id="env-badge" class="bo-badge bo-badge--local">
+        <span class="bo-badge__dot"></span>
+        <span id="env-text">Entorno Local</span>
+      </div>
+    </div>
+
+    <div class="bo-header__actions">
+      <!-- File System API Trigger (Local) -->
+      <button id="btn-connect-fs" class="bo-btn bo-btn--outline" title="Conectar carpeta raíz del proyecto para guardar directamente a disco">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        <span id="fs-status-label">Conectar Carpeta /portafolio</span>
+      </button>
+
+      <!-- Save to Disk (Local with FS) -->
+      <button id="btn-save-disk" class="bo-btn bo-btn--lime" style="display:none;" title="Escribir cambios directamente en los archivos JSON de /content/">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        <span>Guardar en Disco</span>
+      </button>
+
+      <!-- Export JSON -->
+      <button id="btn-export-json" class="bo-btn bo-btn--secondary" title="Descargar toda la configuración del portafolio en JSON">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>Exportar JSON</span>
+      </button>
+
+      <!-- Import JSON -->
+      <label class="bo-btn bo-btn--secondary" title="Importar archivo JSON previamente exportado">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        <span>Importar JSON</span>
+        <input type="file" id="input-import-json" accept=".json" style="display:none;">
+      </label>
+
+      <!-- View Live Portfolio -->
+      <a href="../index.html" target="_blank" class="bo-btn bo-btn--ghost" title="Abrir el portafolio en una nueva pestaña">
+        <span>Ver Portafolio</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Studio Workspace -->
+  <div class="bo-workspace">
+    <!-- Sidebar: Sections & Projects Navigator -->
+    <aside class="bo-sidebar">
+      <!-- Section Tabs -->
+      <div class="bo-section-nav" role="tablist">
+        <button class="bo-sec-tab is-active" data-section="clients" role="tab" aria-selected="true">
+          <span class="bo-sec-tab__name">Clientes</span>
+          <span class="bo-sec-tab__count" id="count-clients">0</span>
+        </button>
+        <button class="bo-sec-tab" data-section="case-studies" role="tab" aria-selected="false">
+          <span class="bo-sec-tab__name">Casos de Estudio</span>
+          <span class="bo-sec-tab__count" id="count-case-studies">0</span>
+        </button>
+        <button class="bo-sec-tab" data-section="lab" role="tab" aria-selected="false">
+          <span class="bo-sec-tab__name">Lab</span>
+          <span class="bo-sec-tab__count" id="count-lab">0</span>
+        </button>
+        <button class="bo-sec-tab" data-section="skills" role="tab" aria-selected="false">
+          <span class="bo-sec-tab__name">Skills</span>
+          <span class="bo-sec-tab__count" id="count-skills">0</span>
+        </button>
+        <button class="bo-sec-tab bo-sec-tab--hero" data-section="hero" role="tab" aria-selected="false" style="grid-column: 1 / -1; border-color: rgba(204,240,32,0.25);">
+          <span class="bo-sec-tab__name">⚡ Hero (Bentos & Video)</span>
+          <span class="bo-sec-tab__count" id="count-bentos">12</span>
+        </button>
+      </div>
+
+      <!-- Action: Add Project -->
+      <div class="bo-sidebar__toolbar">
+        <span class="bo-sidebar__title" id="current-section-label">Trabajo de Clientes</span>
+        <button id="btn-add-project" class="bo-btn bo-btn--xs bo-btn--outline" title="Añadir nuevo proyecto a esta sección">
+          + Nuevo
+        </button>
+      </div>
+
+      <!-- Project List -->
+      <div id="project-list" class="bo-project-list" role="list">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Reset Storage Footer -->
+      <div class="bo-sidebar__footer">
+        <button id="btn-reset-draft" class="bo-link-btn" title="Descartar borrador local y recargar archivos limpios">
+          Restablecer a archivos base
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Editor Canvas -->
+    <main class="bo-editor-container">
+      <div id="editor-empty" class="bo-empty-state" style="display:none;">
+        <div class="bo-empty-state__icon">📂</div>
+        <h3>Selecciona un proyecto para editar</h3>
+        <p>O crea uno nuevo usando el botón <strong>+ Nuevo</strong> en la barra lateral.</p>
+      </div>
+
+      <!-- Active Project Editor Form -->
+      <form id="project-form" class="bo-form">
+        <!-- Editor Header -->
+        <div class="bo-form__header">
+          <div class="bo-form__title-group">
+            <span class="bo-form__eyebrow" id="form-eyebrow">SECCIÓN: CLIENTES</span>
+            <h1 class="bo-form__title" id="form-display-title">Título del Proyecto</h1>
+            <code class="bo-form__slug" id="form-display-slug">slug-del-proyecto</code>
+          </div>
+          <div class="bo-form__header-actions">
+            <!-- Mover a otra sección -->
+            <button type="button" id="btn-move-project" class="bo-btn bo-btn--secondary bo-btn--sm" title="Mover proyecto completo a otra sección">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+              <span>Mover a...</span>
+            </button>
+            <button type="button" id="btn-delete-project" class="bo-btn bo-btn--danger bo-btn--sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <span>Eliminar</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bo-form__grid">
+          <!-- Left Column: Core Metadata & Narrative -->
+          <div class="bo-form__col">
+            <!-- Card: Identificación y Metadatos -->
+            <div class="bo-card">
+              <h3 class="bo-card__title">Identificación y Metadatos</h3>
+              
+              <div class="bo-field">
+                <label for="field-id">ID / Slug (Nombre de carpeta en disco)</label>
+                <input type="text" id="field-id" name="id" class="bo-input bo-input--mono" required placeholder="ej: lickancoy">
+                <span class="bo-help">Debe coincidir con el nombre del subdirectorio en <code>content/[sección]/</code>.</span>
+              </div>
+
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="field-title">Título Principal</label>
+                  <input type="text" id="field-title" name="title" class="bo-input" required placeholder="ej: Turismo Lickancoy">
+                </div>
+                <div class="bo-field">
+                  <label for="field-client">Cliente</label>
+                  <input type="text" id="field-client" name="client" class="bo-input" placeholder="ej: Comunidad Atacameña">
+                </div>
+              </div>
+
+              <div class="bo-field">
+                <label for="field-subtitle">Subtítulo / Bajada</label>
+                <input type="text" id="field-subtitle" name="subtitle" class="bo-input" placeholder="ej: Identidad y diseño territorial en San Pedro de Atacama">
+              </div>
+
+              <div class="bo-field-row bo-field-row--3">
+                <div class="bo-field">
+                  <label for="field-category">Categoría Principal</label>
+                  <select id="field-category" name="category" class="bo-select">
+                    <option value="wordpress">WordPress & Web</option>
+                    <option value="ux">UX / UI</option>
+                    <option value="coding">Coding / Frontend</option>
+                    <option value="multimedia">Multimedia / Motion</option>
+                  </select>
+                </div>
+                <div class="bo-field">
+                  <label for="field-year">Año</label>
+                  <input type="number" id="field-year" name="year" class="bo-input bo-input--mono" min="2018" max="2030" value="2024">
+                </div>
+                <div class="bo-field">
+                  <label for="field-accent">Color de Acento</label>
+                  <div class="bo-color-picker-wrap">
+                    <input type="color" id="field-accent-color" value="#ccf020" class="bo-color-input">
+                    <input type="text" id="field-accent" name="accentColor" class="bo-input bo-input--mono" value="#ccf020">
+                  </div>
+                </div>
+              </div>
+
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="field-role">Rol Desempeñado</label>
+                  <input type="text" id="field-role" name="role" class="bo-input" placeholder="ej: UX/UI Design + WordPress Dev">
+                </div>
+                <div class="bo-field bo-field--checkbox">
+                  <label class="bo-checkbox-label">
+                    <input type="checkbox" id="field-featured" name="featured">
+                    <span>Destacar como Hero / Caso Principal</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card: Tags y Stack -->
+            <div class="bo-card">
+              <h3 class="bo-card__title">Clasificación & Stack Técnico</h3>
+              
+              <div class="bo-field">
+                <label for="field-tags">Tags (separados por coma)</label>
+                <input type="text" id="field-tags" name="tags" class="bo-input" placeholder="wordpress, ux, web, desierto">
+                <div id="tags-chips" class="bo-chips-container"></div>
+              </div>
+
+              <div class="bo-field">
+                <label for="field-stack">Stack / Herramientas (separados por coma)</label>
+                <input type="text" id="field-stack" name="stack" class="bo-input" placeholder="WordPress, Custom CSS, Figma, Three.js">
+                <div id="stack-chips" class="bo-chips-container"></div>
+              </div>
+            </div>
+
+            <!-- Card: Narrativa del Caso / Proyecto -->
+            <div class="bo-card">
+              <h3 class="bo-card__title">Narrativa & Metodología</h3>
+              
+              <div class="bo-field">
+                <label for="field-desc">Descripción General</label>
+                <textarea id="field-desc" name="description" class="bo-textarea" rows="3" placeholder="Resumen del proyecto para las tarjetas del grid..."></textarea>
+              </div>
+
+              <div class="bo-field">
+                <label for="field-challenge">El Desafío / Challenge</label>
+                <textarea id="field-challenge" name="challenge" class="bo-textarea" rows="2" placeholder="¿Cuál era el problema o restricción central?"></textarea>
+              </div>
+
+              <div class="bo-field">
+                <label for="field-solution">La Solución / Strategy</label>
+                <textarea id="field-solution" name="solution" class="bo-textarea" rows="2" placeholder="¿Qué estrategia y diseño se aplicó?"></textarea>
+              </div>
+
+              <div class="bo-field">
+                <label for="field-result">El Resultado / Impacto</label>
+                <textarea id="field-result" name="result" class="bo-textarea" rows="2" placeholder="Impacto alcanzado, deploy o métricas."></textarea>
+              </div>
+
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="field-live">Enlace en Vivo (URL)</label>
+                  <input type="url" id="field-live" name="linkLive" class="bo-input" placeholder="https://turismolickancoy.cl">
+                </div>
+                <div class="bo-field">
+                  <label for="field-github">Repositorio GitHub (URL)</label>
+                  <input type="url" id="field-github" name="linkGithub" class="bo-input" placeholder="https://github.com/vandalit/...">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Media, Cover & Gallery Manager -->
+          <div class="bo-form__col">
+            <!-- Card: Portada / Cover con Verificador de Rutas -->
+            <div class="bo-card">
+              <div class="bo-card__header-flex">
+                <h3 class="bo-card__title">Portada (Cover)</h3>
+                <span id="cover-status-badge" class="bo-status-badge bo-status-badge--neutral">Verificando...</span>
+              </div>
+
+              <div class="bo-field">
+                <label for="field-cover">Ruta Relativa o URL Externa</label>
+                <input type="text" id="field-cover" name="cover" class="bo-input bo-input--mono" placeholder="cover.webp o https://...">
+                <span class="bo-help">
+                  En local se resolverá como: <code id="cover-resolved-path">./content/clients/slug/cover.webp</code>
+                </span>
+              </div>
+
+              <!-- Local Image Dropzone -->
+              <div id="cover-dropzone" class="bo-dropzone">
+                <div class="bo-dropzone__content">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                  <span>Arrastra una imagen aquí para copiarla a disco o asignar nombre</span>
+                  <input type="file" id="cover-file-input" accept="image/*" style="display:none;">
+                </div>
+              </div>
+
+              <!-- Cover Live Preview Box -->
+              <div class="bo-preview-box">
+                <img id="cover-preview-img" src="" alt="Vista previa de portada" class="bo-preview-box__img">
+                <div id="cover-preview-fallback" class="bo-preview-box__fallback">
+                  <span>Sin imagen o ruta inválida</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card: Galería Showcase para la Vista Detalle -->
+            <div class="bo-card">
+              <div class="bo-card__header-flex">
+                <h3 class="bo-card__title">Galería Showcase (Modal)</h3>
+                <button type="button" id="btn-add-gallery-img" class="bo-btn bo-btn--xs bo-btn--outline">+ Añadir Imagen</button>
+              </div>
+              <p class="bo-help" style="margin-bottom:var(--sp-3)">
+                Imágenes que aparecen en el carrusel de la vista detalle al hacer clic en el proyecto.
+              </p>
+
+              <div id="gallery-list" class="bo-gallery-list">
+                <!-- Gallery items populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- ── HERO & BENTOS STUDIO EDITOR ─────────────────────── -->
+      <div id="hero-editor" class="bo-form" style="display:none;">
+        <div class="bo-form__header">
+          <div class="bo-form__title-group">
+            <span class="bo-form__eyebrow">SECCIÓN: HERO & AMBIENT SCENE</span>
+            <h1 class="bo-form__title">12 Bentos & Videos de Fondo</h1>
+            <code class="bo-form__slug">content/settings/hero.json</code>
+          </div>
+        </div>
+
+        <div class="bo-form__grid">
+          <!-- Columna Izquierda: Configuración de Videos de Fondo & Selector de Bentos -->
+          <div class="bo-form__col">
+            <!-- Card: Videos de Fondo Dual-Stage -->
+            <div class="bo-card">
+              <h3 class="bo-card__title">Videos de Fondo Ambientales (YouTube)</h3>
+              <p class="bo-help" style="margin-bottom:var(--sp-3)">
+                Reproducción continua en bucle sin controles. Puedes colocar el ID (ej: <code>Hse_HTX6KGs</code>) o la URL completa de YouTube.
+              </p>
+
+              <div class="bo-field">
+                <label for="field-video-1">Video 1: Hero Stage (< 300px)</label>
+                <input type="text" id="field-video-1" class="bo-input bo-input--mono" placeholder="Hse_HTX6KGs o https://youtube.com/watch?v=...">
+              </div>
+
+              <div class="bo-field">
+                <label for="field-video-2">Video 2: Secciones Stage (>= 300px)</label>
+                <input type="text" id="field-video-2" class="bo-input bo-input--mono" placeholder="GKq9nKZpmu0 o https://youtube.com/watch?v=...">
+              </div>
+
+              <div class="bo-field">
+                <label for="field-video-trans">Altura de Transición / Crossfade (Pixels)</label>
+                <input type="number" id="field-video-trans" class="bo-input bo-input--mono" value="300" min="50" max="800" step="10">
+                <span class="bo-help">Punto de scroll donde se realiza el fundido entre ambos videos (actualmente 300px).</span>
+              </div>
+            </div>
+
+            <!-- Card: Selector Rápido de los 12 Bentos -->
+            <div class="bo-card">
+              <h3 class="bo-card__title">Seleccionar Bento para Editar (1 al 12)</h3>
+              <div id="hero-bento-grid-selector" class="bo-bento-selector-grid">
+                <!-- Buttons #1 to #12 populated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Editor del Bento Activo -->
+          <div class="bo-form__col">
+            <div class="bo-card">
+              <div class="bo-card__header-flex">
+                <h3 class="bo-card__title" id="bento-editor-title">Bento #01 (Ratio 9:16)</h3>
+                <span id="bento-media-badge" class="bo-status-badge bo-status-badge--neutral">Ratio 9:16</span>
+              </div>
+
+              <div class="bo-field">
+                <label for="bento-work-title">Título de la Obra (HUD Arriba Izquierda)</label>
+                <input type="text" id="bento-work-title" class="bo-input" placeholder="ej: Valle de la Luna — Atacama">
+              </div>
+
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="bento-work-meta">Meta Técnica (HUD Abajo Derecha)</label>
+                  <input type="text" id="bento-work-meta" class="bo-input bo-input--mono" placeholder="ej: 2023 · CLIENT WORK">
+                </div>
+                <div class="bo-field">
+                  <label for="bento-target-anchor">Ancla de Destino al Clic</label>
+                  <select id="bento-target-anchor" class="bo-select">
+                    <option value="#work">#work (Clientes)</option>
+                    <option value="#cases">#cases (Casos de Estudio)</option>
+                    <option value="#lab">#lab (Laboratorio)</option>
+                    <option value="#skills">#skills (Habilidades)</option>
+                    <option value="#contact">#contact (Contacto)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="bento-media-type">Tipo de Contenido</label>
+                  <select id="bento-media-type" class="bo-select">
+                    <option value="image">Imagen (WebP, PNG, JPG)</option>
+                    <option value="video">Video HTML5 (MP4 vertical/horizontal)</option>
+                  </select>
+                </div>
+                <div class="bo-field">
+                  <label for="bento-callout-dir">Dirección de Flecha HUD</label>
+                  <select id="bento-callout-dir" class="bo-select">
+                    <option value="left">Izquierda ←</option>
+                    <option value="right">Derecha →</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="bo-field">
+                <label for="bento-media-src">Ruta de Imagen / Video (Local o URL)</label>
+                <input type="text" id="bento-media-src" class="bo-input bo-input--mono" placeholder="./assets/images/midjourney/... o https://...">
+                <span class="bo-help">Puedes colocar una ruta local en <code>./assets/images/</code> o una URL externa directa.</span>
+              </div>
+
+              <div class="bo-field" id="bento-poster-field">
+                <label for="bento-poster">Poster de Video (Opcional para carga instantánea)</label>
+                <input type="text" id="bento-poster" class="bo-input bo-input--mono" placeholder="./assets/images/...">
+              </div>
+
+              <!-- Bento Live Preview Box -->
+              <div class="bo-preview-box" id="bento-preview-box" style="margin-top:16px;">
+                <img id="bento-preview-img" src="" alt="Vista previa bento" class="bo-preview-box__img">
+                <video id="bento-preview-video" src="" muted loop autoplay playsinline class="bo-preview-box__img" style="display:none;"></video>
+                <div id="bento-preview-fallback" class="bo-preview-box__fallback">
+                  <span>Sin imagen o video asignado</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SKILLS STUDIO EDITOR ────────────────────────────── -->
+      <div id="skill-editor" class="bo-form" style="display:none;">
+        <div class="bo-form__header">
+          <div class="bo-form__title-group">
+            <span class="bo-form__eyebrow">SECCIÓN: SKILLS & PERFIL TÉCNICO</span>
+            <h1 class="bo-form__title" id="skill-display-title">Título de Habilidad</h1>
+            <code class="bo-form__slug" id="skill-display-slug">id-habilidad</code>
+          </div>
+          <div class="bo-form__header-actions">
+            <button type="button" id="btn-delete-skill" class="bo-btn bo-btn--danger bo-btn--sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <span>Eliminar</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bo-form__grid">
+          <div class="bo-form__col">
+            <div class="bo-card">
+              <h3 class="bo-card__title">Definición de Tarjeta de Habilidad</h3>
+
+              <div class="bo-field">
+                <label for="skill-field-id">ID / Identificador</label>
+                <input type="text" id="skill-field-id" class="bo-input bo-input--mono" required placeholder="ej: ux">
+              </div>
+
+              <div class="bo-field">
+                <label for="skill-field-title">Título Principal</label>
+                <input type="text" id="skill-field-title" class="bo-input" required placeholder="ej: UX Research & Strategy">
+              </div>
+
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="skill-field-category">Categoría (Etiqueta superior)</label>
+                  <input type="text" id="skill-field-category" class="bo-input" placeholder="ej: UX, FRONTEND, AI">
+                </div>
+                <div class="bo-field">
+                  <label for="skill-field-filter">Filtro Asociado al hacer clic</label>
+                  <select id="skill-field-filter" class="bo-select">
+                    <option value="ux">Filtro UX</option>
+                    <option value="multimedia">Filtro Multimedia</option>
+                    <option value="coding">Filtro Coding</option>
+                    <option value="wordpress">Filtro Web & WP</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="skill-field-icon">Ícono Doodle SVG</label>
+                  <select id="skill-field-icon" class="bo-select">
+                    <option value="circle">Círculo Concéntrico (Circle)</option>
+                    <option value="square">Cuadrado Concéntrico (Square)</option>
+                    <option value="triangle">Triángulo Concéntrico (Triangle)</option>
+                  </select>
+                </div>
+                <div class="bo-field">
+                  <label for="skill-field-accent">Color de Acento</label>
+                  <select id="skill-field-accent" class="bo-select">
+                    <option value="#d4205a">Magenta (#d4205a) - Multimedia / UX</option>
+                    <option value="#b6e030">Lime (#b6e030) - Coding / AI</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="bo-field">
+                <label for="skill-field-desc">Descripción / Manifiesto</label>
+                <textarea id="skill-field-desc" class="bo-textarea" rows="3" placeholder="Descripción de la capacidad..."></textarea>
+              </div>
+
+              <div class="bo-field">
+                <label for="skill-field-pills">Lista de Capacidades / Pills (separadas por coma)</label>
+                <input type="text" id="skill-field-pills" class="bo-input" placeholder="User Interviews, Wireframing, Figma, Heuristic Evaluation">
+                <div id="skill-chips-preview" class="bo-chips-container" style="margin-top:8px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview de la tarjeta de Skill -->
+          <div class="bo-form__col">
+            <div class="bo-card">
+              <h3 class="bo-card__title">Vista Previa en Carrusel</h3>
+              <div id="skill-card-preview-wrap" style="padding:16px 0;">
+                <!-- Rendered live -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="bo-toast-container" class="bo-toast-container" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script type="module" src="./backoffice.js"></script>
+</body>
+</html>

@@ -114,14 +114,11 @@ function renderSkillCards(skills) {
   }).join('');
 }
 
-function renderClientGrid(clients, cases = []) {
+function renderClientGrid(clients) {
   const grid = document.getElementById('clients-grid');
-  if (!grid) return;
+  if (!grid || !Array.isArray(clients)) return;
 
-  const allProjects = [
-    ...clients.map(c => ({ ...c, _type: 'client' })),
-    ...cases.map(c => ({ ...c, _type: 'case' }))
-  ];
+  const allProjects = clients.map(c => ({ ...c, _type: 'client' }));
 
   grid.innerHTML = allProjects.map(c => {
     const isMultimedia = c.category === 'multimedia' || (c.tags && c.tags.includes('multimedia')) || c.category === 'wordpress';
@@ -424,7 +421,7 @@ async function init() {
   const bentoContainer = document.getElementById('hero-bento-container');
   if (bentoContainer) {
     window.__bentoManagerInstance = bentoManager;
-    bentoManager.mount(bentoContainer);
+    await bentoManager.mount(bentoContainer);
   }
 
   // 3. Capa 2.a & 2.c: Inicializar Sandwich 3D (canvas-back z:11, canvas-front z:14)
@@ -459,7 +456,7 @@ async function init() {
       renderFeatured(projectsData.cases);
       renderCaseCards(projectsData.cases);
       renderSkillCards(projectsData.skills);
-      renderClientGrid(projectsData.clients, projectsData.cases);
+      renderClientGrid(projectsData.clients);
       renderLabGrid(projectsData.lab);
     }
   } catch (err) {

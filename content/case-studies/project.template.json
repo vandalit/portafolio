@@ -1,0 +1,29 @@
+{
+  "id": "slug-del-caso",
+  "category": "coding",
+  "title": "Título del Caso de Estudio",
+  "subtitle": "Subtítulo o propuesta de valor",
+  "description": "Descripción en profundidad del caso de estudio.",
+  "year": 2024,
+  "role": "Lead Product Designer & Dev",
+  "tags": [
+    "design-systems",
+    "coding",
+    "motion"
+  ],
+  "accentColor": "#ccf020",
+  "featured": false,
+  "cover": "cover.webp",
+  "coverPlaceholder": "https://picsum.photos/seed/placeholder/1200/675",
+  "challenge": "El reto de producto o diseño.",
+  "solution": "La solución técnica y metodológica aplicada.",
+  "result": "El resultado final obtenido.",
+  "gallery": [
+    "gallery/01.webp",
+    "gallery/02.webp"
+  ],
+  "links": {
+    "github": null,
+    "live": null
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "slug-del-proyecto",
+  "category": "wordpress",
+  "title": "Nombre del Proyecto",
+  "client": "Nombre del Cliente",
+  "subtitle": "Subtítulo descriptivo o síntesis",
+  "description": "Descripción general del proyecto, contexto y alcance del trabajo realizado.",
+  "year": 2024,
+  "role": "UX/UI Design + Dev",
+  "tags": [
+    "wordpress",
+    "ux",
+    "web"
+  ],
+  "cover": "cover.webp",
+  "coverPlaceholder": "https://picsum.photos/seed/placeholder/800/450",
+  "challenge": "El problema o desafío principal que enfrentaba el cliente.",
+  "solution": "La propuesta de valor, estrategia de diseño y ejecución técnica implementada.",
+  "result": "El impacto, métricas o resultado final entregado al cliente.",
+  "stack": [
+    "WordPress",
+    "Custom CSS",
+    "JavaScript"
+  ],
+  "gallery": [
+    "gallery/01.webp",
+    "gallery/02.webp"
+  ],
+  "links": {
+    "live": null,
+    "github": null
+  }
+}

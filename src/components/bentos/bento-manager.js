@@ -38,16 +38,72 @@ class BentoManager {
   }
 
   /**
+   * Carga configuración de bentos desde hero.json o localStorage
+   */
+  async loadHeroConfig() {
+    try {
+      const local = localStorage.getItem('vandalit_hero_override');
+      if (local) {
+        return JSON.parse(local);
+      }
+      const res = await fetch('./content/settings/hero.json');
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn('[BentoManager] Could not load hero.json, using static defaults:', e);
+    }
+    return null;
+  }
+
+  /**
    * Monta todos los bentos registrados dentro del contenedor dinámico y el HUD frontal
    * @param {HTMLElement} containerEl - Contenedor en Capa 2
    */
-  mount(containerEl) {
+  async mount(containerEl) {
     if (!containerEl) {
       console.warn('[BentoManager] No se encontró el contenedor de bentos');
       return;
     }
     this.container = containerEl;
     this.container.innerHTML = '';
+
+    // Cargar y aplicar configuración dinámica
+    const heroConfig = await this.loadHeroConfig();
+    if (heroConfig && Array.isArray(heroConfig.bentos)) {
+      this.bentos.forEach((bento) => {
+        const conf = heroConfig.bentos.find(b => b.id === bento.id);
+        if (conf) {
+          bento.workTitle = conf.workTitle || bento.workTitle;
+          bento.workMeta = conf.workMeta || bento.workMeta;
+          bento.targetAnchor = conf.targetAnchor || bento.targetAnchor;
+          bento.accentColor = conf.accentColor || bento.accentColor;
+          bento.calloutDir = conf.calloutDir || bento.calloutDir;
+
+          if (conf.mediaSrc && conf.mediaSrc.trim().length > 0) {
+            if (conf.mediaType === 'video') {
+              bento.renderContent = () => `
+                <div class="bento-video-wrapper">
+                  <video 
+                    class="bento-video-element"
+                    src="${conf.mediaSrc}"
+                    ${conf.poster ? `poster="${conf.poster}"` : ''}
+                    autoplay loop muted playsinline webkit-playsinline
+                    disablepictureinpicture preload="metadata"
+                    aria-hidden="true"
+                    oncanplay="this.defaultMuted=true; this.muted=true; this.play().catch(()=>{});">
+                  </video>
+                </div>
+              `;
+            } else {
+              bento.renderContent = () => `
+                <img class="bento-image-fill" src="${conf.mediaSrc}" alt="${bento.workTitle}" loading="lazy">
+              `;
+            }
+          }
+        }
+      });
+    }
 
     const hudContainer = document.getElementById('hero-hud-container');
     if (hudContainer) {

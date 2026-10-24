@@ -49,6 +49,8 @@ function normalizeProjectAssets(projectDir, projectData) {
   };
 }
 
+export const CONTENT_BASE_URL = new URL('../../content', import.meta.url).href.replace(/\/+$/, '');
+
 /**
  * Carga una sección modular a partir de su index.json y los subfolders de proyectos
  *
@@ -57,7 +59,7 @@ function normalizeProjectAssets(projectDir, projectData) {
  */
 export async function loadSection(sectionName) {
   try {
-    const indexPath = `./content/${sectionName}/index.json`;
+    const indexPath = `${CONTENT_BASE_URL}/${sectionName}/index.json`;
     const indexRes = await fetch(indexPath);
     if (!indexRes.ok) {
       throw new Error(`Failed to fetch section index: ${indexPath} (${indexRes.status})`);
@@ -66,7 +68,7 @@ export async function loadSection(sectionName) {
 
     const projects = await Promise.all(
       slugs.map(async (slug) => {
-        const projectDir = `./content/${sectionName}/${slug}`;
+        const projectDir = `${CONTENT_BASE_URL}/${sectionName}/${slug}`;
         const projectPath = `${projectDir}/project.json`;
         try {
           const res = await fetch(projectPath);
@@ -97,7 +99,7 @@ export async function loadSection(sectionName) {
  */
 export async function loadSkills() {
   try {
-    const skillsPath = './content/skills/skills.json';
+    const skillsPath = `${CONTENT_BASE_URL}/skills/skills.json`;
     const res = await fetch(skillsPath);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
@@ -108,11 +110,29 @@ export async function loadSkills() {
 }
 
 /**
- * Carga todo el contenido modular del portafolio en paralelo
+ * Carga todo el contenido modular del portafolio en paralelo.
+ * Si existe un borrador de edición en localStorage ('vandalit_content_override'),
+ * lo utiliza prioritariamente (ideal para pruebas en Web/GitHub Pages).
  *
+ * @param {boolean} [forceFromFiles=false] - Forzar carga desde archivos ignorando localStorage
  * @returns {Promise<{ cases: Array, clients: Array, lab: Array, skills: Array }>}
  */
-export async function loadAllContent() {
+export async function loadAllContent(forceFromFiles = false) {
+  if (!forceFromFiles) {
+    try {
+      const localOverride = localStorage.getItem('vandalit_content_override');
+      if (localOverride) {
+        const parsed = JSON.parse(localOverride);
+        if (parsed && parsed.cases && parsed.clients) {
+          console.log('%c[ContentLoader] ⚡ Usando datos desde borrador localStorage (modo preview / backoffice)', 'color: #ccf020; font-weight: bold;');
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.warn('[ContentLoader] Error leyendo borrador de localStorage, continuando con archivos:', err);
+    }
+  }
+
   console.log('%c[ContentLoader] 📦 Loading modular content from /content/...', 'color: #b8e030; font-weight: bold;');
   const startTime = performance.now();
 
@@ -133,3 +153,4 @@ export async function loadAllContent() {
 
   return { cases, clients, lab, skills };
 }
+

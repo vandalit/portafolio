@@ -15,13 +15,34 @@ let isVideo2Injected = false;
 let isPaused = false;
 let currentStage = 1; // 1: Hse_HTX6KGs, 2: GKq9nKZpmu0
 
-const VIDEO_1_ID = 'Hse_HTX6KGs';
-const VIDEO_2_ID = 'GKq9nKZpmu0';
-
-// Altura de scroll donde se dispara el crossfade
-// Adelantado 200px (a 300px, justo en el ecuador del scrollytelling de 600px del hero)
-export const VIDEO_TRANSITION_PX = 300;
+let VIDEO_1_ID = 'Hse_HTX6KGs';
+let VIDEO_2_ID = 'GKq9nKZpmu0';
+export let VIDEO_TRANSITION_PX = 300;
 export const VIDEO_PRELOAD_PX = 80;
+
+async function loadVideoConfig() {
+  try {
+    const local = localStorage.getItem('vandalit_hero_override');
+    if (local) {
+      const parsed = JSON.parse(local);
+      if (parsed.videos) {
+        VIDEO_1_ID = parsed.videos.stage1Id || VIDEO_1_ID;
+        VIDEO_2_ID = parsed.videos.stage2Id || VIDEO_2_ID;
+        VIDEO_TRANSITION_PX = parsed.videos.transitionPx || VIDEO_TRANSITION_PX;
+        return;
+      }
+    }
+    const res = await fetch('./content/settings/hero.json');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.videos) {
+        VIDEO_1_ID = data.videos.stage1Id || VIDEO_1_ID;
+        VIDEO_2_ID = data.videos.stage2Id || VIDEO_2_ID;
+        VIDEO_TRANSITION_PX = data.videos.transitionPx || VIDEO_TRANSITION_PX;
+      }
+    }
+  } catch (_) {}
+}
 
 function getEmbedUrl(videoId) {
   return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&showinfo=0&rel=0&iv_load_policy=3&disablekb=1&fs=0&playsinline=1&enablejsapi=1`;
@@ -51,9 +72,11 @@ function createIframe(videoId, extraClass) {
   return iframe;
 }
 
-export function initVideoBackground() {
+export async function initVideoBackground() {
   containerEl = document.getElementById('hero-layer-video');
   if (!containerEl) return;
+
+  await loadVideoConfig();
 
   // 1. Connection check: skip if slow or data-saver is active
   const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;

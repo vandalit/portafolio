@@ -1,0 +1,1402 @@
+/* ==========================================================
+   BACKOFFICE.JS — Vandalit Content Studio Engine
+   - CRUD para Casos de Estudio, Clientes, Lab y Skills
+   - Mover proyectos entre secciones (con ajuste físico de carpetas e index.json)
+   - Customización de los 12 Bentos del Hero y Videos de fondo
+   - File System Access API para guardado nativo a disco en Local
+   - Persistencia ligera en localStorage (solo texto y rutas relativas)
+   - Exportación e Importación de configuración JSON
+   - Verificador de rutas relativas de imágenes (OK vs 404)
+   ========================================================== */
+
+import { loadAllContent, resolveAssetPath, CONTENT_BASE_URL } from '../src/js/content-loader.js';
+
+// ── ESTADO GLOBAL ─────────────────────────────────────────
+const state = {
+  currentSection: 'clients', // 'clients' | 'case-studies' | 'lab' | 'skills' | 'hero'
+  activeProjectIndex: 0,
+  activeBentoIndex: 0,
+  data: {
+    'case-studies': [],
+    'clients': [],
+    'lab': [],
+    'skills': []
+  },
+  heroData: {
+    videos: {
+      stage1Id: 'Hse_HTX6KGs',
+      stage2Id: 'GKq9nKZpmu0',
+      transitionPx: 300
+    },
+    bentos: []
+  },
+  pendingMoves: [], // Proyectos movidos entre carpetas físicas
+  fsHandle: null, // DirectoryHandle para File System API en Local
+  isLocal: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+};
+
+// ── DOM ELEMENTS ──────────────────────────────────────────
+const el = {
+  envBadge: document.getElementById('env-badge'),
+  envText: document.getElementById('env-text'),
+  btnConnectFs: document.getElementById('btn-connect-fs'),
+  fsStatusLabel: document.getElementById('fs-status-label'),
+  btnSaveDisk: document.getElementById('btn-save-disk'),
+  btnExportJson: document.getElementById('btn-export-json'),
+  inputImportJson: document.getElementById('input-import-json'),
+  btnResetDraft: document.getElementById('btn-reset-draft'),
+  btnAddProject: document.getElementById('btn-add-project'),
+  btnMoveProject: document.getElementById('btn-move-project'),
+  btnDeleteProject: document.getElementById('btn-delete-project'),
+  currentSectionLabel: document.getElementById('current-section-label'),
+  projectList: document.getElementById('project-list'),
+  projectForm: document.getElementById('project-form'),
+  heroEditor: document.getElementById('hero-editor'),
+  editorEmpty: document.getElementById('editor-empty'),
+  
+  // Headers del form
+  formEyebrow: document.getElementById('form-eyebrow'),
+  formDisplayTitle: document.getElementById('form-display-title'),
+  formDisplaySlug: document.getElementById('form-display-slug'),
+  
+  // Inputs del form
+  fieldId: document.getElementById('field-id'),
+  fieldTitle: document.getElementById('field-title'),
+  fieldClient: document.getElementById('field-client'),
+  fieldSubtitle: document.getElementById('field-subtitle'),
+  fieldCategory: document.getElementById('field-category'),
+  fieldYear: document.getElementById('field-year'),
+  fieldAccent: document.getElementById('field-accent'),
+  fieldAccentColor: document.getElementById('field-accent-color'),
+  fieldRole: document.getElementById('field-role'),
+  fieldFeatured: document.getElementById('field-featured'),
+  fieldTags: document.getElementById('field-tags'),
+  fieldStack: document.getElementById('field-stack'),
+  tagsChips: document.getElementById('tags-chips'),
+  stackChips: document.getElementById('stack-chips'),
+  fieldDesc: document.getElementById('field-desc'),
+  fieldChallenge: document.getElementById('field-challenge'),
+  fieldSolution: document.getElementById('field-solution'),
+  fieldResult: document.getElementById('field-result'),
+  fieldLive: document.getElementById('field-live'),
+  fieldGithub: document.getElementById('field-github'),
+  
+  // Cover & Media
+  fieldCover: document.getElementById('field-cover'),
+  coverResolvedPath: document.getElementById('cover-resolved-path'),
+  coverStatusBadge: document.getElementById('cover-status-badge'),
+  coverPreviewImg: document.getElementById('cover-preview-img'),
+  coverPreviewFallback: document.getElementById('cover-preview-fallback'),
+  coverDropzone: document.getElementById('cover-dropzone'),
+  coverFileInput: document.getElementById('cover-file-input'),
+  galleryList: document.getElementById('gallery-list'),
+  btnAddGalleryImg: document.getElementById('btn-add-gallery-img'),
+
+  // Hero & Bentos Elements
+  fieldVideo1: document.getElementById('field-video-1'),
+  fieldVideo2: document.getElementById('field-video-2'),
+  fieldVideoTrans: document.getElementById('field-video-trans'),
+  heroBentoGridSelector: document.getElementById('hero-bento-grid-selector'),
+  bentoEditorTitle: document.getElementById('bento-editor-title'),
+  bentoMediaBadge: document.getElementById('bento-media-badge'),
+  bentoWorkTitle: document.getElementById('bento-work-title'),
+  bentoWorkMeta: document.getElementById('bento-work-meta'),
+  bentoTargetAnchor: document.getElementById('bento-target-anchor'),
+  bentoMediaType: document.getElementById('bento-media-type'),
+  bentoCalloutDir: document.getElementById('bento-callout-dir'),
+  bentoMediaSrc: document.getElementById('bento-media-src'),
+  bentoPoster: document.getElementById('bento-poster'),
+  bentoPosterField: document.getElementById('bento-poster-field'),
+  bentoPreviewBox: document.getElementById('bento-preview-box'),
+  bentoPreviewImg: document.getElementById('bento-preview-img'),
+  bentoPreviewVideo: document.getElementById('bento-preview-video'),
+  bentoPreviewFallback: document.getElementById('bento-preview-fallback'),
+
+  // Skills Editor Elements
+  skillEditor: document.getElementById('skill-editor'),
+  skillDisplayTitle: document.getElementById('skill-display-title'),
+  skillDisplaySlug: document.getElementById('skill-display-slug'),
+  btnDeleteSkill: document.getElementById('btn-delete-skill'),
+  skillFieldId: document.getElementById('skill-field-id'),
+  skillFieldTitle: document.getElementById('skill-field-title'),
+  skillFieldCategory: document.getElementById('skill-field-category'),
+  skillFieldFilter: document.getElementById('skill-field-filter'),
+  skillFieldIcon: document.getElementById('skill-field-icon'),
+  skillFieldAccent: document.getElementById('skill-field-accent'),
+  skillFieldDesc: document.getElementById('skill-field-desc'),
+  skillFieldPills: document.getElementById('skill-field-pills'),
+  skillChipsPreview: document.getElementById('skill-chips-preview'),
+  skillCardPreviewWrap: document.getElementById('skill-card-preview-wrap'),
+  
+  toastContainer: document.getElementById('bo-toast-container')
+};
+
+// ── TOAST NOTIFICATION ────────────────────────────────────
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `bo-toast bo-toast--${type}`;
+  toast.innerHTML = `
+    <span class="bo-toast__icon">${type === 'success' ? '✔' : '✖'}</span>
+    <span class="bo-toast__msg">${message}</span>
+  `;
+  el.toastContainer.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.25s ease';
+    setTimeout(() => toast.remove(), 250);
+  }, 3500);
+}
+
+// ── INICIALIZACIÓN ────────────────────────────────────────
+async function init() {
+  setupEnvironmentUI();
+  setupNavigation();
+  setupFormListeners();
+  setupHeroEditorListeners();
+  setupSkillEditorListeners();
+  setupMoveProject();
+  setupFileSystemAPI();
+  setupExportImport();
+
+  // 1. Cargar contenido de proyectos
+  try {
+    const rawData = await loadAllContent();
+    state.data['case-studies'] = rawData.cases || [];
+    state.data['clients'] = rawData.clients || [];
+    state.data['lab'] = rawData.lab || [];
+    state.data['skills'] = rawData.skills || [];
+  } catch (err) {
+    showToast('Error cargando contenidos del portafolio', 'danger');
+    console.error('[Backoffice] Error loading data:', err);
+  }
+
+  // 2. Cargar configuración de Hero & Bentos
+  await loadHeroSettings();
+
+  updateCounts();
+  renderProjectList();
+  loadActiveProject();
+}
+
+// ── ENTORNO UI ────────────────────────────────────────────
+function setupEnvironmentUI() {
+  if (state.isLocal) {
+    el.envBadge.className = 'bo-badge bo-badge--local';
+    el.envText.textContent = 'Entorno Local';
+    el.btnConnectFs.style.display = 'inline-flex';
+  } else {
+    el.envBadge.className = 'bo-badge bo-badge--web';
+    el.envText.textContent = 'Web / GitHub Pages';
+    el.btnConnectFs.style.display = 'none';
+  }
+}
+
+// ── NAVEGACIÓN DE SECCIONES ───────────────────────────────
+function setupNavigation() {
+  const tabs = document.querySelectorAll('.bo-sec-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => {
+        t.classList.remove('is-active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('is-active');
+      tab.setAttribute('aria-selected', 'true');
+
+      state.currentSection = tab.dataset.section;
+      state.activeProjectIndex = 0;
+
+      const labels = {
+        'clients': 'Trabajo de Clientes',
+        'case-studies': 'Casos de Estudio',
+        'lab': 'Experimentos Lab',
+        'skills': 'Perfil Técnico',
+        'hero': '⚡ Hero (Bentos & Video)'
+      };
+      el.currentSectionLabel.textContent = labels[state.currentSection] || state.currentSection;
+
+      if (state.currentSection === 'hero') {
+        el.btnAddProject.style.display = 'none';
+        el.projectForm.style.display = 'none';
+        el.skillEditor.style.display = 'none';
+        el.editorEmpty.style.display = 'none';
+        el.heroEditor.style.display = 'block';
+        renderHeroEditor();
+      } else if (state.currentSection === 'skills') {
+        el.btnAddProject.style.display = 'inline-flex';
+        el.projectForm.style.display = 'none';
+        el.heroEditor.style.display = 'none';
+        el.skillEditor.style.display = 'block';
+        el.editorEmpty.style.display = 'none';
+        renderProjectList();
+        populateSkillForm();
+      } else {
+        el.btnAddProject.style.display = 'inline-flex';
+        el.heroEditor.style.display = 'none';
+        el.skillEditor.style.display = 'none';
+        renderProjectList();
+        loadActiveProject();
+      }
+    });
+  });
+
+  // Reset borrador
+  el.btnResetDraft.addEventListener('click', async () => {
+    if (confirm('¿Descartar el borrador local y recargar los contenidos originales de los archivos?')) {
+      localStorage.removeItem('vandalit_content_override');
+      localStorage.removeItem('vandalit_hero_override');
+      showToast('Borrador restablecido. Recargando archivos...', 'success');
+      setTimeout(() => window.location.reload(), 600);
+    }
+  });
+
+  // Añadir nuevo proyecto
+  el.btnAddProject.addEventListener('click', () => {
+    addNewProject();
+  });
+
+  // Eliminar proyecto activo
+  el.btnDeleteProject.addEventListener('click', () => {
+    deleteActiveProject();
+  });
+}
+
+// ── RENDER LISTA DE PROYECTOS ─────────────────────────────
+function updateCounts() {
+  document.getElementById('count-clients').textContent = state.data['clients'].length;
+  document.getElementById('count-case-studies').textContent = state.data['case-studies'].length;
+  document.getElementById('count-lab').textContent = state.data['lab'].length;
+  document.getElementById('count-skills').textContent = state.data['skills'].length;
+  document.getElementById('count-bentos').textContent = state.heroData.bentos?.length || 12;
+}
+
+function renderProjectList() {
+  if (state.currentSection === 'hero') {
+    el.projectList.innerHTML = '';
+    state.heroData.bentos.forEach((bento, idx) => {
+      const isSelected = idx === state.activeBentoIndex;
+      const bentoItem = document.createElement('div');
+      bentoItem.className = `bo-project-item ${isSelected ? 'is-selected' : ''}`;
+      bentoItem.innerHTML = `
+        <div class="bo-project-item__info">
+          <span class="bo-project-item__title">Bento #${bento.num || idx + 1} (${bento.ratio})</span>
+          <span class="bo-project-item__slug">${bento.workTitle || 'Sin título'}</span>
+        </div>
+      `;
+      bentoItem.addEventListener('click', () => {
+        state.activeBentoIndex = idx;
+        renderProjectList();
+        populateBentoForm();
+      });
+      el.projectList.appendChild(bentoItem);
+    });
+    return;
+  }
+
+  const list = state.data[state.currentSection] || [];
+  el.projectList.innerHTML = '';
+
+  if (list.length === 0) {
+    el.projectList.innerHTML = `
+      <div style="padding:14px; text-align:center; color:var(--bo-text-muted); font-size:12px">
+        No hay proyectos en esta sección.
+      </div>
+    `;
+    return;
+  }
+
+  list.forEach((item, index) => {
+    const isSelected = index === state.activeProjectIndex;
+    const projectItem = document.createElement('div');
+    projectItem.className = `bo-project-item ${isSelected ? 'is-selected' : ''}`;
+    projectItem.innerHTML = `
+      <div class="bo-project-item__info">
+        <span class="bo-project-item__title">${item.title || item.name || 'Sin título'}</span>
+        <span class="bo-project-item__slug">${item.id || 'slug-n/a'}</span>
+      </div>
+      <div class="bo-project-item__controls">
+        <button type="button" class="bo-order-btn bo-order-up" title="Mover arriba" ${index === 0 ? 'disabled style="opacity:0.2"' : ''}>▲</button>
+        <button type="button" class="bo-order-btn bo-order-down" title="Mover abajo" ${index === list.length - 1 ? 'disabled style="opacity:0.2"' : ''}>▼</button>
+      </div>
+    `;
+
+    projectItem.addEventListener('click', (e) => {
+      if (e.target.closest('.bo-order-btn')) return;
+      state.activeProjectIndex = index;
+      renderProjectList();
+      if (state.currentSection === 'skills') {
+        populateSkillForm();
+      } else {
+        loadActiveProject();
+      }
+    });
+
+    const upBtn = projectItem.querySelector('.bo-order-up');
+    const downBtn = projectItem.querySelector('.bo-order-down');
+
+    upBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      moveProjectOrder(index, -1);
+    });
+
+    downBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      moveProjectOrder(index, 1);
+    });
+
+    el.projectList.appendChild(projectItem);
+  });
+}
+
+function moveProjectOrder(fromIndex, delta) {
+  const list = state.data[state.currentSection];
+  const toIndex = fromIndex + delta;
+  if (toIndex < 0 || toIndex >= list.length) return;
+
+  const item = list.splice(fromIndex, 1)[0];
+  list.splice(toIndex, 0, item);
+  state.activeProjectIndex = toIndex;
+
+  persistDraft();
+  renderProjectList();
+  if (state.currentSection === 'skills') {
+    populateSkillForm();
+  } else {
+    loadActiveProject();
+  }
+  showToast(`Orden actualizado en ${state.currentSection}`);
+}
+
+// ── CARGAR PROYECTO ACTIVO EN EL FORMULARIO ────────────────
+function loadActiveProject() {
+  if (state.currentSection === 'hero') return;
+
+  const list = state.data[state.currentSection] || [];
+  const project = list[state.activeProjectIndex];
+
+  if (!project) {
+    el.projectForm.style.display = 'none';
+    el.editorEmpty.style.display = 'flex';
+    return;
+  }
+
+  el.projectForm.style.display = 'block';
+  el.editorEmpty.style.display = 'none';
+
+  // Headers
+  el.formEyebrow.textContent = `SECCIÓN: ${state.currentSection.toUpperCase()}`;
+  el.formDisplayTitle.textContent = project.title || 'Proyecto sin título';
+  el.formDisplaySlug.textContent = project.id || 'slug';
+
+  // Inputs
+  el.fieldId.value = project.id || '';
+  el.fieldTitle.value = project.title || '';
+  el.fieldClient.value = project.client || '';
+  el.fieldSubtitle.value = project.subtitle || '';
+  el.fieldCategory.value = project.category || 'wordpress';
+  el.fieldYear.value = project.year || 2024;
+  el.fieldRole.value = project.role || '';
+  el.fieldFeatured.checked = !!project.featured;
+
+  const accent = project.accentColor || '#ccf020';
+  el.fieldAccent.value = accent;
+  el.fieldAccentColor.value = accent.startsWith('#') && accent.length === 7 ? accent : '#ccf020';
+
+  // Tags & Stack
+  const tags = Array.isArray(project.tags) ? project.tags : [];
+  el.fieldTags.value = tags.join(', ');
+  renderChips(el.tagsChips, tags, false);
+
+  const stack = Array.isArray(project.stack) ? project.stack : [];
+  el.fieldStack.value = stack.join(', ');
+  renderChips(el.stackChips, stack, true);
+
+  // Narrative
+  el.fieldDesc.value = project.description || '';
+  el.fieldChallenge.value = project.challenge || '';
+  el.fieldSolution.value = project.solution || '';
+  el.fieldResult.value = project.result || '';
+
+  // Links
+  el.fieldLive.value = project.links?.live || '';
+  el.fieldGithub.value = project.links?.github || '';
+
+  // Cover
+  const coverVal = project.cover || project.coverPlaceholder || '';
+  el.fieldCover.value = coverVal;
+  updateCoverPreview(coverVal);
+
+  // Gallery
+  renderGalleryList(project.gallery || []);
+}
+
+// ── CHIPS RENDER ──────────────────────────────────────────
+function renderChips(container, items, isLime = false) {
+  container.innerHTML = '';
+  items.forEach(item => {
+    const text = String(item).trim();
+    if (!text) return;
+    const chip = document.createElement('span');
+    chip.className = `bo-chip ${isLime ? 'bo-chip--lime' : ''}`;
+    chip.textContent = text;
+    container.appendChild(chip);
+  });
+}
+
+// ── VERIFICADOR DE RUTAS DE IMÁGENES (OK vs 404) ──────────
+function updateCoverPreview(assetPath) {
+  const slug = el.fieldId.value || 'slug';
+  const section = state.currentSection;
+  const projectDir = `${CONTENT_BASE_URL}/${section}/${slug}`;
+  const resolvedUrl = resolveAssetPath(projectDir, assetPath);
+
+  el.coverResolvedPath.textContent = resolvedUrl;
+
+  if (!assetPath) {
+    el.coverStatusBadge.className = 'bo-status-badge bo-status-badge--neutral';
+    el.coverStatusBadge.textContent = 'Sin portada';
+    el.coverPreviewImg.classList.remove('is-loaded');
+    el.coverPreviewFallback.style.display = 'block';
+    el.coverPreviewFallback.textContent = 'Sin imagen asignada';
+    return;
+  }
+
+  el.coverStatusBadge.className = 'bo-status-badge bo-status-badge--neutral';
+  el.coverStatusBadge.textContent = 'Verificando...';
+
+  const imgTester = new Image();
+  imgTester.onload = () => {
+    el.coverPreviewImg.src = resolvedUrl;
+    el.coverPreviewImg.classList.add('is-loaded');
+    el.coverPreviewFallback.style.display = 'none';
+
+    el.coverStatusBadge.className = 'bo-status-badge bo-status-badge--ok';
+    el.coverStatusBadge.textContent = '🟢 OK (Encontrada)';
+  };
+
+  imgTester.onerror = () => {
+    el.coverPreviewImg.classList.remove('is-loaded');
+    el.coverPreviewFallback.style.display = 'block';
+    el.coverPreviewFallback.innerHTML = `
+      <span style="color:var(--bo-danger)">🔴 404 No encontrada en:<br><code>${resolvedUrl}</code></span>
+    `;
+
+    el.coverStatusBadge.className = 'bo-status-badge bo-status-badge--err';
+    el.coverStatusBadge.textContent = '🔴 404 (No existe en disco)';
+  };
+
+  imgTester.src = resolvedUrl;
+}
+
+// ── GESTIÓN DE GALERÍA SHOWCASE ───────────────────────────
+function renderGalleryList(gallery) {
+  el.galleryList.innerHTML = '';
+  const slug = el.fieldId.value || 'slug';
+  const projectDir = `${CONTENT_BASE_URL}/${state.currentSection}/${slug}`;
+
+  if (!gallery || gallery.length === 0) {
+    el.galleryList.innerHTML = `
+      <div style="font-size:11px; color:var(--bo-text-faint); padding:8px 0;">
+        Sin imágenes en la galería. Haz clic en <strong>+ Añadir Imagen</strong> para agregar capturas.
+      </div>
+    `;
+    return;
+  }
+
+  gallery.forEach((imgPath, idx) => {
+    const item = document.createElement('div');
+    item.className = 'bo-gallery-item';
+    const resolved = resolveAssetPath(projectDir, imgPath);
+
+    item.innerHTML = `
+      <img class="bo-gallery-item__thumb" src="${resolved}" onerror="this.style.opacity='0.2'" alt="Thumb ${idx+1}">
+      <input type="text" class="bo-input bo-input--mono bo-gallery-item__input" value="${imgPath}" placeholder="gallery/0${idx+1}.webp">
+      <div class="bo-gallery-item__actions">
+        <button type="button" class="bo-btn bo-btn--xs bo-btn--outline btn-gal-up" ${idx === 0 ? 'disabled' : ''}>▲</button>
+        <button type="button" class="bo-btn bo-btn--xs bo-btn--outline btn-gal-down" ${idx === gallery.length - 1 ? 'disabled' : ''}>▼</button>
+        <button type="button" class="bo-btn bo-btn--xs bo-btn--danger btn-gal-del">✕</button>
+      </div>
+    `;
+
+    const input = item.querySelector('.bo-gallery-item__input');
+    input.addEventListener('change', () => {
+      gallery[idx] = input.value.trim();
+      saveCurrentFormValues();
+      renderGalleryList(gallery);
+    });
+
+    item.querySelector('.btn-gal-up')?.addEventListener('click', () => {
+      if (idx > 0) {
+        const temp = gallery[idx];
+        gallery[idx] = gallery[idx - 1];
+        gallery[idx - 1] = temp;
+        saveCurrentFormValues();
+        renderGalleryList(gallery);
+      }
+    });
+
+    item.querySelector('.btn-gal-down')?.addEventListener('click', () => {
+      if (idx < gallery.length - 1) {
+        const temp = gallery[idx];
+        gallery[idx] = gallery[idx + 1];
+        gallery[idx + 1] = temp;
+        saveCurrentFormValues();
+        renderGalleryList(gallery);
+      }
+    });
+
+    item.querySelector('.btn-gal-del')?.addEventListener('click', () => {
+      gallery.splice(idx, 1);
+      saveCurrentFormValues();
+      renderGalleryList(gallery);
+    });
+
+    el.galleryList.appendChild(item);
+  });
+}
+
+// ── LISTENERS DEL FORMULARIO DE PROYECTO ───────────────────
+function setupFormListeners() {
+  const liveInputs = [
+    el.fieldId, el.fieldTitle, el.fieldClient, el.fieldSubtitle,
+    el.fieldCategory, el.fieldYear, el.fieldAccent, el.fieldRole,
+    el.fieldFeatured, el.fieldDesc, el.fieldChallenge, el.fieldSolution,
+    el.fieldResult, el.fieldLive, el.fieldGithub
+  ];
+
+  liveInputs.forEach(input => {
+    input.addEventListener('input', () => {
+      saveCurrentFormValues();
+    });
+  });
+
+  // Color picker sync
+  el.fieldAccentColor.addEventListener('input', () => {
+    el.fieldAccent.value = el.fieldAccentColor.value;
+    saveCurrentFormValues();
+  });
+  el.fieldAccent.addEventListener('input', () => {
+    if (el.fieldAccent.value.startsWith('#') && el.fieldAccent.value.length === 7) {
+      el.fieldAccentColor.value = el.fieldAccent.value;
+    }
+    saveCurrentFormValues();
+  });
+
+  // Tags & Stack
+  el.fieldTags.addEventListener('change', () => {
+    const list = el.fieldTags.value.split(',').map(s => s.trim()).filter(Boolean);
+    renderChips(el.tagsChips, list, false);
+    saveCurrentFormValues();
+  });
+  el.fieldStack.addEventListener('change', () => {
+    const list = el.fieldStack.value.split(',').map(s => s.trim()).filter(Boolean);
+    renderChips(el.stackChips, list, true);
+    saveCurrentFormValues();
+  });
+
+  // Cover input change
+  el.fieldCover.addEventListener('change', () => {
+    const val = el.fieldCover.value.trim();
+    updateCoverPreview(val);
+    saveCurrentFormValues();
+  });
+
+  // Add gallery image
+  el.btnAddGalleryImg.addEventListener('click', () => {
+    const project = state.data[state.currentSection][state.activeProjectIndex];
+    if (!project) return;
+    if (!Array.isArray(project.gallery)) project.gallery = [];
+    const nextNum = String(project.gallery.length + 1).padStart(2, '0');
+    project.gallery.push(`gallery/${nextNum}.webp`);
+    saveCurrentFormValues();
+    renderGalleryList(project.gallery);
+  });
+
+  // Dropzone de portada
+  el.coverDropzone.addEventListener('click', () => el.coverFileInput.click());
+  el.coverFileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) handleCoverFileSelected(file);
+  });
+
+  el.coverDropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    el.coverDropzone.classList.add('is-dragover');
+  });
+  el.coverDropzone.addEventListener('dragleave', () => {
+    el.coverDropzone.classList.remove('is-dragover');
+  });
+  el.coverDropzone.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    el.coverDropzone.classList.remove('is-dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      handleCoverFileSelected(file);
+    }
+  });
+}
+
+// Guardar archivo arrastrado o seleccionado
+async function handleCoverFileSelected(file) {
+  const fileName = file.name;
+  el.fieldCover.value = fileName;
+
+  if (state.fsHandle) {
+    try {
+      const slug = el.fieldId.value || 'temp';
+      const sectionDir = await state.fsHandle.getDirectoryHandle(`content`);
+      const secHandle = await sectionDir.getDirectoryHandle(state.currentSection);
+      const projDir = await secHandle.getDirectoryHandle(slug, { create: true });
+      const fileHandle = await projDir.getFileHandle(fileName, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(file);
+      await writable.close();
+      showToast(`Imagen copiada físicamente en /content/${state.currentSection}/${slug}/${fileName}`);
+    } catch (err) {
+      console.warn('[Backoffice] No se pudo guardar la imagen directamente en disco:', err);
+    }
+  }
+
+  updateCoverPreview(fileName);
+  saveCurrentFormValues();
+}
+
+// ── GUARDAR VALORES EN MEMORIA Y PERSISTIR BORRADOR ───────
+function saveCurrentFormValues() {
+  const list = state.data[state.currentSection];
+  const project = list[state.activeProjectIndex];
+  if (!project) return;
+
+  project.id = el.fieldId.value.trim();
+  project.title = el.fieldTitle.value.trim();
+  project.client = el.fieldClient.value.trim();
+  project.subtitle = el.fieldSubtitle.value.trim();
+  project.category = el.fieldCategory.value;
+  project.year = parseInt(el.fieldYear.value, 10) || 2024;
+  project.accentColor = el.fieldAccent.value.trim();
+  project.role = el.fieldRole.value.trim();
+  project.featured = el.fieldFeatured.checked;
+
+  project.tags = el.fieldTags.value.split(',').map(s => s.trim()).filter(Boolean);
+  project.stack = el.fieldStack.value.split(',').map(s => s.trim()).filter(Boolean);
+
+  project.description = el.fieldDesc.value;
+  project.challenge = el.fieldChallenge.value;
+  project.solution = el.fieldSolution.value;
+  project.result = el.fieldResult.value;
+
+  project.links = {
+    live: el.fieldLive.value.trim() || null,
+    github: el.fieldGithub.value.trim() || null
+  };
+
+  project.cover = el.fieldCover.value.trim();
+  project.coverPlaceholder = project.cover;
+
+  el.formDisplayTitle.textContent = project.title || 'Proyecto sin título';
+  el.formDisplaySlug.textContent = project.id || 'slug';
+
+  const activeSidebarItem = el.projectList.children[state.activeProjectIndex];
+  if (activeSidebarItem) {
+    const titleEl = activeSidebarItem.querySelector('.bo-project-item__title');
+    const slugEl = activeSidebarItem.querySelector('.bo-project-item__slug');
+    if (titleEl) titleEl.textContent = project.title || 'Sin título';
+    if (slugEl) slugEl.textContent = project.id || 'slug';
+  }
+
+  persistDraft();
+}
+
+function persistDraft() {
+  try {
+    const payload = {
+      cases: state.data['case-studies'],
+      clients: state.data['clients'],
+      lab: state.data['lab'],
+      skills: state.data['skills'],
+      updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem('vandalit_content_override', JSON.stringify(payload));
+  } catch (err) {
+    console.error('[Backoffice] Error guardando borrador:', err);
+  }
+}
+
+// ── CREAR Y ELIMINAR PROYECTOS ────────────────────────────
+function addNewProject() {
+  const slug = prompt('Ingresa el ID / slug único para la carpeta del nuevo proyecto (ej: nuevo-cliente):');
+  if (!slug) return;
+
+  if (state.currentSection === 'skills') {
+    const slug = prompt('Ingresa el ID único para la nueva tarjeta de habilidad (ej: devops):');
+    if (!slug) return;
+    const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+    const newSkill = {
+      id: cleanSlug,
+      category: 'coding',
+      filterTag: 'coding',
+      title: 'Nueva Capacidad Técnica',
+      description: 'Descripción de las herramientas y metodologías...',
+      skills: ['Capacidad 1', 'Capacidad 2'],
+      accentColor: '#b6e030',
+      icon: 'triangle'
+    };
+    state.data['skills'].push(newSkill);
+    state.activeProjectIndex = state.data['skills'].length - 1;
+    updateCounts();
+    persistDraft();
+    renderProjectList();
+    populateSkillForm();
+    showToast(`Habilidad '${cleanSlug}' creada.`);
+    return;
+  }
+
+  const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+  const isCase = state.currentSection === 'case-studies';
+
+  const newProject = {
+    id: cleanSlug,
+    category: isCase ? 'coding' : 'wordpress',
+    title: 'Nuevo Proyecto',
+    client: isCase ? '' : 'Nombre del Cliente',
+    subtitle: 'Síntesis descriptiva',
+    description: 'Descripción del trabajo realizado...',
+    year: new Date().getFullYear(),
+    role: 'UX/UI Design + Dev',
+    tags: [isCase ? 'coding' : 'wordpress', 'ux'],
+    stack: ['Figma', 'CSS', 'JavaScript'],
+    accentColor: '#ccf020',
+    featured: false,
+    cover: 'cover.webp',
+    coverPlaceholder: 'cover.webp',
+    gallery: ['gallery/01.webp'],
+    challenge: 'Desafío del proyecto...',
+    solution: 'Solución implementada...',
+    result: 'Resultado obtenido...',
+    links: { live: null, github: null }
+  };
+
+  state.data[state.currentSection].push(newProject);
+  state.activeProjectIndex = state.data[state.currentSection].length - 1;
+
+  updateCounts();
+  persistDraft();
+  renderProjectList();
+  loadActiveProject();
+  showToast(`Proyecto '${cleanSlug}' añadido a ${state.currentSection}`);
+}
+
+function deleteActiveProject() {
+  const list = state.data[state.currentSection];
+  const project = list[state.activeProjectIndex];
+  if (!project) return;
+
+  if (confirm(`¿Estás seguro de eliminar '${project.title || project.id}' de ${state.currentSection}?`)) {
+    list.splice(state.activeProjectIndex, 1);
+    state.activeProjectIndex = Math.max(0, state.activeProjectIndex - 1);
+
+    updateCounts();
+    persistDraft();
+    renderProjectList();
+    loadActiveProject();
+    showToast(`Proyecto eliminado`, 'danger');
+  }
+}
+
+// ── MOVER PROYECTO A OTRA SECCIÓN ─────────────────────────
+function setupMoveProject() {
+  el.btnMoveProject.addEventListener('click', async () => {
+    const currentList = state.data[state.currentSection];
+    const project = currentList[state.activeProjectIndex];
+    if (!project) return;
+
+    const sections = [
+      { key: 'clients', label: 'Trabajo de Clientes' },
+      { key: 'case-studies', label: 'Casos de Estudio' },
+      { key: 'lab', label: 'Laboratorio' }
+    ].filter(s => s.key !== state.currentSection);
+
+    const targetSection = prompt(
+      `¿A qué sección deseas mover '${project.title || project.id}'?\n\nOpciones disponibles:\n` +
+      sections.map((s, i) => `${i + 1}. ${s.label} (${s.key})`).join('\n') +
+      `\n\nEscribe el nombre de la sección (${sections.map(s => s.key).join(' / ')}):`
+    );
+
+    if (!targetSection) return;
+
+    const chosenSection = targetSection.trim().toLowerCase();
+    const valid = sections.find(s => s.key === chosenSection || s.label.toLowerCase() === chosenSection);
+
+    if (!valid) {
+      showToast('Sección no válida seleccionada.', 'danger');
+      return;
+    }
+
+    const sourceSection = state.currentSection;
+    const destSection = valid.key;
+
+    // Registrar en pendingMoves para File System API
+    state.pendingMoves.push({
+      slug: project.id,
+      from: sourceSection,
+      to: destSection
+    });
+
+    // 1. Extraer de la sección actual
+    currentList.splice(state.activeProjectIndex, 1);
+
+    // 2. Agregar a la sección destino
+    if (!state.data[destSection]) state.data[destSection] = [];
+    state.data[destSection].push(project);
+
+    persistDraft();
+    updateCounts();
+
+    // 3. Si File System está conectado en local, mover los archivos en disco
+    if (state.fsHandle) {
+      try {
+        await moveProjectDirectoryOnDisk(project.id, sourceSection, destSection, project);
+      } catch (err) {
+        console.warn('[Backoffice] No se pudo mover la carpeta física inmediatamente, se guardará al presionar Guardar en Disco:', err);
+      }
+    }
+
+    showToast(`✅ Proyecto '${project.title}' movido a '${valid.label}'.`);
+
+    // Cambiar a la sección destino
+    const targetTab = document.querySelector(`.bo-sec-tab[data-section="${destSection}"]`);
+    targetTab?.click();
+    state.activeProjectIndex = state.data[destSection].length - 1;
+    renderProjectList();
+    loadActiveProject();
+  });
+}
+
+async function moveProjectDirectoryOnDisk(slug, fromSec, toSec, projectData) {
+  const contentDir = await state.fsHandle.getDirectoryHandle('content');
+  const sourceSecDir = await contentDir.getDirectoryHandle(fromSec, { create: true });
+  const destSecDir = await contentDir.getDirectoryHandle(toSec, { create: true });
+
+  // Crear o asegurar carpeta en destino y escribir project.json
+  const destProjDir = await destSecDir.getDirectoryHandle(slug, { create: true });
+  const destProjFile = await destProjDir.getFileHandle('project.json', { create: true });
+  const writable = await destProjFile.createWritable();
+  writable.write(JSON.stringify(projectData, null, 2) + '\n');
+  await writable.close();
+
+  // Intentar eliminar del origen
+  try {
+    await sourceSecDir.removeEntry(slug, { recursive: true });
+  } catch (_) {}
+
+  // Actualizar ambos index.json
+  await saveSectionIndexOnly(sourceSecDir, state.data[fromSec].map(p => p.id));
+  await saveSectionIndexOnly(destSecDir, state.data[toSec].map(p => p.id));
+}
+
+async function saveSectionIndexOnly(sectionDir, slugs) {
+  const indexFile = await sectionDir.getFileHandle('index.json', { create: true });
+  const indexWritable = await indexFile.createWritable();
+  await indexWritable.write(JSON.stringify(slugs, null, 2) + '\n');
+  await indexWritable.close();
+}
+
+// ── SKILLS STUDIO ENGINE ──────────────────────────────────
+const skillDoodles = {
+  circle: (c) => `<svg viewBox="0 0 56 56" fill="none" style="width:48px;height:48px"><circle cx="28" cy="28" r="24" stroke="${c}" stroke-width="2"/><circle cx="28" cy="28" r="12" stroke="${c}" stroke-width="1" stroke-dasharray="4 4"/><circle cx="28" cy="28" r="4" fill="${c}"/></svg>`,
+  square: (c) => `<svg viewBox="0 0 56 56" fill="none" style="width:48px;height:48px"><rect x="6" y="6" width="44" height="44" stroke="${c}" stroke-width="2"/><rect x="18" y="18" width="20" height="20" stroke="${c}" stroke-width="1" stroke-dasharray="4 4"/><rect x="24" y="24" width="8" height="8" fill="${c}"/></svg>`,
+  triangle: (c) => `<svg viewBox="0 0 56 56" fill="none" style="width:48px;height:48px"><polygon points="28,6 52,50 4,50" stroke="${c}" stroke-width="2" fill="none"/><polygon points="28,18 42,42 14,42" stroke="${c}" stroke-width="1" stroke-dasharray="4 4" fill="none"/><circle cx="28" cy="34" r="4" fill="${c}"/></svg>`
+};
+
+function setupSkillEditorListeners() {
+  const inputs = [
+    el.skillFieldId, el.skillFieldTitle, el.skillFieldCategory,
+    el.skillFieldFilter, el.skillFieldIcon, el.skillFieldAccent,
+    el.skillFieldDesc
+  ];
+  inputs.forEach(input => {
+    input.addEventListener('input', () => {
+      saveActiveSkillValues();
+    });
+    input.addEventListener('change', () => {
+      saveActiveSkillValues();
+      updateSkillLivePreview();
+    });
+  });
+
+  el.skillFieldPills.addEventListener('change', () => {
+    saveActiveSkillValues();
+    updateSkillLivePreview();
+  });
+
+  el.btnDeleteSkill.addEventListener('click', () => {
+    deleteActiveSkill();
+  });
+}
+
+function populateSkillForm() {
+  const list = state.data['skills'] || [];
+  const skill = list[state.activeProjectIndex];
+
+  if (!skill) {
+    el.skillEditor.style.display = 'none';
+    el.editorEmpty.style.display = 'flex';
+    return;
+  }
+
+  el.skillEditor.style.display = 'block';
+  el.editorEmpty.style.display = 'none';
+
+  el.skillDisplayTitle.textContent = skill.title || 'Habilidad sin título';
+  el.skillDisplaySlug.textContent = skill.id || 'slug';
+
+  el.skillFieldId.value = skill.id || '';
+  el.skillFieldTitle.value = skill.title || '';
+  el.skillFieldCategory.value = (skill.category || 'ux').toUpperCase();
+  el.skillFieldFilter.value = skill.filterTag || 'ux';
+  el.skillFieldIcon.value = skill.icon || 'circle';
+  el.skillFieldAccent.value = skill.accentColor?.includes('b6') || skill.accentColor?.includes('cc') ? '#b6e030' : '#d4205a';
+  el.skillFieldDesc.value = skill.description || '';
+
+  const pills = Array.isArray(skill.skills) ? skill.skills : [];
+  el.skillFieldPills.value = pills.join(', ');
+  renderChips(el.skillChipsPreview, pills, el.skillFieldAccent.value === '#b6e030');
+
+  updateSkillLivePreview();
+}
+
+function saveActiveSkillValues() {
+  const list = state.data['skills'];
+  const skill = list[state.activeProjectIndex];
+  if (!skill) return;
+
+  skill.id = el.skillFieldId.value.trim();
+  skill.title = el.skillFieldTitle.value.trim();
+  skill.category = el.skillFieldCategory.value.trim().toLowerCase();
+  skill.filterTag = el.skillFieldFilter.value;
+  skill.icon = el.skillFieldIcon.value;
+  skill.accentColor = el.skillFieldAccent.value;
+  skill.description = el.skillFieldDesc.value;
+
+  const pills = el.skillFieldPills.value.split(',').map(s => s.trim()).filter(Boolean);
+  skill.skills = pills;
+  renderChips(el.skillChipsPreview, pills, skill.accentColor === '#b6e030');
+
+  el.skillDisplayTitle.textContent = skill.title || 'Habilidad sin título';
+  el.skillDisplaySlug.textContent = skill.id || 'slug';
+
+  const activeSidebarItem = el.projectList.children[state.activeProjectIndex];
+  if (activeSidebarItem) {
+    const titleEl = activeSidebarItem.querySelector('.bo-project-item__title');
+    const slugEl = activeSidebarItem.querySelector('.bo-project-item__slug');
+    if (titleEl) titleEl.textContent = skill.title || 'Sin título';
+    if (slugEl) slugEl.textContent = `${skill.id || 'slug'} · ${skill.category || ''}`;
+  }
+
+  persistDraft();
+}
+
+function updateSkillLivePreview() {
+  const list = state.data['skills'] || [];
+  const skill = list[state.activeProjectIndex];
+  if (!skill) return;
+
+  const isMagenta = skill.accentColor?.includes('d4') || skill.accentColor?.includes('e8');
+  const accent = isMagenta ? 'magenta' : 'lime';
+  const accentColor = isMagenta ? 'var(--magenta, #d4205a)' : 'var(--lime, #b6e030)';
+  const iconSvg = skillDoodles[skill.icon] ? skillDoodles[skill.icon](accentColor) : skillDoodles.circle(accentColor);
+  const pills = Array.isArray(skill.skills) ? skill.skills : [];
+
+  el.skillCardPreviewWrap.innerHTML = `
+    <article class="skill-card" data-accent="${accent}" style="position:relative; width:100%; max-width:320px; margin:0 auto; cursor:default;">
+      <div class="skill-card__icon-bg">${iconSvg}</div>
+      <p class="skill-card__category">${(skill.category || 'SKILL').toUpperCase()}</p>
+      <h3 class="skill-card__title">${skill.title || 'Título'}</h3>
+      <p class="skill-card__desc">${skill.description || 'Descripción...'}</p>
+      <div class="skill-card__pills">
+        ${pills.map(sk => `<span class="skill-pill">${sk}</span>`).join('')}
+      </div>
+      <button type="button" class="skill-card__cta btn--ghost-${accent}" style="pointer-events:none;">
+        Ver ejemplos <span>→</span>
+      </button>
+    </article>
+  `;
+}
+
+function deleteActiveSkill() {
+  const list = state.data['skills'];
+  const skill = list[state.activeProjectIndex];
+  if (!skill) return;
+
+  if (confirm(`¿Estás seguro de eliminar la habilidad '${skill.title || skill.id}'?`)) {
+    list.splice(state.activeProjectIndex, 1);
+    state.activeProjectIndex = Math.max(0, state.activeProjectIndex - 1);
+    updateCounts();
+    persistDraft();
+    renderProjectList();
+    populateSkillForm();
+    showToast(`Habilidad eliminada`, 'danger');
+  }
+}
+
+// ── HERO & BENTOS STUDIO ENGINE ───────────────────────────
+async function loadHeroSettings() {
+  try {
+    const local = localStorage.getItem('vandalit_hero_override');
+    if (local) {
+      state.heroData = JSON.parse(local);
+      if (Array.isArray(state.heroData?.bentos) && state.heroData.bentos.length > 0) {
+        return;
+      }
+    }
+    const res = await fetch(`${CONTENT_BASE_URL}/settings/hero.json`);
+    if (res.ok) {
+      state.heroData = await res.json();
+    }
+  } catch (err) {
+    console.warn('[Backoffice] Could not load hero.json, using defaults:', err);
+  }
+
+  // Garantizar que existan los 12 bentos si no se pudieron cargar
+  if (!state.heroData || !Array.isArray(state.heroData.bentos) || state.heroData.bentos.length === 0) {
+    state.heroData = {
+      videos: { stage1Id: 'Hse_HTX6KGs', stage2Id: 'GKq9nKZpmu0', transitionPx: 300 },
+      bentos: [
+        { id: 'bento-card-1', num: '01', ratio: '9:16', workTitle: 'Valle de la Luna — Atacama', workMeta: '2023 · CLIENT WORK', targetAnchor: '#work', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'video', mediaSrc: 'https://turismolickancoy.cl/wp-content/uploads/2025/07/Duna-mayor-dentro-del-valle-de-la-luna.mp4', poster: './assets/images/midjourney/vandalit_Blob_graphic_dopamine_design_abstract_modern_design__7ce2ff82-6ce2-4c99-ba8d-15649dcbe2c2_1.png' },
+        { id: 'bento-card-2', num: '02', ratio: '16:9', workTitle: 'Screens Mockup Web UI', workMeta: '2024 · MULTIMEDIA', targetAnchor: '#cases', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_screens_mockup_web_design_--sref_httpss.mj.runcgBuE3_bdfc81af-66c5-42b8-9a78-09b2648c35f5_3.png' },
+        { id: 'bento-card-3', num: '03', ratio: '1:1', workTitle: 'Dopamine Organic Fluid', workMeta: '2024 · AI EXPERIMENT', targetAnchor: '#lab', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_Blob_graphic_dopamine_design_abstract_modern_design__7ce2ff82-6ce2-4c99-ba8d-15649dcbe2c2_1.png' },
+        { id: 'bento-card-4', num: '04', ratio: '4:5', workTitle: 'Fluor Street Punk Art', workMeta: '2024 · MULTIMEDIA', targetAnchor: '#cases', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_a_vtuber_as_a_punk_fluor_colour_street_art_inspired__e1f91a82-97a9-4307-888e-654603a3dcd8_2.png' },
+        { id: 'bento-card-5', num: '05', ratio: '4:3', workTitle: 'Spatial Living Architecture', workMeta: '2024 · 3D SPACE', targetAnchor: '#cases', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_A_cozy_and_clean_suburban_living_room_staged_for_sal_81f8c780-9cd8-4b20-877f-d4edd27a1244_1.png' },
+        { id: 'bento-card-6', num: '06', ratio: '21:9', workTitle: 'Iridescent Paper Texture', workMeta: '2024 · EDITORIAL', targetAnchor: '#skills', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_black_paper_with_iridescent_effect_texture_embossed_gr_dc33a515-4896-4553-9559-90821e277c1f.png' },
+        { id: 'bento-card-7', num: '07', ratio: '9:16', workTitle: 'Rizoma Macro Biology', workMeta: '2024 · AI VISUAL', targetAnchor: '#lab', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_Rizoma_national_geographic_macro_coloured_photograph_64ec413f-e06f-4998-8654-5994bbba87c2_2.png' },
+        { id: 'bento-card-8', num: '08', ratio: '16:10', workTitle: 'Digital Neon Outline', workMeta: '2024 · CODING', targetAnchor: '#skills', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_Outline_digital_illustration_hipertealostic_photogra_47c8bf74-1925-427f-8eda-ebf0690ac2b3_2.png' },
+        { id: 'bento-card-9', num: '09', ratio: '3:2', workTitle: 'Natales Food Lettering', workMeta: '2023 · BRANDING', targetAnchor: '#work', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_la_disqura_natales_logotype_as_lettering_on_a_food_d_fc757d24-20cc-4d78-93cd-75bf0fe88265_3.png' },
+        { id: 'bento-card-10', num: '10', ratio: '1:1', workTitle: 'Modular Studio Box 10', workMeta: '2024 · FRONT-END', targetAnchor: '#cases', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'image', mediaSrc: '' },
+        { id: 'bento-card-11', num: '11', ratio: '4:5', workTitle: 'Editorial Format 11', workMeta: '2024 · DESIGN SYSTEMS', targetAnchor: '#skills', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'image', mediaSrc: '' },
+        { id: 'bento-card-12', num: '12', ratio: '2:1', workTitle: 'Cinema Banner 12', workMeta: '2024 · MULTIMEDIA', targetAnchor: '#cases', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: '' }
+      ]
+    };
+  }
+}
+
+function setupHeroEditorListeners() {
+  // Videos de fondo
+  const onVideoChange = () => {
+    state.heroData.videos.stage1Id = cleanYouTubeId(el.fieldVideo1.value);
+    state.heroData.videos.stage2Id = cleanYouTubeId(el.fieldVideo2.value);
+    state.heroData.videos.transitionPx = parseInt(el.fieldVideoTrans.value, 10) || 300;
+    persistHeroSettings();
+  };
+
+  el.fieldVideo1.addEventListener('change', onVideoChange);
+  el.fieldVideo2.addEventListener('change', onVideoChange);
+  el.fieldVideoTrans.addEventListener('change', onVideoChange);
+
+  // Bento fields
+  const bentoInputs = [
+    el.bentoWorkTitle, el.bentoWorkMeta, el.bentoTargetAnchor,
+    el.bentoMediaType, el.bentoCalloutDir, el.bentoMediaSrc, el.bentoPoster
+  ];
+
+  bentoInputs.forEach(input => {
+    input.addEventListener('input', () => {
+      saveActiveBentoValues();
+    });
+    input.addEventListener('change', () => {
+      saveActiveBentoValues();
+      updateBentoLivePreview();
+    });
+  });
+}
+
+function cleanYouTubeId(input) {
+  if (!input) return '';
+  const str = input.trim();
+  // Si es una URL completa
+  const match = str.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+  return match ? match[1] : str;
+}
+
+function renderHeroEditor() {
+  if (!state.heroData || !state.heroData.bentos) return;
+
+  // Videos
+  el.fieldVideo1.value = state.heroData.videos?.stage1Id || 'Hse_HTX6KGs';
+  el.fieldVideo2.value = state.heroData.videos?.stage2Id || 'GKq9nKZpmu0';
+  el.fieldVideoTrans.value = state.heroData.videos?.transitionPx || 300;
+
+  // Grid de 12 bentos
+  el.heroBentoGridSelector.innerHTML = '';
+  state.heroData.bentos.forEach((bento, idx) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `bo-bento-btn ${idx === state.activeBentoIndex ? 'is-selected' : ''}`;
+    btn.innerHTML = `
+      <span>#${bento.num || idx + 1}</span>
+      <span class="bo-bento-btn__ratio">${bento.ratio || '1:1'}</span>
+    `;
+    btn.addEventListener('click', () => {
+      state.activeBentoIndex = idx;
+      renderHeroEditor();
+    });
+    el.heroBentoGridSelector.appendChild(btn);
+  });
+
+  populateBentoForm();
+}
+
+function populateBentoForm() {
+  const bento = state.heroData.bentos[state.activeBentoIndex];
+  if (!bento) return;
+
+  el.bentoEditorTitle.textContent = `Bento #${bento.num || state.activeBentoIndex + 1} (Ratio ${bento.ratio})`;
+  el.bentoMediaBadge.textContent = `Ratio ${bento.ratio} · ${bento.mediaType || 'image'}`;
+
+  el.bentoWorkTitle.value = bento.workTitle || '';
+  el.bentoWorkMeta.value = bento.workMeta || '';
+  el.bentoTargetAnchor.value = bento.targetAnchor || '#work';
+  el.bentoMediaType.value = bento.mediaType || 'image';
+  el.bentoCalloutDir.value = bento.calloutDir || 'right';
+  el.bentoMediaSrc.value = bento.mediaSrc || '';
+  el.bentoPoster.value = bento.poster || '';
+
+  // Mostrar/ocultar campo poster según tipo
+  el.bentoPosterField.style.display = bento.mediaType === 'video' ? 'block' : 'none';
+
+  updateBentoLivePreview();
+}
+
+function saveActiveBentoValues() {
+  const bento = state.heroData.bentos[state.activeBentoIndex];
+  if (!bento) return;
+
+  bento.workTitle = el.bentoWorkTitle.value.trim();
+  bento.workMeta = el.bentoWorkMeta.value.trim();
+  bento.targetAnchor = el.bentoTargetAnchor.value;
+  bento.mediaType = el.bentoMediaType.value;
+  bento.calloutDir = el.bentoCalloutDir.value;
+  bento.mediaSrc = el.bentoMediaSrc.value.trim();
+  bento.poster = el.bentoPoster.value.trim();
+
+  el.bentoPosterField.style.display = bento.mediaType === 'video' ? 'block' : 'none';
+  el.bentoMediaBadge.textContent = `Ratio ${bento.ratio} · ${bento.mediaType}`;
+
+  persistHeroSettings();
+}
+
+function updateBentoLivePreview() {
+  const bento = state.heroData.bentos[state.activeBentoIndex];
+  if (!bento) return;
+
+  const src = bento.mediaSrc || '';
+
+  if (!src) {
+    el.bentoPreviewImg.style.display = 'none';
+    el.bentoPreviewVideo.style.display = 'none';
+    el.bentoPreviewFallback.style.display = 'block';
+    return;
+  }
+
+  el.bentoPreviewFallback.style.display = 'none';
+
+  if (bento.mediaType === 'video') {
+    el.bentoPreviewImg.style.display = 'none';
+    el.bentoPreviewVideo.style.display = 'block';
+    el.bentoPreviewVideo.src = src;
+    el.bentoPreviewVideo.load();
+    el.bentoPreviewVideo.play().catch(() => {});
+  } else {
+    el.bentoPreviewVideo.style.display = 'none';
+    el.bentoPreviewImg.style.display = 'block';
+    el.bentoPreviewImg.src = src;
+  }
+}
+
+function persistHeroSettings() {
+  try {
+    localStorage.setItem('vandalit_hero_override', JSON.stringify(state.heroData));
+  } catch (err) {
+    console.error('[Backoffice] Error persistiendo hero settings:', err);
+  }
+}
+
+// ── FILE SYSTEM ACCESS API (LOCAL DISK SAVE) ──────────────
+function setupFileSystemAPI() {
+  if (!window.showDirectoryPicker) {
+    el.btnConnectFs.title = 'Tu navegador no soporta File System Access API (se recomienda Chrome/Edge/Brave).';
+    return;
+  }
+
+  el.btnConnectFs.addEventListener('click', async () => {
+    try {
+      const handle = await window.showDirectoryPicker({
+        id: 'vandalit-portfolio-root',
+        mode: 'readwrite'
+      });
+
+      let hasContent = false;
+      for await (const entry of handle.values()) {
+        if (entry.kind === 'directory' && entry.name === 'content') {
+          hasContent = true;
+          break;
+        }
+      }
+
+      if (!hasContent) {
+        showToast("Selecciona la carpeta raíz 'portafolio' (que contiene el directorio 'content/').", 'danger');
+        return;
+      }
+
+      state.fsHandle = handle;
+      el.fsStatusLabel.textContent = `📁 Conectado: ${handle.name}`;
+      el.btnConnectFs.classList.add('bo-btn--lime');
+      el.btnConnectFs.classList.remove('bo-btn--outline');
+      el.btnSaveDisk.style.display = 'inline-flex';
+
+      showToast('¡Carpeta del portafolio conectada! Ahora puedes guardar directamente a disco.');
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error('[Backoffice] Error conectando File System:', err);
+        showToast('No se pudo conectar la carpeta.', 'danger');
+      }
+    }
+  });
+
+  // Guardar en Disco
+  el.btnSaveDisk.addEventListener('click', async () => {
+    if (!state.fsHandle) return;
+
+    try {
+      el.btnSaveDisk.disabled = true;
+      el.btnSaveDisk.innerHTML = '<span>Guardando...</span>';
+
+      const contentDir = await state.fsHandle.getDirectoryHandle('content');
+
+      // 1. Guardar Casos de Estudio
+      await saveSectionToDisk(contentDir, 'case-studies', state.data['case-studies']);
+
+      // 2. Guardar Clientes
+      await saveSectionToDisk(contentDir, 'clients', state.data['clients']);
+
+      // 3. Guardar Lab
+      await saveSectionToDisk(contentDir, 'lab', state.data['lab']);
+
+      // 4. Guardar Skills
+      if (state.data['skills'] && state.data['skills'].length > 0) {
+        const skillsDir = await contentDir.getDirectoryHandle('skills', { create: true });
+        const skillsFile = await skillsDir.getFileHandle('skills.json', { create: true });
+        const writable = await skillsFile.createWritable();
+        await writable.write(JSON.stringify(state.data['skills'], null, 2) + '\n');
+        await writable.close();
+      }
+
+      // 5. Guardar Hero & Bentos en content/settings/hero.json
+      if (state.heroData) {
+        const settingsDir = await contentDir.getDirectoryHandle('settings', { create: true });
+        const heroFile = await settingsDir.getFileHandle('hero.json', { create: true });
+        const heroWritable = await heroFile.createWritable();
+        await heroWritable.write(JSON.stringify(state.heroData, null, 2) + '\n');
+        await heroWritable.close();
+      }
+
+      // Limpiar borradores
+      localStorage.removeItem('vandalit_content_override');
+      localStorage.removeItem('vandalit_hero_override');
+
+      showToast('✅ ¡Todos los archivos project.json, index.json y hero.json se guardaron físicamente en disco!');
+    } catch (err) {
+      console.error('[Backoffice] Error guardando a disco:', err);
+      showToast('Error escribiendo archivos en disco: ' + err.message, 'danger');
+    } finally {
+      el.btnSaveDisk.disabled = false;
+      el.btnSaveDisk.innerHTML = `
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        <span>Guardar en Disco</span>
+      `;
+    }
+  });
+}
+
+async function saveSectionToDisk(contentDir, sectionName, projects) {
+  const sectionDir = await contentDir.getDirectoryHandle(sectionName, { create: true });
+
+  const slugs = projects.map(p => p.id);
+  const indexFile = await sectionDir.getFileHandle('index.json', { create: true });
+  const indexWritable = await indexFile.createWritable();
+  await indexWritable.write(JSON.stringify(slugs, null, 2) + '\n');
+  await indexWritable.close();
+
+  for (const project of projects) {
+    if (!project.id) continue;
+    const projDir = await sectionDir.getDirectoryHandle(project.id, { create: true });
+    const projFile = await projDir.getFileHandle('project.json', { create: true });
+    const projWritable = await projFile.createWritable();
+
+    const cleanProject = { ...project };
+    delete cleanProject._type;
+
+    await projWritable.write(JSON.stringify(cleanProject, null, 2) + '\n');
+    await projWritable.close();
+  }
+}
+
+// ── EXPORTACIÓN E IMPORTACIÓN JSON ────────────────────────
+function setupExportImport() {
+  el.btnExportJson.addEventListener('click', () => {
+    const payload = {
+      version: '1.1',
+      exportedAt: new Date().toISOString(),
+      'case-studies': state.data['case-studies'],
+      'clients': state.data['clients'],
+      'lab': state.data['lab'],
+      'skills': state.data['skills'],
+      'hero': state.heroData
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `vandalit-portfolio-config-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Archivo JSON de configuración exportado (incluye Hero & Bentos)');
+  });
+
+  el.inputImportJson.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target.result);
+        if (!imported['clients'] && !imported['case-studies']) {
+          throw new Error('El archivo no contiene la estructura requerida de secciones.');
+        }
+
+        if (imported['case-studies']) state.data['case-studies'] = imported['case-studies'];
+        if (imported['clients']) state.data['clients'] = imported['clients'];
+        if (imported['lab']) state.data['lab'] = imported['lab'];
+        if (imported['skills']) state.data['skills'] = imported['skills'];
+        if (imported['hero']) state.heroData = imported['hero'];
+
+        persistDraft();
+        persistHeroSettings();
+        updateCounts();
+        renderProjectList();
+        loadActiveProject();
+        if (state.currentSection === 'hero') renderHeroEditor();
+
+        showToast('Configuración JSON importada y aplicada al borrador con éxito');
+      } catch (err) {
+        showToast('Error al importar JSON: ' + err.message, 'danger');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+}
+
+// ── BOOTSTRAP ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', init);
