@@ -44,7 +44,9 @@ function renderCaseCards(cases) {
         <img class="case-card__img"
              src="${c.coverPlaceholder}"
              alt="${c.title}"
-             loading="${i < 2 ? 'eager' : 'lazy'}">
+             loading="${i < 2 ? 'eager' : 'lazy'}"
+             decoding="async"
+             onload="this.classList.add('is-loaded')">
         <div class="case-card__overlay"></div>
         <div class="case-card__accent" style="background:${accentColor}"></div>
         <div class="case-card__content">
@@ -146,7 +148,7 @@ function renderClientGrid(clients) {
                data-type="${c._type}"
                ${isEmpty ? '' : 'role="button" tabindex="0"'}
                aria-label="${isEmpty ? 'Proyecto próximamente' : 'Ver proyecto: ' + c.title}">
-        <img class="project-thumb__img" src="${coverSrc}" alt="${c.title || 'Próximamente'}" loading="lazy">
+        <img class="project-thumb__img" src="${coverSrc}" alt="${c.title || 'Próximamente'}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
         ${isEmpty ? '<div class="project-thumb__wip-badge">Próximamente</div>' : `
         <div class="project-thumb__overlay"></div>
         <div class="project-thumb__info">
@@ -197,7 +199,7 @@ function renderLabGrid(lab) {
       return `
         <article class="lab-card--expanded" data-lab-id="${l.id}" tabindex="0" role="button" aria-label="Ver experimento: ${l.title}">
           <div class="lab-card__thumb lab-scanline">
-            <img class="lab-card__img" src="${l.coverPlaceholder || l.cover}" alt="${l.title}" loading="lazy">
+            <img class="lab-card__img" src="${l.coverPlaceholder || l.cover}" alt="${l.title}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
             <span class="lab-card__badge">Experimento</span>
           </div>
           <div class="lab-card__body">
@@ -718,12 +720,86 @@ function hydrateSiteSettings(site) {
   }
 }
 
+// ── PRELOADER TELEMETRY CONTROLLER ─────────────────────────
+const preloaderEl = document.getElementById('preloader');
+const preloaderBar = document.getElementById('preloader-bar');
+const preloaderStatus = document.getElementById('preloader-status');
+const preloaderPercent = document.getElementById('preloader-percent');
+
+function setPreloadProgress(percent, statusText) {
+  if (preloaderBar) preloaderBar.style.width = `${percent}%`;
+  if (preloaderPercent) preloaderPercent.textContent = `${String(Math.round(percent)).padStart(2, '0')}%`;
+  if (preloaderStatus && statusText) preloaderStatus.textContent = `// ${statusText}`;
+}
+
+async function finishPreloader() {
+  if (!preloaderEl || preloaderEl.classList.contains('is-loaded')) return;
+  setPreloadProgress(100, 'SYSTEM_READY');
+  await new Promise(r => setTimeout(r, 180));
+  preloaderEl.classList.add('is-loaded');
+  setTimeout(() => {
+    preloaderEl.style.display = 'none';
+  }, 650);
+}
+
+// ── SCROLL TO TOP ─────────────────────────────────────────
+function initScrollTop() {
+  const btn = document.getElementById('scroll-top');
+  if (!btn) return;
+
+  let ticking = false;
+
+  function update() {
+    if (window.scrollY > 400) {
+      btn.classList.add('is-visible');
+    } else {
+      btn.classList.remove('is-visible');
+    }
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(update);
+      ticking = true;
+    }
+  }, { passive: true });
+
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  update();
+}
+
 // ── INIT ──────────────────────────────────────────────────
 async function init() {
   console.log('%c[Portafolio:Main] ⏳ init() running, readyState:', 'color: #b8e030; font-weight: bold;', document.readyState);
 
-  // 1. Capa 0: Video Ambient Background (Lazyload + bandwidth check)
-  initVideoBackground();
+  // Safety fallback: si algún recurso tarda de más, el preloader se retira en máx 2.2s
+  const preloaderTimer = setTimeout(finishPreloader, 2200);
+
+  setPreloadProgress(18, 'INITIALIZING MANIFESTS');
+
+  // 1. Cargar datos dinámicos de proyectos y configuración
+  try {
+    await loadData();
+    setPreloadProgress(38, 'HYDRATING SITE TOKENS');
+    if (siteSettings) {
+      hydrateSiteSettings(siteSettings);
+    }
+    if (projectsData) {
+      renderFeatured(projectsData.cases);
+      renderCaseCards(projectsData.cases);
+      renderSkillCards(projectsData.skills);
+      renderClientGrid(projectsData.clients);
+      renderLabGrid(projectsData.lab);
+    }
+  } catch (err) {
+    console.error('[Main] loadData error:', err);
+  }
+
+  setPreloadProgress(60, 'MOUNTING MODULAR BENTOS');
 
   // 2. Capa 2.b: Montar componentes Bento modulares
   const bentoContainer = document.getElementById('hero-bento-container');
@@ -731,6 +807,8 @@ async function init() {
     window.__bentoManagerInstance = bentoManager;
     await bentoManager.mount(bentoContainer);
   }
+
+  setPreloadProgress(78, 'COMPILING 3D SHADERS');
 
   // 3. Capa 2.a & 2.c: Inicializar Sandwich 3D (canvas-back z:11, canvas-front z:14)
   const canvasBack = document.getElementById('three-canvas-back');
@@ -747,7 +825,7 @@ async function init() {
     }
   }
 
-  // 2. Init UI listeners & navigation
+  // 4. Init UI listeners & navigation
   initNav();
   initFxToggle();
   initHero();
@@ -758,25 +836,9 @@ async function init() {
   initSkillLinks();
   initSkillModal();
   initWorkTitleScrolltell();
+  initScrollTop();
 
-  // 3. Load projects data & render dynamic sections
-  try {
-    await loadData();
-    if (siteSettings) {
-      hydrateSiteSettings(siteSettings);
-    }
-    if (projectsData) {
-      renderFeatured(projectsData.cases);
-      renderCaseCards(projectsData.cases);
-      renderSkillCards(projectsData.skills);
-      renderClientGrid(projectsData.clients);
-      renderLabGrid(projectsData.lab);
-    }
-  } catch (err) {
-    console.error('[Main] loadData error:', err);
-  }
-
-  // 4. Carousels & Grid Filter
+  // 5. Carousels & Grid Filter
   const casesCarousel = document.getElementById('cases-carousel');
   if (casesCarousel) new Carousel(casesCarousel);
 
@@ -788,6 +850,27 @@ async function init() {
 
   const workSection = document.getElementById('work');
   if (workSection) new GridFilter(workSection);
+
+  setPreloadProgress(92, 'VERIFYING FONTS & LAYOUT');
+
+  // Esperar a que las fuentes web terminen de renderizar (máx 300ms)
+  if (document.fonts && document.fonts.ready) {
+    await Promise.race([
+      document.fonts.ready,
+      new Promise(r => setTimeout(r, 300))
+    ]);
+  }
+
+  clearTimeout(preloaderTimer);
+  await finishPreloader();
+
+  // 6. Defer Video Ambient Background: iniciarlo en idle / tras disipar el loader
+  // para evitar saturación de ancho de banda y contención de hilos con YouTube en el primer paint
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => initVideoBackground(), { timeout: 1500 });
+  } else {
+    setTimeout(() => initVideoBackground(), 400);
+  }
 }
 
 if (document.readyState === 'loading') {

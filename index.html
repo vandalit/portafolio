@@ -35,6 +35,83 @@
   <link rel="stylesheet" href="./src/components/bentos/bentos.css?v=bento_hover_pop">
 
   <style>
+    /* ── PRELOADER CRITICAL CSS (Cero FOUC / Cero layout shift) ── */
+    .preloader {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: #080810;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 600ms cubic-bezier(0.16, 1, 0.3, 1),
+                  filter 500ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .preloader.is-loaded {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.02);
+      filter: blur(6px);
+    }
+    .preloader__inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      width: min(88vw, 340px);
+      text-align: center;
+      user-select: none;
+    }
+    .preloader__logo {
+      font-family: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 1.85rem;
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      color: #f4f4f4;
+    }
+    .preloader__dot {
+      color: #ccf020;
+      display: inline-block;
+      animation: preloaderDotPulse 1.2s ease-in-out infinite;
+    }
+    @keyframes preloaderDotPulse {
+      0%, 100% { color: #ccf020; transform: scale(1); filter: drop-shadow(0 0 8px rgba(204, 240, 32, 0.7)); }
+      50% { color: #e8306e; transform: scale(1.2); filter: drop-shadow(0 0 8px rgba(232, 48, 110, 0.7)); }
+    }
+    .preloader__track {
+      width: 100%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+    .preloader__bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #e8306e, #ccf020);
+      box-shadow: 0 0 10px rgba(204, 240, 32, 0.5);
+      transition: width 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .preloader__meta {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: #8c8c9e;
+      text-transform: uppercase;
+    }
+    .preloader__percent {
+      color: #ccf020;
+      font-weight: 500;
+    }
+
     /* Inline critical: btn size variants */
     .btn--sm { padding: 6px 14px; font-size: 0.65rem; }
 
@@ -117,6 +194,24 @@
 </head>
 
 <body>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PRELOADER / FLUID BOOTSTRAP TELEMETRY SCREEN
+  ══════════════════════════════════════════════════════════ -->
+  <div id="preloader" class="preloader" aria-label="Iniciando experiencia">
+    <div class="preloader__inner">
+      <div class="preloader__logo">
+        van<span class="preloader__dot">.</span>dalit
+      </div>
+      <div class="preloader__track">
+        <div id="preloader-bar" class="preloader__bar"></div>
+      </div>
+      <div class="preloader__meta">
+        <span id="preloader-status" class="preloader__status">// SYSTEM_BOOT</span>
+        <span id="preloader-percent" class="preloader__percent">00%</span>
+      </div>
+    </div>
+  </div>
 
   <!-- ── CURSOR GLOW ─────────────────────────────────────── -->
   <div id="cursor-glow" aria-hidden="true"></div>
@@ -661,6 +756,16 @@
       </svg>
     </button>
   </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       BOTÓN SUTIL SCROLL UP (BACK TO TOP)
+  ══════════════════════════════════════════════════════════ -->
+  <button id="scroll-top" class="scroll-top" type="button" aria-label="Volver arriba">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 19V5M5 12l7-7 7 7"/>
+    </svg>
+    <span class="scroll-top__label">TOP</span>
+  </button>
 
   <!-- ── SCRIPTS ────────────────────────────────────────── -->
   <script type="module" src="./src/js/main.js?v=bento_hover_pop"></script>

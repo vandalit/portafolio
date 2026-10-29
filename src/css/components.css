@@ -1693,3 +1693,82 @@
   .modal__gallery { height: 50vh; }
   .modal__masonry { column-count: 1; }
 }
+
+/* ── SCROLL TOP (BACK TO TOP) ────────────────────────────── */
+.scroll-top {
+  position: fixed;
+  bottom: clamp(1.5rem, 3vw, 2.5rem);
+  right: clamp(1.5rem, 3vw, 2.5rem);
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  background: rgba(10, 12, 22, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(14px);
+  transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color var(--transition-fast),
+              color var(--transition-fast),
+              box-shadow var(--transition-fast);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.scroll-top.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.scroll-top:hover {
+  border-color: var(--lime);
+  color: var(--lime);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(184, 224, 48, 0.25);
+}
+
+.scroll-top:active {
+  transform: translateY(-1px) scale(0.97);
+}
+
+.scroll-top svg {
+  transition: transform var(--transition-fast);
+}
+
+.scroll-top:hover svg {
+  transform: translateY(-2px);
+}
+
+/* ── LAZYLOADING FLUID DECODE FOR IMAGES ─────────────────── */
+.project-thumb,
+.case-card__thumb,
+.lab-card__thumb {
+  background-color: #121520;
+}
+
+.project-thumb__img,
+.case-card__img,
+.lab-card__img,
+.lab-gallery-thumb img {
+  opacity: 0;
+  transition: opacity 380ms ease-out, transform 700ms var(--ease-out);
+}
+
+.project-thumb__img.is-loaded,
+.case-card__img.is-loaded,
+.lab-card__img.is-loaded,
+.lab-gallery-thumb img.is-loaded {
+  opacity: 1;
+}

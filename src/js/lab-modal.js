@@ -262,7 +262,7 @@ export class LabModal {
       if (this.photos.length > 0) {
         this.galleryEl.innerHTML = this.photos.map((imgSrc, i) => `
           <div class="lab-gallery-thumb" data-img-index="${i}" role="button" tabindex="0" aria-label="Ver captura ${i + 1} ampliada">
-            <img src="${imgSrc}" alt="${data.title} captura ${i + 1}" loading="lazy">
+            <img src="${imgSrc}" alt="${data.title} captura ${i + 1}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
           </div>
         `).join('');
 
