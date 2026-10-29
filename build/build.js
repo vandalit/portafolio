@@ -240,12 +240,12 @@ function renderClientGrid(clients) {
         ${isEmpty ? '<div class="project-thumb__wip-badge">Próximamente</div>' : `
         <div class="project-thumb__overlay"></div>
         <div class="project-thumb__info">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--sp-2)">
+          <div class="project-thumb__header">
             <span class="tag ${tagClass}">${escapeHtml(badge)}</span>
             <span class="project-thumb__meta">${escapeHtml(String(c.year || ''))}</span>
           </div>
           <h3 class="project-thumb__title">${escapeHtml(c.title)}</h3>
-          <p class="project-thumb__meta" style="color:var(--text-1); font-size:var(--text-xs); margin-top:2px; text-transform:none">
+          <p class="project-thumb__subtitle">
             ${escapeHtml(c.subtitle || c.role || '')}
           </p>
         </div>`}

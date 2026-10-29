@@ -16,6 +16,17 @@
   --bg-glass: rgba(255,255,255,0.03);
   --bg-glass-hover: rgba(255,255,255,0.06);
 
+  /* Superficies técnicas especializadas (Lab, Studio, Modales) */
+  --bg-surface-elevated: #161c26;  /* cards técnicas comprimidas */
+  --bg-surface-hover:    #1c2432;  /* hover en cards técnicas */
+  --bg-modal-narrative:  #0d1017;  /* columna izquierda modal lab */
+  --bg-modal-showcase:   #080a10;  /* columna derecha modal lab */
+  --bg-modal-backdrop:   rgba(6, 8, 14, 0.94);
+
+  /* Status */
+  --status-online:       #4ade80;
+  --status-online-glow:  rgba(74, 222, 128, 0.5);
+
   /* Borders */
   --border-0: rgba(255,255,255,0.04);
   --border-1: rgba(255,255,255,0.08);
@@ -28,27 +39,37 @@
   --text-2: #6a677a;     /* tertiary — metadata */
   --text-3: #3d3a4a;     /* disabled */
 
-  /* ── BRAND ACCENTS ─────────────────────────────────────── */
-  /* Magenta / Multimedia / Design */
-  --magenta:        #e8306e;
-  --magenta-deep:   #c4205a;
+  /* ── BRAND ACCENTS (Triada de Ejes y Categorías) ────────── */
+  /* Eje 1: Autoral · Multimedia y Diseño */
+  --magenta:        #d4205a;
+  --magenta-bright: #e8306e;
   --magenta-dark:   #8a1040;
-  --magenta-glow:   rgba(232, 48, 110, 0.18);
-  --magenta-glow-sm:rgba(232, 48, 110, 0.10);
-  --magenta-fade:   rgba(232, 48, 110, 0.06);
+  --magenta-glow:   rgba(212, 32, 90, 0.22);
+  --magenta-glow-sm:rgba(212, 32, 90, 0.12);
+  --magenta-fade:   rgba(212, 32, 90, 0.08);
 
-  /* Yellowgreen / Coding / AI */
-  --lime:           #b8e030;
+  /* Eje 2: Desarrollo · Coding & AI */
+  --lime:           #ccf020;
   --lime-bright:    #ccf020;
+  --lime-muted:     #b8e030;
   --lime-dark:      #6a8010;
-  --lime-glow:      rgba(184, 224, 48, 0.18);
-  --lime-glow-sm:   rgba(184, 224, 48, 0.10);
-  --lime-fade:      rgba(184, 224, 48, 0.06);
+  --lime-glow:      rgba(204, 240, 32, 0.22);
+  --lime-glow-sm:   rgba(204, 240, 32, 0.12);
+  --lime-fade:      rgba(204, 240, 32, 0.08);
 
-  /* Gradient shorthands */
-  --grad-magenta: linear-gradient(135deg, #e8306e 0%, #c4205a 100%);
+  /* Eje 3: Comercial · Estrategia, Contenido & Negocio (WCAG AA pass: 7.2:1 sobre #080810) */
+  --mango:          #ff6b35;
+  --mango-bright:   #ff834f;
+  --mango-dark:     #b83d10;
+  --mango-glow:     rgba(255, 107, 53, 0.22);
+  --mango-glow-sm:  rgba(255, 107, 53, 0.12);
+  --mango-fade:     rgba(255, 107, 53, 0.08);
+
+  /* Gradientes de ejes */
+  --grad-magenta: linear-gradient(135deg, #e8306e 0%, #d4205a 100%);
   --grad-lime:    linear-gradient(135deg, #ccf020 0%, #8ab820 100%);
-  --grad-hero:    linear-gradient(135deg, rgba(232,48,110,0.15) 0%, rgba(184,224,48,0.08) 100%);
+  --grad-mango:   linear-gradient(135deg, #ff834f 0%, #ff6b35 100%);
+  --grad-hero:    linear-gradient(135deg, rgba(212,32,90,0.15) 0%, rgba(204,240,32,0.08) 100%);
 
   /* ── TYPOGRAPHY ─────────────────────────────────────────── */
   --font-display: 'Cormorant Garamond', Georgia, serif;
@@ -231,6 +252,7 @@ input, textarea { font: inherit; }
 
 .tag--magenta { color: var(--magenta); border-color: var(--magenta-glow); background: var(--magenta-fade); }
 .tag--lime    { color: var(--lime);    border-color: var(--lime-glow);    background: var(--lime-fade); }
+.tag--mango   { color: var(--mango);   border-color: var(--mango-glow);   background: var(--mango-fade); }
 
 /* ── REDUCED MOTION ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

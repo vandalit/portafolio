@@ -543,8 +543,36 @@ section::after {
   gap: var(--sp-12);
 }
 
+/* ── SECTION CASING & BACKGROUNDS ────────────────────────── */
+.cases-layout {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3.5rem);
+}
+
+#skills .section-grid-bg,
+#lab .section-grid-bg {
+  display: block;
+}
+
+.skills-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: var(--sp-8);
+  margin-bottom: clamp(3rem, 6vw, 5rem);
+}
+
+.lab-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: var(--sp-8);
+}
+
 @media (max-width: 768px) {
   .nav__links { display: none; }
   .footer__grid { grid-template-columns: 1fr; }
   .hero__scroll { display: none; }
+  .skills-header { grid-template-columns: 1fr; gap: var(--sp-4); }
+  .lab-header { grid-template-columns: 1fr; gap: var(--sp-4); }
 }

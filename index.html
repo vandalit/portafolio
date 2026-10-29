@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Portafolio de vandalit — diseñador UX/UI y desarrollador front-end. Proyectos de clientes, casos de estudio y experimentos de diseño.">
+  <meta name="description"
+    content="Portafolio de vandalit — diseñador UX/UI y desarrollador front-end. Proyectos de clientes, casos de estudio y experimentos de diseño.">
   <meta name="keywords" content="UX design, UI design, front-end developer, portafolio, diseño web, freelance, Chile">
   <meta property="og:title" content="vandalit — UX/UI Designer & Front-end Developer">
   <meta property="og:description" content="Diseño que comunica. Código que respira.">
@@ -15,10 +17,10 @@
   <!-- Console Diagnostics & Error Trap -->
   <script>
     console.log('%c[PORTAFOLIO BOOTSTRAP] HTML parsing started', 'background: #080810; color: #e8306e; font-weight: bold; font-size: 13px; border: 1px solid #e8306e; padding: 2px 6px; border-radius: 3px;');
-    window.addEventListener('error', function(e) {
+    window.addEventListener('error', function (e) {
       console.error('%c[GLOBAL ERROR CAPTURED]', 'background: #e8306e; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;', e.message, 'in', e.filename, 'line:', e.lineno, e.error);
     });
-    window.addEventListener('unhandledrejection', function(e) {
+    window.addEventListener('unhandledrejection', function (e) {
       console.error('%c[PROMISE REJECTION CAPTURED]', 'background: #e8306e; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;', e.reason);
     });
   </script>
@@ -34,28 +36,6 @@
   <link rel="stylesheet" href="./src/css/animations.css">
   <link rel="stylesheet" href="./src/components/bentos/bentos.css?v=bento_hover_pop">
 
-  <style>
-    /* ── PRELOADER CRITICAL CSS (Cero FOUC / Cero layout shift) ── */
-    .preloader {
-      position: fixed;
-      inset: 0;
-      z-index: 99999;
-      background: #080810;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1),
-                  transform 600ms cubic-bezier(0.16, 1, 0.3, 1),
-                  filter 500ms cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .preloader.is-loaded {
-      opacity: 0;
-      pointer-events: none;
-      transform: scale(1.02);
-      filter: blur(6px);
-    }
-  </style>
-
   <!-- Progressive Enhancement: Si JS está deshabilitado, ocultar preloader de inmediato -->
   <noscript>
     <style>
@@ -65,6 +45,27 @@
   </noscript>
 
   <style>
+    /* ── PRELOADER CRITICAL CSS (Cero FOUC / Cero layout shift) ── */
+    .preloader {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: var(--bg-0, #080810);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 500ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+                  transform 600ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+                  filter 500ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+    }
+
+    .preloader.is-loaded {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.02);
+      filter: blur(6px);
+    }
+
     .preloader__inner {
       display: flex;
       flex-direction: column;
@@ -74,133 +75,69 @@
       text-align: center;
       user-select: none;
     }
+
     .preloader__logo {
-      font-family: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Syne', var(--font-display, sans-serif);
       font-size: 1.85rem;
       font-weight: 400;
       letter-spacing: -0.03em;
-      color: #f4f4f4;
+      color: var(--text-0, #f2eff8);
     }
+
     .preloader__dot {
-      color: #ccf020;
+      color: var(--lime, #ccf020);
       display: inline-block;
       animation: preloaderDotPulse 1.2s ease-in-out infinite;
     }
+
     @keyframes preloaderDotPulse {
-      0%, 100% { color: #ccf020; transform: scale(1); filter: drop-shadow(0 0 8px rgba(204, 240, 32, 0.7)); }
-      50% { color: #e8306e; transform: scale(1.2); filter: drop-shadow(0 0 8px rgba(232, 48, 110, 0.7)); }
+      0%, 100% {
+        color: var(--lime, #ccf020);
+        transform: scale(1);
+        filter: drop-shadow(0 0 8px var(--lime-glow, rgba(204, 240, 32, 0.4)));
+      }
+      50% {
+        color: var(--magenta, #d4205a);
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 8px var(--magenta-glow, rgba(212, 32, 90, 0.4)));
+      }
     }
+
     .preloader__track {
       width: 100%;
       height: 2px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 999px;
+      background: var(--border-1, rgba(255, 255, 255, 0.08));
+      border-radius: var(--radius-pill, 999px);
       overflow: hidden;
       position: relative;
     }
+
     .preloader__bar {
       position: absolute;
       top: 0;
       left: 0;
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, #e8306e, #ccf020);
-      box-shadow: 0 0 10px rgba(204, 240, 32, 0.5);
-      transition: width 220ms cubic-bezier(0.16, 1, 0.3, 1);
+      background: linear-gradient(90deg, var(--magenta, #d4205a), var(--lime, #ccf020));
+      box-shadow: 0 0 10px var(--lime-glow, rgba(204, 240, 32, 0.5));
+      transition: width 220ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
     }
+
     .preloader__meta {
       display: flex;
       justify-content: space-between;
       width: 100%;
-      font-family: 'Space Mono', monospace;
+      font-family: var(--font-mono, monospace);
       font-size: 10px;
-      letter-spacing: 0.08em;
-      color: #8c8c9e;
+      letter-spacing: var(--tracking-wider, 0.08em);
+      color: var(--text-2, #8c8c9e);
       text-transform: uppercase;
     }
+
     .preloader__percent {
-      color: #ccf020;
+      color: var(--lime, #ccf020);
       font-weight: 500;
     }
-
-    /* Inline critical: btn size variants */
-    .btn--sm { padding: 6px 14px; font-size: 0.65rem; }
-
-    /* Hero doodle SVG positions */
-    .hero__doodle--1 { top: 18%; right: 12%; width: 180px; opacity: 0.18; }
-    .hero__doodle--2 { top: 60%; right: 30%; width: 80px; opacity: 0.12; }
-    .hero__doodle--3 { top: 25%; left: 8%; width: 120px; opacity: 0.10; }
-    .hero__doodle--4 { bottom: 20%; left: 20%; width: 60px; opacity: 0.14; }
-
-    /* Cases section grid */
-    .cases-layout { display: grid; gap: clamp(2rem,4vw,3.5rem); }
-
-    /* Section micro-grid bg only on some sections */
-    #skills .section-grid-bg,
-    #lab .section-grid-bg { display: block; }
-
-    /* Footer specifics */
-    .footer-logo {
-      font-family: var(--font-display);
-      font-size: clamp(3rem, 8vw, 6rem);
-      font-weight: 300;
-      line-height: 1;
-      letter-spacing: -0.04em;
-      color: var(--text-0);
-      margin-bottom: var(--sp-6);
-    }
-    .footer-logo span { color: var(--magenta); }
-
-    .footer-tagline {
-      font-family: var(--font-display);
-      font-style: italic;
-      font-size: var(--text-xl);
-      color: var(--text-1);
-      margin-bottom: var(--sp-8);
-    }
-
-    .footer-links {
-      display: flex;
-      gap: var(--sp-6);
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .footer-link {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
-      color: var(--text-2);
-      transition: color var(--transition-fast);
-    }
-    .footer-link:hover { color: var(--magenta); }
-
-    .footer-right {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: var(--sp-4);
-    }
-
-    .footer-email {
-      font-family: var(--font-display);
-      font-size: var(--text-3xl);
-      font-weight: 300;
-      color: var(--text-0);
-      transition: color var(--transition-fast);
-    }
-    .footer-email:hover { color: var(--magenta); }
-
-    .footer-copy {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      color: var(--text-3);
-      letter-spacing: var(--tracking-wider);
-    }
-
-    /* Doodle SVGs inline */
-    .svg-doodle { overflow: visible; }
   </style>
 </head>
 
@@ -233,13 +170,14 @@
       van<span>.</span>dalit
     </a>
     <ul class="nav__links" role="list">
-      <li><a href="#cases"  class="nav__link" aria-label="Casos de estudio">Cases</a></li>
+      <li><a href="#cases" class="nav__link" aria-label="Casos de estudio">Cases</a></li>
       <li><a href="#skills" class="nav__link" aria-label="Perfil técnico">Skills</a></li>
-      <li><a href="#work"   class="nav__link" aria-label="Trabajos">Trabajos</a></li>
-      <li><a href="#lab"    class="nav__link" aria-label="Experimentos">Lab</a></li>
+      <li><a href="#work" class="nav__link" aria-label="Trabajos">Trabajos</a></li>
+      <li><a href="#lab" class="nav__link" aria-label="Experimentos">Lab</a></li>
     </ul>
     <div class="nav__actions">
-      <button id="fx-toggle" class="nav__fx-toggle" type="button" aria-pressed="true" aria-label="Alternar efectos visuales (fondo de video y geometrías 3D)">
+      <button id="fx-toggle" class="nav__fx-toggle" type="button" aria-pressed="true"
+        aria-label="Alternar efectos visuales (fondo de video y geometrías 3D)">
         <span class="nav__fx-dot" aria-hidden="true"></span>
         <span class="nav__fx-label">fx</span>
       </button>
@@ -286,34 +224,37 @@
         <!-- 2.d: Doodles Vectoriales (z-index: 15) -->
         <div class="hero__doodle hero__doodle--1 doodle--float-a" aria-hidden="true">
           <svg class="svg-doodle" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="90" cy="90" r="80" stroke="#e8306e" stroke-width="1"/>
-            <circle cx="90" cy="90" r="55" stroke="#e8306e" stroke-width="0.5" stroke-dasharray="6 6"/>
-            <circle cx="90" cy="90" r="28" stroke="#e8306e" stroke-width="1.5"/>
-            <line x1="10" y1="90" x2="170" y2="90" stroke="#e8306e" stroke-width="0.5" opacity="0.4"/>
-            <line x1="90" y1="10" x2="90" y2="170" stroke="#e8306e" stroke-width="0.5" opacity="0.4"/>
+            <circle cx="90" cy="90" r="80" stroke="#e8306e" stroke-width="1" />
+            <circle cx="90" cy="90" r="55" stroke="#e8306e" stroke-width="0.5" stroke-dasharray="6 6" />
+            <circle cx="90" cy="90" r="28" stroke="#e8306e" stroke-width="1.5" />
+            <line x1="10" y1="90" x2="170" y2="90" stroke="#e8306e" stroke-width="0.5" opacity="0.4" />
+            <line x1="90" y1="10" x2="90" y2="170" stroke="#e8306e" stroke-width="0.5" opacity="0.4" />
           </svg>
         </div>
 
         <div class="hero__doodle hero__doodle--2 doodle--float-b" aria-hidden="true">
           <svg class="svg-doodle" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4" y="4" width="72" height="72" stroke="#b8e030" stroke-width="1.5" transform="rotate(15 40 40)"/>
-            <rect x="18" y="18" width="44" height="44" stroke="#b8e030" stroke-width="0.75" transform="rotate(15 40 40)"/>
-            <circle cx="40" cy="40" r="6" fill="#b8e030" opacity="0.6"/>
+            <rect x="4" y="4" width="72" height="72" stroke="#b8e030" stroke-width="1.5" transform="rotate(15 40 40)" />
+            <rect x="18" y="18" width="44" height="44" stroke="#b8e030" stroke-width="0.75"
+              transform="rotate(15 40 40)" />
+            <circle cx="40" cy="40" r="6" fill="#b8e030" opacity="0.6" />
           </svg>
         </div>
 
         <div class="hero__doodle hero__doodle--3 doodle--float-c" aria-hidden="true">
           <svg class="svg-doodle" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="60,8 114,92 6,92" stroke="#e8306e" stroke-width="1.5" fill="none"/>
-            <polygon points="60,28 94,82 26,82" stroke="#e8306e" stroke-width="0.75" fill="none" stroke-dasharray="5 5"/>
-            <circle cx="60" cy="68" r="5" fill="#e8306e" opacity="0.7"/>
+            <polygon points="60,8 114,92 6,92" stroke="#e8306e" stroke-width="1.5" fill="none" />
+            <polygon points="60,28 94,82 26,82" stroke="#e8306e" stroke-width="0.75" fill="none"
+              stroke-dasharray="5 5" />
+            <circle cx="60" cy="68" r="5" fill="#e8306e" opacity="0.7" />
           </svg>
         </div>
 
         <div class="hero__doodle hero__doodle--4 doodle--rotate" aria-hidden="true">
           <svg class="svg-doodle" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4" y="4" width="52" height="52" stroke="#b8e030" stroke-width="1" transform="rotate(45 30 30)"/>
-            <rect x="14" y="14" width="32" height="32" stroke="#b8e030" stroke-width="0.5" transform="rotate(45 30 30)"/>
+            <rect x="4" y="4" width="52" height="52" stroke="#b8e030" stroke-width="1" transform="rotate(45 30 30)" />
+            <rect x="14" y="14" width="32" height="32" stroke="#b8e030" stroke-width="0.5"
+              transform="rotate(45 30 30)" />
           </svg>
         </div>
       </div>
@@ -338,17 +279,24 @@
 
         <div class="hero__meta">
           <a id="hero-cta-work" href="#cases" class="btn btn--primary">Ver trabajo <span class="btn__icon">↓</span></a>
-          <a id="hero-cta-contact" href="mailto:vandalit@metamedia.cl" class="btn btn--ghost">Contacto <span class="btn__icon">✉</span></a>
+          <a id="hero-cta-contact" href="mailto:vandalit@metamedia.cl" class="btn btn--ghost">Contacto <span
+              class="btn__icon">✉</span></a>
           <div class="hero__socials">
-            <a id="hero-social-github" href="https://github.com/vandalit" target="_blank" rel="noopener noreferrer" class="social-badge" aria-label="GitHub de vandalit">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            <a id="hero-social-github" href="https://github.com/vandalit" target="_blank" rel="noopener noreferrer"
+              class="social-badge" aria-label="GitHub de vandalit">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                </path>
               </svg>
               <span>GitHub</span>
             </a>
-            <a id="hero-social-behance" href="https://behance.net/vandalit" target="_blank" rel="noopener noreferrer" class="social-badge" aria-label="Behance de vandalit">
+            <a id="hero-social-behance" href="https://behance.net/vandalit" target="_blank" rel="noopener noreferrer"
+              class="social-badge" aria-label="Behance de vandalit">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-5.171 3-3.455 0-5.555-2.529-5.555-5.941 0-3.328 2.05-6.059 5.516-6.059 3.424 0 5.253 2.502 5.034 5.766h-7.669c.071 1.637 1.118 2.684 2.697 2.684 1.206 0 2.051-.555 2.451-1.45h2.697zm-5.171-4.706c-1.328 0-2.12.871-2.261 2.062h4.436c-.059-1.127-.728-2.062-2.175-2.062zm-12.555 4.706h-3v-10h3.582c2.086 0 3.418 1.094 3.418 2.871 0 1.171-.624 2.124-1.637 2.556 1.341.442 2.055 1.564 2.055 2.923 0 1.954-1.517 3.65-4.418 3.65zm-3-4.294h2.464c1.171 0 1.839-.569 1.839-1.469 0-.962-.733-1.474-1.839-1.474h-2.464v2.943zm0-4.412h2.245c1.071 0 1.706-.522 1.706-1.353 0-.853-.635-1.353-1.706-1.353h-2.245v2.706z"/>
+                <path
+                  d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-5.171 3-3.455 0-5.555-2.529-5.555-5.941 0-3.328 2.05-6.059 5.516-6.059 3.424 0 5.253 2.502 5.034 5.766h-7.669c.071 1.637 1.118 2.684 2.697 2.684 1.206 0 2.051-.555 2.451-1.45h2.697zm-5.171-4.706c-1.328 0-2.12.871-2.261 2.062h4.436c-.059-1.127-.728-2.062-2.175-2.062zm-12.555 4.706h-3v-10h3.582c2.086 0 3.418 1.094 3.418 2.871 0 1.171-.624 2.124-1.637 2.556 1.341.442 2.055 1.564 2.055 2.923 0 1.954-1.517 3.65-4.418 3.65zm-3-4.294h2.464c1.171 0 1.839-.569 1.839-1.469 0-.962-.733-1.474-1.839-1.474h-2.464v2.943zm0-4.412h2.245c1.071 0 1.706-.522 1.706-1.353 0-.853-.635-1.353-1.706-1.353h-2.245v2.706z" />
               </svg>
               <span>Behance</span>
             </a>
@@ -398,12 +346,12 @@
           </div>
           <button class="carousel-btn" data-carousel-prev aria-label="Anterior">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
             </svg>
           </button>
           <button class="carousel-btn" data-carousel-next aria-label="Siguiente">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
             </svg>
           </button>
         </div>
@@ -417,24 +365,24 @@
   <section id="skills" aria-label="Perfil técnico y habilidades">
     <div class="section-grid-bg" aria-hidden="true"></div>
     <div class="container">
-      <div style="display:grid; grid-template-columns:1fr auto; align-items:end; gap:var(--sp-8); margin-bottom:clamp(3rem,6vw,5rem)">
+      <div class="skills-header">
         <header class="reveal">
-          <p id="skills-eyebrow" class="eyebrow" style="margin-bottom:var(--sp-4)">Habilidades</p>
+          <p id="skills-eyebrow" class="eyebrow">Habilidades</p>
           <h2 id="skills-title" class="section-header__title display">Perfil Técnico</h2>
-          <p id="skills-desc" class="section-header__desc" style="margin-top:var(--sp-4)">
+          <p id="skills-desc" class="section-header__desc">
             No una lista de íconos. Un mapa de capacidades reales, con sus conexiones.
           </p>
         </header>
         <!-- Legend -->
         <aside class="reveal" aria-label="Leyenda de categorías">
-          <div style="display:flex;flex-direction:column;gap:var(--sp-3)">
-            <div style="display:flex;align-items:center;gap:var(--sp-3)">
-              <span style="width:10px;height:10px;border-radius:50%;background:var(--magenta);display:block"></span>
-              <span id="skills-legend-multimedia" class="eyebrow" style="color:var(--text-2)">Multimedia / Design</span>
+          <div class="skills-legend">
+            <div class="skills-legend__item">
+              <span class="skills-legend__dot skills-legend__dot--magenta" aria-hidden="true"></span>
+              <span id="skills-legend-multimedia" class="eyebrow skills-legend__label">Multimedia / Design</span>
             </div>
-            <div style="display:flex;align-items:center;gap:var(--sp-3)">
-              <span style="width:10px;height:10px;border-radius:50%;background:var(--lime);display:block"></span>
-              <span id="skills-legend-coding" class="eyebrow" style="color:var(--text-2)">Coding / Dev</span>
+            <div class="skills-legend__item">
+              <span class="skills-legend__dot skills-legend__dot--lime" aria-hidden="true"></span>
+              <span id="skills-legend-coding" class="eyebrow skills-legend__label">Coding / Dev</span>
             </div>
           </div>
         </aside>
@@ -453,12 +401,12 @@
           </div>
           <button class="carousel-btn" data-carousel-prev aria-label="Anterior habilidad">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
             </svg>
           </button>
           <button class="carousel-btn" data-carousel-next aria-label="Siguiente habilidad">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
             </svg>
           </button>
         </div>
@@ -481,11 +429,11 @@
 
       <!-- Tabs -->
       <nav class="tabs tabs--full reveal" role="tablist" aria-label="Filtro de proyectos">
-        <button class="tab-btn active" data-tab="all"       role="tab" aria-selected="true">Todos</button>
-        <button class="tab-btn"        data-tab="wordpress" role="tab" aria-selected="false">Web &amp; WP</button>
-        <button class="tab-btn"        data-tab="ux"        role="tab" aria-selected="false">UX/UI</button>
-        <button class="tab-btn"        data-tab="multimedia"role="tab" aria-selected="false">Multimedia</button>
-        <button class="tab-btn"        data-tab="coding"    role="tab" aria-selected="false">Coding</button>
+        <button class="tab-btn active" data-tab="all" role="tab" aria-selected="true">Todos</button>
+        <button class="tab-btn" data-tab="wordpress" role="tab" aria-selected="false">Web &amp; WP</button>
+        <button class="tab-btn" data-tab="ux" role="tab" aria-selected="false">UX/UI</button>
+        <button class="tab-btn" data-tab="multimedia" role="tab" aria-selected="false">Multimedia</button>
+        <button class="tab-btn" data-tab="coding" role="tab" aria-selected="false">Coding</button>
       </nav>
     </div>
 
@@ -501,20 +449,20 @@
   <section id="lab" aria-label="Experimentos de coding">
     <div class="section-grid-bg" aria-hidden="true"></div>
     <div class="container">
-      <header class="section-header reveal" style="display:grid;grid-template-columns:1fr auto;align-items:end;gap:var(--sp-8)">
+      <header class="section-header reveal lab-header">
         <div>
           <p id="lab-eyebrow" class="eyebrow section-header__eyebrow">Experimentos</p>
           <h2 id="lab-title" class="section-header__title display">Lab</h2>
-          <p id="lab-desc" class="section-header__desc" style="margin-top:var(--sp-4)">
+          <p id="lab-desc" class="section-header__desc">
             Exploración técnica como práctica. Prototipos, demos y curiosidades.
           </p>
         </div>
         <!-- Doodle accent -->
-        <div aria-hidden="true" style="width:80px;opacity:0.25" class="doodle--rotate">
+        <div aria-hidden="true" class="hero__doodle--accent doodle--rotate">
           <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="40" cy="40" r="36" stroke="#b8e030" stroke-width="1"/>
-            <circle cx="40" cy="40" r="22" stroke="#b8e030" stroke-width="0.75" stroke-dasharray="5 5"/>
-            <circle cx="40" cy="40" r="8" stroke="#b8e030" stroke-width="1.5"/>
+            <circle cx="40" cy="40" r="36" stroke="#b8e030" stroke-width="1" />
+            <circle cx="40" cy="40" r="22" stroke="#b8e030" stroke-width="0.75" stroke-dasharray="5 5" />
+            <circle cx="40" cy="40" r="8" stroke="#b8e030" stroke-width="1.5" />
           </svg>
         </div>
       </header>
@@ -532,19 +480,19 @@
           </div>
           <button class="carousel-btn" data-carousel-prev aria-label="Anterior experimento">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
             </svg>
           </button>
           <button class="carousel-btn" data-carousel-next aria-label="Siguiente experimento">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
             </svg>
           </button>
         </div>
       </div>
 
       <!-- Note about AI -->
-      <div class="lab-note reveal">
+      <!-- <div class="lab-note reveal">
         <p>
           <strong id="lab-note-title">Nota sobre estos proyectos:</strong>
           <span id="lab-note-content">Los experimentos en esta sección fueron desarrollados con asistencia de IA generativa como herramienta de flujo de trabajo.
@@ -552,7 +500,7 @@
           Los casos de estudio también utilizan IA como parte del proceso —
           es el nuevo paradigma de producción y los resultados hablan por sí solos.</span>
         </p>
-      </div>
+      </div> -->
     </div>
   </section>
 
@@ -572,12 +520,12 @@
             <a href="https://twitter.com/vandalittt" class="footer-link" target="_blank" rel="noopener">@vandalittt</a>
             <a href="#cases" class="footer-link">Proyectos</a>
             <a href="#skills" class="footer-link">Skills</a>
-            <a href="./backoffice/" class="footer-link" style="opacity:0.6" title="Gestor de contenido">Studio</a>
+            <a href="./backoffice/" class="footer-link footer-link--studio" title="Gestor de contenido">Studio</a>
           </nav>
         </div>
 
         <div class="footer-right reveal">
-          <p id="footer-contact-eyebrow" class="eyebrow" style="margin-bottom:var(--sp-2)">¿Trabajamos?</p>
+          <p id="footer-contact-eyebrow" class="eyebrow footer-contact-eyebrow">¿Trabajamos?</p>
           <a id="footer-contact-email" href="mailto:vandalit@metamedia.cl" class="footer-email">
             vandalit@metamedia.cl
           </a>
@@ -590,12 +538,8 @@
   <!-- ═══════════════════════════════════════════════════════
        MODAL — SPLIT CANVAS
   ══════════════════════════════════════════════════════════ -->
-  <div id="project-modal"
-       class="modal"
-       role="dialog"
-       aria-modal="true"
-       aria-hidden="true"
-       aria-label="Detalle de proyecto">
+  <div id="project-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true"
+    aria-label="Detalle de proyecto">
 
     <div class="modal__backdrop"></div>
 
@@ -603,7 +547,7 @@
       <!-- Close -->
       <button class="modal__close" aria-label="Cerrar detalle">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
         </svg>
       </button>
 
@@ -637,7 +581,7 @@
     <!-- Scroll unlock hint -->
     <div class="modal__scroll-hint" aria-live="polite">
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-        <path d="M6 1L6 11M2 7L6 11L10 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M6 1L6 11M2 7L6 11L10 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
       </svg>
       Continuar
     </div>
@@ -646,12 +590,8 @@
   <!-- ═══════════════════════════════════════════════════════
        MODAL — LABORATORIO & EXPERIMENTOS (SPLIT TECH SHOWCASE)
   ══════════════════════════════════════════════════════════ -->
-  <div id="lab-modal"
-       class="modal lab-modal"
-       role="dialog"
-       aria-modal="true"
-       aria-hidden="true"
-       aria-label="Detalle del experimento de laboratorio">
+  <div id="lab-modal" class="modal lab-modal" role="dialog" aria-modal="true" aria-hidden="true"
+    aria-label="Detalle del experimento de laboratorio">
 
     <div class="lab-modal__backdrop"></div>
 
@@ -659,7 +599,7 @@
       <!-- Botón de Cerrar -->
       <button class="lab-modal__close" aria-label="Cerrar detalle del experimento">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
         </svg>
       </button>
 
@@ -733,7 +673,7 @@
     <div class="skill-modal__panel">
       <button class="skill-modal__close" aria-label="Cerrar">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M2 2L14 14M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M2 2L14 14M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
         </svg>
       </button>
       <p class="skill-modal__category"></p>
@@ -750,12 +690,12 @@
     <span class="modal__lightbox-counter">1 / 1</span>
     <button class="modal__lightbox-close" aria-label="Cerrar visor de imagen">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M2 2L14 14M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M2 2L14 14M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
       </svg>
     </button>
     <button class="modal__lightbox-btn modal__lightbox-btn--prev" aria-label="Imagen anterior">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <path d="M11 3L5 9L11 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M11 3L5 9L11 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
       </svg>
     </button>
     <div class="modal__lightbox-stage">
@@ -763,7 +703,7 @@
     </div>
     <button class="modal__lightbox-btn modal__lightbox-btn--next" aria-label="Imagen siguiente">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <path d="M7 3L13 9L7 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M7 3L13 9L7 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
       </svg>
     </button>
   </div>
@@ -772,8 +712,9 @@
        BOTÓN SUTIL SCROLL UP (BACK TO TOP)
   ══════════════════════════════════════════════════════════ -->
   <button id="scroll-top" class="scroll-top" type="button" aria-label="Volver arriba">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 19V5M5 12l7-7 7 7"/>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 19V5M5 12l7-7 7 7" />
     </svg>
     <span class="scroll-top__label">TOP</span>
   </button>
@@ -781,4 +722,5 @@
   <!-- ── SCRIPTS ────────────────────────────────────────── -->
   <script type="module" src="./src/js/main.js?v=bento_hover_pop"></script>
 </body>
+
 </html>
