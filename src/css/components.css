@@ -1049,19 +1049,20 @@
 }
 
 /* ── MODAL EXCLUSIVO DE LAB (SPLIT TECH SHOWCASE) ────────── */
-.lab-modal {
+.modal.lab-modal {
   position: fixed;
   inset: 0;
-  z-index: 1100;
+  z-index: 2200;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: clamp(20px, 4vh, 48px) clamp(16px, 3vw, 40px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 300ms var(--ease-out);
 }
 
-.lab-modal.is-open {
+.modal.lab-modal.is-open {
   opacity: 1;
   pointer-events: auto;
 }
@@ -1077,17 +1078,24 @@
 .lab-modal__inner {
   position: relative;
   z-index: 2;
-  width: 92vw;
-  max-width: 1240px;
-  height: 88vh;
-  max-height: 850px;
+  width: min(94vw, 1220px);
+  max-width: 1220px;
+  height: min(86vh, 800px);
+  max-height: 800px;
+  margin: auto;
   background: var(--bg-1);
   border: 1px solid var(--border-1);
   border-radius: var(--radius-lg);
   display: grid;
   grid-template-columns: 44% 56%;
   overflow: hidden;
-  box-shadow: var(--shadow-xl), 0 0 60px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transform: translateY(16px) scale(0.99);
+  transition: transform 300ms var(--ease-out);
+}
+
+.modal.lab-modal.is-open .lab-modal__inner {
+  transform: translateY(0) scale(1);
 }
 
 .lab-modal__close {
@@ -1118,11 +1126,13 @@
 /* Columna Izquierda: Narrativa & Planteamiento Técnico */
 .lab-modal__narrative {
   background: #0d1017;
-  padding: var(--sp-8);
+  padding: clamp(20px, 3vw, 36px);
   border-right: 1px solid var(--border-1);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(204, 240, 32, 0.25) transparent;
 }
 
 .lab-modal__tag-eyebrow {
@@ -1197,22 +1207,24 @@
 /* Columna Derecha: Stack, Micro-Loop y Galería */
 .lab-modal__showcase {
   background: #080a10;
-  padding: var(--sp-6) var(--sp-8);
+  padding: clamp(16px, 2.5vw, 24px);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-5);
+  gap: var(--sp-4);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(204, 240, 32, 0.25) transparent;
 }
 
 .lab-modal__card {
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: var(--radius-md);
-  padding: var(--sp-4) var(--sp-5);
+  padding: 12px 16px;
 }
 
 .lab-modal__sec-header {
-  margin-bottom: var(--sp-3);
+  margin-bottom: var(--sp-2);
 }
 
 .lab-modal__sec-label {
@@ -1246,9 +1258,11 @@
   position: relative;
   width: 100%;
   aspect-ratio: 16/9;
+  max-height: 250px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   background: #000;
+  margin: 0 auto;
 }
 
 .lab-modal__video {
