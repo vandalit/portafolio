@@ -1,104 +1,126 @@
-[
-  {
-    "id": "ux",
-    "category": "ux",
-    "filterTag": "ux",
-    "title": "UX Research & Strategy",
-    "description": "Investigación de usuarios, síntesis de hallazgos, journey maps y definición de problemas de diseño. Del caos del brief a la claridad del problema.",
-    "skills": [
-      "User Interviews",
-      "Usability Testing",
-      "Journey Mapping",
-      "Heuristic Evaluation",
-      "Wireframing",
-      "Information Architecture"
-    ],
-    "accentColor": "#d4205a",
-    "icon": "circle"
+{
+  "legend": {
+    "autoral":    { "label": "Autoral · multimedia y diseño", "color": "magenta" },
+    "desarrollo": { "label": "Desarrollo",                    "color": "lime"    },
+    "comercial":  { "label": "Comercial",                     "color": "mango"   }
   },
-  {
-    "id": "ui",
-    "category": "ui",
-    "filterTag": "multimedia",
-    "title": "UI Design & Systems",
-    "description": "Figma, design tokens, sistemas de componentes. Tipografía, grillas, color como sistema. Interfaces que funcionan y se sienten bien.",
-    "skills": [
-      "Figma",
-      "Design Systems",
-      "Component Libraries",
-      "Responsive Design",
-      "Typography",
-      "Color Theory"
-    ],
-    "accentColor": "#d4205a",
-    "icon": "square"
-  },
-  {
-    "id": "frontend",
-    "category": "frontend",
-    "filterTag": "coding",
-    "title": "Front-end Development",
-    "description": "HTML/CSS/JS nativos sin miedo. Three.js, GSAP, animaciones CSS, rendimiento web. El código como herramienta de diseño.",
-    "skills": [
-      "HTML/CSS/JS",
-      "Three.js",
-      "GSAP",
-      "CSS Animations",
-      "GitHub",
-      "Web Performance"
-    ],
-    "accentColor": "#b6e030",
-    "icon": "triangle"
-  },
-  {
-    "id": "motion",
-    "category": "motion",
-    "filterTag": "multimedia",
-    "title": "Motion & Visual Design",
-    "description": "Micro-animaciones con propósito, parallax, CSS art, motion principles. El movimiento como parte del lenguaje de diseño, no decoración.",
-    "skills": [
-      "CSS Animations",
-      "GSAP",
-      "Parallax",
-      "Micro-interactions",
-      "After Effects",
-      "Lottie"
-    ],
-    "accentColor": "#d4205a",
-    "icon": "circle"
-  },
-  {
-    "id": "content",
-    "category": "content",
-    "filterTag": "ux",
-    "title": "Contenido & SEO",
-    "description": "Copywriting UX, arquitectura de contenido, SEO técnico on-page, métricas. El contenido como componente del diseño.",
-    "skills": [
-      "UX Writing",
-      "SEO On-page",
-      "SEM Básico",
-      "GA4",
-      "Content Architecture",
-      "A/B Testing"
-    ],
-    "accentColor": "#d4205a",
-    "icon": "square"
-  },
-  {
-    "id": "ai",
-    "category": "ai",
-    "filterTag": "coding",
-    "title": "AI-Assisted Workflows",
-    "description": "Prompting visual y técnico, flujos de trabajo con IA, CSS y código generativo, experimentación. La IA como herramienta, no como sustituto del criterio.",
-    "skills": [
-      "Prompt Engineering",
-      "AI Image Direction",
-      "CSS Generativo",
-      "LLM Workflows",
-      "Midjourney",
-      "GitHub Copilot"
-    ],
-    "accentColor": "#b6e030",
-    "icon": "triangle"
-  }
-]
+  "categories": [
+    {
+      "id": "diseno-producto",
+      "order": 1,
+      "title": "Diseño de producto",
+      "technicalName": "UX/UI y diseño de producto",
+      "description": "Investigación de usuarios, arquitectura de información, interfaces y sistemas de diseño. Formación en diseño industrial aplicado a productos digitales y físicos.",
+      "icon": "circle",
+      "dots": ["autoral"],
+      "items": [
+        { "name": "UX research y síntesis",       "level": "intermedio", "state": "confirmado" },
+        { "name": "Arquitectura de información",   "level": "intermedio", "state": "confirmado" },
+        { "name": "Figma, UI y design systems",    "level": "intermedio", "state": "confirmado" },
+        { "name": "Docencia UX/UI",                "level": "avanzado",   "state": "confirmado" }
+      ]
+    },
+    {
+      "id": "desarrollo-web",
+      "order": 2,
+      "title": "Desarrollo web y front-end",
+      "technicalName": "Desarrollo web y front-end",
+      "description": "WordPress como base, con desarrollo a medida en Laravel y Angular, y front-end con HTML, CSS y JavaScript. Trabajo con CMS headless y React en formación.",
+      "icon": "square",
+      "dots": ["desarrollo"],
+      "items": [
+        { "name": "WordPress (ecosistema Crocoblock)", "level": "avanzado",   "state": "confirmado" },
+        { "name": "Laravel",                          "level": "avanzado",   "state": "confirmado" },
+        { "name": "Angular",                          "level": "avanzado",   "state": "confirmado" },
+        { "name": "HTML, CSS y JavaScript",           "level": "avanzado",   "state": "confirmado" },
+        { "name": "React",                            "level": "intermedio", "state": "confirmado" },
+        { "name": "CMS headless",                     "level": "intermedio", "state": "confirmado" }
+      ]
+    },
+    {
+      "id": "marketing-contenido",
+      "order": 3,
+      "title": "Marketing digital y contenido",
+      "technicalName": "Estrategia de contenido, SEO y GEO",
+      "description": "Contenido, SEO técnico y on-page, y campañas pagadas con criterio comercial para pymes. Marketing con IA como puente hacia la enseñanza.",
+      "icon": "triangle",
+      "dots": ["comercial"],
+      "items": [
+        { "name": "Estrategia de contenido",                     "level": "intermedio", "state": "confirmado" },
+        { "name": "SEO técnico y on-page",                       "level": "intermedio", "state": "confirmado" },
+        { "name": "Copywriting UX y storytelling",               "level": "intermedio", "state": "confirmado" },
+        { "name": "Marketing con IA",                            "level": "intermedio", "state": "confirmado" },
+        { "name": "GEO (optimización para motores generativos)", "level": "basico",     "state": "confirmado" },
+        { "name": "Campañas Meta y Google Ads",                  "level": "basico",     "state": "confirmado" },
+        { "name": "Analítica (GA4)",                             "level": "basico",     "state": "en-curso",  "note": "Certificación Google Marketing en curso" }
+      ]
+    },
+    {
+      "id": "diseno-industrial",
+      "order": 4,
+      "title": "Diseño industrial, CAD y fabricación",
+      "technicalName": "Ingeniería en Fabricación y Diseño Industrial",
+      "description": "Formación en Ingeniería en Fabricación y Diseño Industrial (UTFSM). Modelado paramétrico, render de producto, prototipado y fabricación digital.",
+      "icon": "circle",
+      "dots": ["autoral"],
+      "items": [
+        { "name": "Autodesk Inventor",          "level": "avanzado",   "state": "confirmado" },
+        { "name": "Fusion 360",                 "level": "avanzado",   "state": "confirmado" },
+        { "name": "KeyShot",                    "level": "avanzado",   "state": "confirmado" },
+        { "name": "Rhinoceros",                 "level": "basico",     "state": "confirmado" },
+        { "name": "Creo Parametric",            "level": "basico",     "state": "confirmado" },
+        { "name": "SketchUp, AutoCAD",          "level": "intermedio", "state": "confirmado" },
+        { "name": "Impresión 3D FDM",           "level": "avanzado",   "state": "confirmado" },
+        { "name": "Arduino y microcomponentes", "level": "intermedio", "state": "confirmado" },
+        { "name": "Corte láser y CNC",          "level": "intermedio", "state": "confirmado" }
+      ]
+    },
+    {
+      "id": "interaccion-espacial",
+      "order": 5,
+      "title": "Interacción espacial",
+      "technicalName": "XR y 3D web",
+      "description": "Experimentos de interacción espacial, realidad extendida y 3D en el navegador. Área en formación, con estado honesto de cada pieza.",
+      "icon": "square",
+      "dots": ["autoral", "desarrollo"],
+      "items": [
+        { "name": "Three.js",                        "level": "intermedio",   "state": "confirmado" },
+        { "name": "MediaPipe (gestos y seguimiento)", "level": "intermedio",   "state": "confirmado" },
+        { "name": "Experimentos XR y VR",            "level": "en-formacion", "state": "en-formacion" },
+        { "name": "3D Gaussian Splatting",            "level": "en-formacion", "state": "en-formacion" }
+      ]
+    },
+    {
+      "id": "ia-automatizacion",
+      "order": 6,
+      "title": "IA aplicada y automatización",
+      "technicalName": "Flujos generativos y automatización",
+      "description": "Flujos con modelos de lenguaje y generación de imágenes, automatización con n8n y pipelines de contenido. Orientado a pymes y emprendedores.",
+      "icon": "triangle",
+      "dots": ["desarrollo", "comercial"],
+      "items": [
+        { "name": "Midjourney y prompting visual",   "level": "avanzado",   "state": "confirmado" },
+        { "name": "LLM con API y flujos de trabajo", "level": "intermedio", "state": "confirmado" },
+        { "name": "n8n",                             "level": "intermedio", "state": "confirmado" },
+        { "name": "ComfyUI y pipelines locales",     "level": "basico",     "state": "en-proceso" }
+      ]
+    },
+    {
+      "id": "multimedia-audiovisual",
+      "order": 7,
+      "title": "Multimedia y audiovisual",
+      "technicalName": "Producción audiovisual y 3D",
+      "description": "Video, motion y 3D para proyectos autorales, eventos y productoras. Rama autoral en desarrollo.",
+      "icon": "circle",
+      "dots": ["autoral"],
+      "draft": true,
+      "items": [
+        { "name": "Blender",                    "level": "basico",        "state": "confirmado" },
+        { "name": "Premiere y After Effects",   "level": "intermedio",    "state": "confirmado" },
+        { "name": "Cinema 4D y Moho",           "level": "en-formacion",  "state": "en-formacion" },
+        { "name": "TouchDesigner",              "level": "en-formacion",  "state": "en-formacion" },
+        { "name": "Línea autoral",              "level": "en-desarrollo", "state": "en-desarrollo" }
+      ]
+    }
+  ]
+}

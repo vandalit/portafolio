@@ -45,9 +45,15 @@ export class Carousel {
 
   refresh() {
     if (!this.track) return;
-    this.items = [...this.container.querySelectorAll('.carousel-track > *')];
-    this._updateActive(this.currentIndex);
+    // Re-read only visible items (skip display:none)
+    this.items = [...this.container.querySelectorAll('.carousel-track > *')].filter(el => el.style.display !== 'none' && !el.classList.contains('is-filtered-out'));
+    this.currentIndex = 0;
+    this._updateActive(0);
     this._updateProgress();
+    // Reset translate to start
+    this.track.style.transform = 'translate3d(0, 0, 0)';
+    this.currentTranslate = 0;
+    this.prevTranslate = 0;
   }
 
   _bindEvents() {

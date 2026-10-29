@@ -411,6 +411,10 @@
 .skill-card[data-accent="lime"]::before    { background: var(--grad-lime); }
 .skill-card[data-accent="lime"]:hover      { box-shadow: var(--shadow-lg), 0 0 30px var(--lime-glow-sm); }
 
+/* Mango axis (Comercial) */
+.skill-card[data-accent="mango"]::before   { background: var(--grad-mango); }
+.skill-card[data-accent="mango"]:hover     { box-shadow: var(--shadow-lg), 0 0 30px color-mix(in srgb, var(--mango) 30%, transparent); }
+
 /* Doodle icon background */
 .skill-card__icon-bg {
   position: absolute;
@@ -493,6 +497,71 @@
 .skill-card[data-accent="magenta"] .skill-card__cta { color: var(--magenta); }
 .skill-card[data-accent="lime"] .skill-card__category,
 .skill-card[data-accent="lime"] .skill-card__cta    { color: var(--lime); }
+
+/* Mango text colors */
+.skill-card[data-accent="mango"] .skill-card__category,
+.skill-card[data-accent="mango"] .skill-card__cta   { color: var(--mango); }
+
+/* Filter: hidden cards collapse entirely so carousel has no gaps */
+.skill-card.is-filtered-out {
+  display: none !important;
+}
+
+/* Legend item: interactive filter button */
+.skills-legend__item[data-dot] {
+  cursor: pointer;
+  user-select: none;
+  transition: opacity var(--transition-fast);
+}
+.skills-legend__item[data-dot]:hover .skills-legend__label { color: var(--text-0); }
+.skills-legend__item[data-dot].is-active .skills-legend__label { color: var(--text-0); }
+.skills-legend__item[data-dot].is-active .skills-legend__dot  { box-shadow: 0 0 12px currentColor; }
+
+/* Draft card overlay (Card 7 - Multimedia) */
+.skill-card--draft {
+  overflow: hidden;
+}
+.skill-card--draft::after {
+  content: 'PRÓXIMAMENTE';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255,255,255,0.03) 0,
+    rgba(255,255,255,0.03) 1px,
+    transparent 0,
+    transparent 50%
+  );
+  background-size: 6px 6px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: var(--sp-3) var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-3);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Multi-dot mini indicators on card (optional, subtle) */
+.skill-card__dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 3px;
+}
+.skill-card__dot--autoral  { background: var(--magenta); }
+.skill-card__dot--desarrollo { background: var(--lime); }
+.skill-card__dot--comercial  { background: var(--mango); }
+
+/* +N más pill indicator */
+.skill-pill--more {
+  opacity: 0.5;
+  font-style: italic;
+}
 
 .skill-card:hover .skill-card__cta { gap: var(--sp-3); }
 
@@ -690,6 +759,52 @@
 .skill-pill--lg {
   font-size: var(--text-sm);
   padding: var(--sp-2) var(--sp-5);
+}
+
+/* Pill with level fill (eye mode active) */
+.skill-pill--level {
+  position: relative;
+  overflow: hidden;
+}
+.skill-pill--level::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--level-pct, 40%);
+  background: var(--lime);
+  opacity: 0.18;
+  border-radius: inherit;
+  transition: width 400ms var(--ease-out), opacity var(--transition);
+}
+.skill-pill--level:hover::before { opacity: 0.28; }
+
+/* Eye toggle button — inline as last pill in modal */
+.skill-modal__eye {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg-4);
+  border: 1px solid var(--border-1);
+  color: var(--text-2);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+  vertical-align: middle;
+}
+.skill-modal__eye:hover {
+  border-color: var(--lime);
+  color: var(--lime);
+}
+.skill-modal__eye.is-active {
+  background: var(--lime);
+  color: var(--bg-0);
+  border-color: var(--lime);
+  box-shadow: 0 0 12px var(--lime-glow-sm);
 }
 
 /* ── PROJECT THUMB CARD ──────────────────────────────────── */
@@ -1991,6 +2106,7 @@
 
 .skills-legend__label {
   color: var(--text-2);
+  transition: color var(--transition-fast);
 }
 
 /* ── PROJECT THUMB META & SUBTITLE (DESACOPLADO DE INLINE STYLE) ── */

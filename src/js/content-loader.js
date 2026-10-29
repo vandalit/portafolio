@@ -95,7 +95,7 @@ export async function loadSection(sectionName) {
 /**
  * Carga las habilidades técnicas desde content/skills/skills.json
  *
- * @returns {Promise<Array<Object>>}
+ * @returns {Promise<{ legend: Object, categories: Array<Object> }>}
  */
 export async function loadSkills() {
   try {
@@ -105,7 +105,7 @@ export async function loadSkills() {
     return await res.json();
   } catch (err) {
     console.error('[ContentLoader] Failed to load skills:', err);
-    return [];
+    return { legend: {}, categories: [] };
   }
 }
 
@@ -148,7 +148,7 @@ export async function loadAllContent(forceFromFiles = false) {
     cases: cases.length,
     clients: clients.length,
     lab: lab.length,
-    skills: skills.length
+    skills: (skills.categories || []).length
   });
 
   return { cases, clients, lab, skills };

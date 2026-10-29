@@ -96,7 +96,9 @@ function loadLab() {
 }
 
 function loadSkills() {
-  return readJSON(join(CONTENT, 'skills', 'skills.json'));
+  const raw = readJSON(join(CONTENT, 'skills', 'skills.json'));
+  // Support new schema { legend, categories } or legacy flat array
+  return Array.isArray(raw) ? { legend: {}, categories: raw } : raw;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -127,26 +129,34 @@ const triangleIcon = (color) => `
 /**
  * SKILLS — Perfil técnico
  */
-function renderSkillCards(skills) {
-  return skills.map((s, i) => {
-    const isMagenta = s.accentColor.includes('d4') || s.accentColor.includes('e8');
-    const accent = isMagenta ? 'magenta' : 'lime';
-    const accentColor = isMagenta ? 'var(--magenta)' : 'var(--lime)';
+function renderSkillCards(categories) {
+  const ACCENT_MAP = { autoral: 'magenta', desarrollo: 'lime', comercial: 'mango' };
+  const MAX_CARD_PILLS = 6;
+
+  return categories.map((s) => {
+    const primaryDot = (s.dots && s.dots[0]) || 'autoral';
+    const accent = ACCENT_MAP[primaryDot] || 'magenta';
+    const accentColor = accent === 'magenta' ? 'var(--magenta)' : accent === 'lime' ? 'var(--lime)' : 'var(--mango)';
 
     const icons = { circle: circleIcon, square: squareIcon, triangle: triangleIcon };
     const iconSvg = icons[s.icon] || circleIcon;
 
+    const cardItems = (s.items || []).slice(0, MAX_CARD_PILLS);
+    const extraCount = (s.items || []).length - cardItems.length;
+    const modalData = JSON.stringify({ id: s.id, title: s.title, technicalName: s.technicalName, description: s.description, dots: s.dots, items: s.items || [] });
+    const draftClass = s.draft ? ' skill-card--draft' : '';
+
     return `
-      <article class="skill-card" data-accent="${accent}" tabindex="0">
+      <article class="skill-card${draftClass}" data-accent="${accent}" data-dots="${(s.dots || []).join(',')}" data-skill='${modalData.replace(/'/g, '&#39;')}' tabindex="0">
         <div class="skill-card__icon-bg">${iconSvg(accentColor)}</div>
-        <p class="skill-card__category">${escapeHtml(s.category.toUpperCase())}</p>
+        <p class="skill-card__category">${escapeHtml(s.technicalName.toUpperCase())}</p>
         <h3 class="skill-card__title">${escapeHtml(s.title)}</h3>
         <p class="skill-card__desc">${escapeHtml(s.description)}</p>
         <div class="skill-card__pills">
-          ${s.skills.map(sk => `<span class="skill-pill">${escapeHtml(sk)}</span>`).join('')}
+          ${cardItems.map(item => `<span class="skill-pill">${escapeHtml(item.name)}</span>`).join('')}
+          ${extraCount > 0 ? `<span class="skill-pill skill-pill--more">+${extraCount} más</span>` : ''}
         </div>
         <button class="skill-card__cta btn--ghost-${accent}"
-                data-filter="${escapeHtml(s.filterTag)}"
                 data-scroll-to="work">
           Ver ejemplos <span>→</span>
         </button>
@@ -351,7 +361,7 @@ function buildHtml({ site, cases, clients, lab, skills }) {
   // ── 2. SKILLS — carrusel de habilidades ────────────────────────────────────
   html = html.replace(
     /(<div class="carousel-track" role="list">\s*)<!-- Skill cards populated by JS -->(\s*<\/div>)/,
-    `$1${renderSkillCards(skills)}\n            $2`
+    `$1${renderSkillCards(skills.categories || [])}\n            $2`
   );
 
   // ── 3. CASES — caso destacado ───────────────────────────────────────────────
@@ -398,9 +408,9 @@ function validateContent({ site, cases, clients, lab, skills }) {
     if (!c.description) warnings.push(`Caso sin descripción: ${c.title}`);
   });
 
-  skills.forEach(s => {
+  (skills.categories || []).forEach(s => {
     if (!s.title) errors.push(`Grupo de habilidades sin título (${s.id})`);
-    if (!Array.isArray(s.skills) || s.skills.length === 0) warnings.push(`Habilidades vacías en ${s.title}`);
+    if (!Array.isArray(s.items) || s.items.length === 0) warnings.push(`Habilidades vacías en ${s.title}`);
   });
 
   if (warnings.length > 0) {
@@ -446,8 +456,8 @@ function generateLlmsTxt({ site, cases, clients, lab, skills }) {
   const tagline = site.hero?.tagline || '';
   const email = site.hero?.email || '';
 
-  const skillsBlock = skills
-    .map(s => `- **${s.title}** (${s.category}): ${s.description} [Herramientas: ${s.skills.join(', ')}]`)
+  const skillsBlock = (skills.categories || [])
+    .map(s => `- **${s.title}** (${s.technicalName}): ${s.description} [Skills: ${(s.items || []).map(i => i.name).join(', ')}]`)
     .join('\n');
 
   const casesBlock = cases
@@ -535,7 +545,7 @@ async function main() {
   console.log(`[build]    - ${cases.length} casos de estudio`);
   console.log(`[build]    - ${clients.length} proyectos (trabajos)`);
   console.log(`[build]    - ${lab.length} experimentos de lab`);
-  console.log(`[build]    - ${skills.length} grupos de habilidades`);
+  console.log(`[build]    - ${(skills.categories || []).length} grupos de habilidades`);
 
   // 3. Validar
   validateContent({ site, cases, clients, lab, skills });

@@ -92,29 +92,53 @@ function renderFeatured(cases) {
   el.dataset.type = 'case';
 }
 
-function renderSkillCards(skills) {
+// Mapa de niveles a porcentaje de relleno para el ojo en modal
+const LEVEL_PCT = { 'basico': 40, 'intermedio': 70, 'avanzado': 95, 'en-formacion': 20, 'en-desarrollo': 20, 'en-proceso': 20 };
+
+// Pills de card: máximo 6, nombres cortos del items[].name
+const MAX_CARD_PILLS = 6;
+
+function renderSkillCards(categories) {
   const track = document.querySelector('#skills-carousel .carousel-track');
   if (!track) return;
 
-  track.innerHTML = skills.map((s, i) => {
-    const isMagenta = s.accentColor.includes('d4') || s.accentColor.includes('e8');
-    const accent = isMagenta ? 'magenta' : 'lime';
-    const accentColor = isMagenta ? 'var(--magenta)' : 'var(--lime)';
+  // Mapa de color de acento según eje
+  const ACCENT_MAP = { autoral: 'magenta', desarrollo: 'lime', comercial: 'mango' };
+
+  track.innerHTML = categories.map((s) => {
+    // Primer dot define el acento visual de la card
+    const primaryDot = (s.dots && s.dots[0]) || 'autoral';
+    const accent = ACCENT_MAP[primaryDot] || 'magenta';
+    const accentColor = accent === 'magenta' ? 'var(--magenta)' : accent === 'lime' ? 'var(--lime)' : 'var(--mango)';
 
     const icons = { circle: circleIcon, square: squareIcon, triangle: triangleIcon };
     const iconSvg = icons[s.icon] || circleIcon;
 
+    // Pills de tarjeta: máximo MAX_CARD_PILLS items, solo nombre corto
+    const cardItems = (s.items || []).slice(0, MAX_CARD_PILLS);
+    const extraCount = (s.items || []).length - cardItems.length;
+
+    // Dots visuals (puede tener varios ejes)
+    const dotsHtml = (s.dots || []).map(d =>
+      `<span class="skill-card__dot skill-card__dot--${d}" aria-hidden="true"></span>`
+    ).join('');
+
+    // Data para el modal: serializar items a JSON en data-atributo
+    const modalData = JSON.stringify({ id: s.id, title: s.title, technicalName: s.technicalName, description: s.description, dots: s.dots, items: s.items || [] });
+
+    const draftClass = s.draft ? ' skill-card--draft' : '';
+
     return `
-      <article class="skill-card" data-accent="${accent}" tabindex="0">
+      <article class="skill-card${draftClass}" data-accent="${accent}" data-dots="${(s.dots || []).join(',')}" data-skill='${modalData.replace(/'/g, '&#39;')}' tabindex="0">
         <div class="skill-card__icon-bg">${iconSvg(accentColor)}</div>
-        <p class="skill-card__category">${s.category.toUpperCase()}</p>
+        <p class="skill-card__category">${s.technicalName.toUpperCase()}</p>
         <h3 class="skill-card__title">${s.title}</h3>
         <p class="skill-card__desc">${s.description}</p>
         <div class="skill-card__pills">
-          ${s.skills.map(sk => `<span class="skill-pill">${sk}</span>`).join('')}
+          ${cardItems.map(item => `<span class="skill-pill">${item.name}</span>`).join('')}
+          ${extraCount > 0 ? `<span class="skill-pill skill-pill--more">+${extraCount} más</span>` : ''}
         </div>
         <button class="skill-card__cta btn--ghost-${accent}"
-                data-filter="${s.filterTag}"
                 data-scroll-to="work">
           Ver ejemplos <span>→</span>
         </button>
@@ -392,15 +416,47 @@ function initSkillModal() {
   const descEl   = modal.querySelector('.skill-modal__desc');
   const pillsEl  = modal.querySelector('.skill-modal__pills');
 
+  let eyeActive = false;
+
+  function renderPills(items, withEye) {
+    const LABEL_MAP = { basico: 'Básico', intermedio: 'Intermedio', avanzado: 'Avanzado', 'en-formacion': 'En formación', 'en-desarrollo': 'En desarrollo', 'en-proceso': 'En proceso' };
+    const pct = (lvl) => LEVEL_PCT[lvl] || 40;
+
+    const pillsHtml = items.map(item => {
+      const levelClass = withEye ? ` skill-pill--level` : '';
+      const style = withEye ? ` style="--level-pct:${pct(item.level)}%"` : '';
+      return `<span class="skill-pill skill-pill--lg${levelClass}"${style}>${item.name}</span>`;
+    }).join('');
+
+    // El ojo va inline como última "pill"
+    const eyeClass = withEye ? ' is-active' : '';
+    const eyeBtn = `<button class="skill-modal__eye${eyeClass}" aria-label="Mostrar nivel de habilidad" title="Ver niveles">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+    </button>`;
+
+    pillsEl.innerHTML = pillsHtml + eyeBtn;
+
+    // Re-bind eye button click
+    pillsEl.querySelector('.skill-modal__eye')?.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      eyeActive = !eyeActive;
+      renderPills(items, eyeActive);
+    });
+  }
+
   function openSkillModal(skillData) {
-    if (catEl)   catEl.textContent   = skillData.category?.toUpperCase() || '';
+    eyeActive = false;
+    const accent = skillData.dots && skillData.dots[0] ? ({ autoral: 'magenta', desarrollo: 'lime', comercial: 'mango' }[skillData.dots[0]] || 'magenta') : 'magenta';
+    if (catEl) {
+      catEl.textContent = skillData.technicalName?.toUpperCase() || skillData.title?.toUpperCase() || '';
+      catEl.style.color = accent === 'magenta' ? 'var(--magenta)' : accent === 'lime' ? 'var(--lime)' : 'var(--mango)';
+    }
     if (titleEl) titleEl.textContent = skillData.title || '';
     if (descEl)  descEl.textContent  = skillData.description || '';
-    if (pillsEl) {
-      pillsEl.innerHTML = (skillData.skills || [])
-        .map(sk => `<span class="skill-pill skill-pill--lg">${sk}</span>`)
-        .join('');
-    }
+    if (pillsEl) renderPills(skillData.items || [], false);
     modal.setAttribute('aria-hidden', 'false');
     modal.classList.add('is-open');
     document.body.style.overflow = 'hidden';
@@ -410,6 +466,7 @@ function initSkillModal() {
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    eyeActive = false;
   }
 
   backdrop?.addEventListener('click', closeSkillModal);
@@ -418,16 +475,55 @@ function initSkillModal() {
     if (e.key === 'Escape' && modal.classList.contains('is-open')) closeSkillModal();
   });
 
-  // Delegate — escucha clics en skill-cards renderizadas dinámicamente
+  // Delegate — lee datos serializados en data-skill del card
   document.addEventListener('click', (e) => {
     const card = e.target.closest('.skill-card');
     if (!card || e.target.closest('[data-scroll-to]')) return;
-    // Leer datos del DOM (ya renderizados)
-    const category = card.querySelector('.skill-card__category')?.textContent || '';
-    const title    = card.querySelector('.skill-card__title')?.textContent || '';
-    const desc     = card.querySelector('.skill-card__desc')?.textContent || '';
-    const pills    = [...card.querySelectorAll('.skill-pill')].map(p => p.textContent);
-    openSkillModal({ category, title, description: desc, skills: pills });
+    try {
+      const skillData = JSON.parse(card.dataset.skill || '{}');
+      openSkillModal(skillData);
+    } catch {
+      // fallback: leer del DOM si el JSON falla
+      const title = card.querySelector('.skill-card__title')?.textContent || '';
+      const desc  = card.querySelector('.skill-card__desc')?.textContent || '';
+      openSkillModal({ title, description: desc, items: [] });
+    }
+  });
+}
+
+// ── SKILL LEGEND FILTER ───────────────────────────────────
+function initSkillLegendFilter(skillsCarouselInstance) {
+  const legendItems = document.querySelectorAll('.skills-legend__item[data-dot]');
+  if (!legendItems.length) return;
+
+  const cards = () => document.querySelectorAll('#skills-carousel .skill-card');
+
+  legendItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const dot = item.dataset.dot;
+      const isActive = item.classList.contains('is-active');
+
+      // Deactivate all, then activate clicked if not already active
+      legendItems.forEach(el => el.classList.remove('is-active'));
+
+      if (isActive) {
+        // Toggle off: show all
+        cards().forEach(card => card.classList.remove('is-filtered-out'));
+      } else {
+        item.classList.add('is-active');
+        cards().forEach(card => {
+          const cardDots = (card.dataset.dots || '').split(',').filter(Boolean);
+          if (!cardDots.includes(dot)) {
+            card.classList.add('is-filtered-out');
+          } else {
+            card.classList.remove('is-filtered-out');
+          }
+        });
+      }
+
+      // Refresh carousel to skip hidden cards
+      if (skillsCarouselInstance) skillsCarouselInstance.refresh();
+    });
   });
 }
 
@@ -851,7 +947,7 @@ async function init() {
     if (projectsData) {
       renderFeatured(projectsData.cases);
       renderCaseCards(projectsData.cases);
-      renderSkillCards(projectsData.skills);
+      renderSkillCards(projectsData.skills.categories || []);
       renderClientGrid(projectsData.clients);
       renderLabGrid(projectsData.lab);
 
@@ -915,7 +1011,8 @@ async function init() {
   if (casesCarousel) new Carousel(casesCarousel);
 
   const skillsCarousel = document.getElementById('skills-carousel');
-  if (skillsCarousel) new Carousel(skillsCarousel, { activeClass: '' });
+  const skillsCarouselInstance = skillsCarousel ? new Carousel(skillsCarousel, { activeClass: '' }) : null;
+  initSkillLegendFilter(skillsCarouselInstance);
 
   const labCarousel = document.getElementById('lab-carousel');
   if (labCarousel) new Carousel(labCarousel, { activeClass: '' });
