@@ -125,6 +125,9 @@ function renderClientGrid(clients) {
   const grid = document.getElementById('clients-grid');
   if (!grid || !Array.isArray(clients)) return;
 
+  // Cover por defecto: imagen SVG blanca inlined (sin red, funciona estático)
+  const DEFAULT_COVER_SVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23f4f4f4'/%3E%3C/svg%3E`;
+
   const allProjects = clients.map(c => ({ ...c, _type: 'client' }));
 
   grid.innerHTML = allProjects.map(c => {
@@ -132,16 +135,19 @@ function renderClientGrid(clients) {
     const tagClass = isMultimedia ? 'tag--magenta' : 'tag--lime';
     const badge = c.client ? c.client : (c.category === 'coding' ? '✦ Coding' : '◈ Multimedia');
     const tagsStr = (c.tags || []).join(' ');
+    const coverSrc = c.cover || c.coverPlaceholder || DEFAULT_COVER_SVG;
+    const isEmpty = !c.client && !c.description;
 
     return `
-      <article class="project-thumb"
+      <article class="project-thumb ${isEmpty ? 'project-thumb--wip' : ''}"
                data-category="${c.category}"
                data-tags="${tagsStr}"
-               data-project-id="${c.id}"
+               data-project-id="${isEmpty ? '' : c.id}"
                data-type="${c._type}"
-               role="button" tabindex="0"
-               aria-label="Ver proyecto: ${c.title}">
-        <img class="project-thumb__img" src="${c.coverPlaceholder}" alt="${c.title}" loading="lazy">
+               ${isEmpty ? '' : 'role="button" tabindex="0"'}
+               aria-label="${isEmpty ? 'Proyecto próximamente' : 'Ver proyecto: ' + c.title}">
+        <img class="project-thumb__img" src="${coverSrc}" alt="${c.title || 'Próximamente'}" loading="lazy">
+        ${isEmpty ? '<div class="project-thumb__wip-badge">Próximamente</div>' : `
         <div class="project-thumb__overlay"></div>
         <div class="project-thumb__info">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--sp-2)">
@@ -152,7 +158,7 @@ function renderClientGrid(clients) {
           <p class="project-thumb__meta" style="color:var(--text-1); font-size:var(--text-xs); margin-top:2px; text-transform:none">
             ${c.subtitle || c.role}
           </p>
-        </div>
+        </div>`}
       </article>
     `;
   }).join('');
@@ -288,6 +294,74 @@ function initReveal() {
   }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
 
   revealEls.forEach(el => obs.observe(el));
+}
+
+// ── WORK TITLE SCROLLTELL — arranca izquierda, centra al aparecer ──
+function initWorkTitleScrolltell() {
+  const workHeader = document.querySelector('.work-header');
+  if (!workHeader) return;
+
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        workHeader.classList.add('work-header--centered');
+        obs.unobserve(workHeader);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  obs.observe(workHeader);
+}
+
+// ── SKILL MODAL (fullscreen detail) ──────────────────────
+function initSkillModal() {
+  const modal = document.getElementById('skill-modal');
+  if (!modal) return;
+
+  const backdrop = modal.querySelector('.skill-modal__backdrop');
+  const closeBtn = modal.querySelector('.skill-modal__close');
+  const catEl    = modal.querySelector('.skill-modal__category');
+  const titleEl  = modal.querySelector('.skill-modal__title');
+  const descEl   = modal.querySelector('.skill-modal__desc');
+  const pillsEl  = modal.querySelector('.skill-modal__pills');
+
+  function openSkillModal(skillData) {
+    if (catEl)   catEl.textContent   = skillData.category?.toUpperCase() || '';
+    if (titleEl) titleEl.textContent = skillData.title || '';
+    if (descEl)  descEl.textContent  = skillData.description || '';
+    if (pillsEl) {
+      pillsEl.innerHTML = (skillData.skills || [])
+        .map(sk => `<span class="skill-pill skill-pill--lg">${sk}</span>`)
+        .join('');
+    }
+    modal.setAttribute('aria-hidden', 'false');
+    modal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSkillModal() {
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  backdrop?.addEventListener('click', closeSkillModal);
+  closeBtn?.addEventListener('click', closeSkillModal);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('is-open')) closeSkillModal();
+  });
+
+  // Delegate — escucha clics en skill-cards renderizadas dinámicamente
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('.skill-card');
+    if (!card || e.target.closest('[data-scroll-to]')) return;
+    // Leer datos del DOM (ya renderizados)
+    const category = card.querySelector('.skill-card__category')?.textContent || '';
+    const title    = card.querySelector('.skill-card__title')?.textContent || '';
+    const desc     = card.querySelector('.skill-card__desc')?.textContent || '';
+    const pills    = [...card.querySelectorAll('.skill-pill')].map(p => p.textContent);
+    openSkillModal({ category, title, description: desc, skills: pills });
+  });
 }
 
 // ── NAV ──────────────────────────────────────────────────
@@ -639,6 +713,8 @@ async function init() {
   initParallax();
   initModal();
   initSkillLinks();
+  initSkillModal();
+  initWorkTitleScrolltell();
 
   // 3. Load projects data & render dynamic sections
   try {

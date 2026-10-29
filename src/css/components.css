@@ -493,6 +493,17 @@
 
 .tabs::-webkit-scrollbar { display: none; }
 
+/* Tabs con ancho completo — cada botón crece igual */
+.tabs--full {
+  margin-bottom: 0;
+}
+
+.tabs--full .tab-btn {
+  flex: 1;
+  text-align: center;
+  justify-content: center;
+}
+
 .tab-btn {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
@@ -515,6 +526,159 @@
   border-bottom-color: var(--magenta);
 }
 
+/* ── WORK SECTION — SCROLLTELL TITLE ─────────────────────── */
+/* Titular arranca left-aligned (por defecto) y migra a center al revelar */
+.work-header .section-header__title {
+  transition: text-align 0ms; /* no animar text-align, sino el transform */
+}
+
+.work-header {
+  transition: text-align 600ms var(--ease-out);
+}
+
+/* Estado inicial: izquierda */
+.work-header .section-header__title,
+.work-header .section-header__eyebrow,
+.work-header .section-header__desc {
+  text-align: left;
+}
+
+/* Estado revelado: centrado */
+.work-header--centered .section-header__title,
+.work-header--centered .section-header__eyebrow,
+.work-header--centered .section-header__desc {
+  text-align: center;
+  transition: text-align 0ms 400ms; /* sin transición visible en text-align, pero con delay del reveal */
+}
+
+/* WIP badge sobre tiles vacíos */
+.project-thumb--wip {
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.project-thumb--wip::after {
+  content: 'Próximamente';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-2);
+  background: rgba(8, 8, 16, 0.3);
+}
+
+.project-thumb__wip-badge {
+  display: none; /* el pseudo-elemento ::after lo reemplaza */
+}
+
+/* ── SKILL MODAL — Fullscreen Detail ─────────────────────── */
+.skill-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms var(--ease-out);
+}
+
+.skill-modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.skill-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 8, 14, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.skill-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(92vw, 860px);
+  padding: clamp(2.5rem, 6vw, 5rem);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-6);
+}
+
+.skill-modal__close {
+  position: absolute;
+  top: calc(-1 * var(--sp-10));
+  right: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.skill-modal__close:hover {
+  background: var(--lime);
+  color: var(--bg-0);
+  border-color: var(--lime);
+  transform: rotate(90deg);
+}
+
+.skill-modal__category {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--magenta);
+  margin: 0;
+}
+
+.skill-modal__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 6vw, 5rem);
+  font-weight: 400;
+  color: var(--text-0);
+  line-height: 1.05;
+  margin: 0;
+}
+
+.skill-modal__desc {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  color: var(--text-1);
+  line-height: 1.65;
+  max-width: 640px;
+  margin: 0;
+}
+
+.skill-modal__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  justify-content: center;
+  margin-top: var(--sp-2);
+}
+
+.skill-pill--lg {
+  font-size: var(--text-sm);
+  padding: var(--sp-2) var(--sp-5);
+}
+
 /* ── PROJECT THUMB CARD ──────────────────────────────────── */
 .project-thumb {
   position: relative;
@@ -533,6 +697,23 @@
   border-color: var(--border-2);
   transform: translateY(-3px);
   box-shadow: var(--shadow-lg);
+}
+
+/* En el grid flush los tiles no tienen borde individual ni radio */
+.projects-grid--flush .project-thumb {
+  border-radius: 0;
+  border: none;
+  aspect-ratio: 4/3;
+  transition: opacity var(--transition);
+}
+
+.projects-grid--flush .project-thumb:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.projects-grid--flush .project-thumb:hover .project-thumb__overlay {
+  opacity: 1;
 }
 
 .project-thumb.hidden {

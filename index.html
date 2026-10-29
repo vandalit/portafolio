@@ -129,7 +129,7 @@
     <ul class="nav__links" role="list">
       <li><a href="#cases"  class="nav__link" aria-label="Casos de estudio">Cases</a></li>
       <li><a href="#skills" class="nav__link" aria-label="Perfil técnico">Skills</a></li>
-      <li><a href="#work"   class="nav__link" aria-label="Trabajo de clientes">Trabajo</a></li>
+      <li><a href="#work"   class="nav__link" aria-label="Trabajos">Trabajos</a></li>
       <li><a href="#lab"    class="nav__link" aria-label="Experimentos">Lab</a></li>
     </ul>
     <div class="nav__actions">
@@ -361,31 +361,31 @@
   </section>
 
   <!-- ═══════════════════════════════════════════════════════
-       TRABAJO DE CLIENTES
+       TRABAJOS — GRID COMPLETO SIN GAPS (referente masonry flush)
   ══════════════════════════════════════════════════════════ -->
-  <section id="work" aria-label="Trabajo de clientes">
+  <section id="work" aria-label="Trabajos">
     <div class="container">
-      <header class="section-header reveal">
-        <p id="work-eyebrow" class="eyebrow section-header__eyebrow">Proyectos</p>
-        <h2 id="work-title" class="section-header__title display">Trabajo de Clientes</h2>
+      <header class="section-header work-header reveal">
+        <p id="work-eyebrow" class="eyebrow section-header__eyebrow">Proyectos reales</p>
+        <h2 id="work-title" class="section-header__title display work-title--animate">Trabajos</h2>
         <p id="work-desc" class="section-header__desc">
           Proyectos reales, problemas reales. Desde el brief hasta el deploy.
         </p>
       </header>
 
       <!-- Tabs -->
-      <nav class="tabs reveal" role="tablist" aria-label="Filtro de proyectos">
+      <nav class="tabs tabs--full reveal" role="tablist" aria-label="Filtro de proyectos">
         <button class="tab-btn active" data-tab="all"       role="tab" aria-selected="true">Todos</button>
         <button class="tab-btn"        data-tab="wordpress" role="tab" aria-selected="false">Web &amp; WP</button>
         <button class="tab-btn"        data-tab="ux"        role="tab" aria-selected="false">UX/UI</button>
         <button class="tab-btn"        data-tab="multimedia"role="tab" aria-selected="false">Multimedia</button>
         <button class="tab-btn"        data-tab="coding"    role="tab" aria-selected="false">Coding</button>
       </nav>
+    </div>
 
-      <!-- Grid -->
-      <div id="clients-grid" class="projects-grid stagger" role="list" aria-label="Grid de proyectos">
-        <!-- Populated by JS -->
-      </div>
+    <!-- Grid — breakout completo, sin container, sin gaps -->
+    <div id="clients-grid" class="projects-grid--flush stagger" role="list" aria-label="Grid de proyectos">
+      <!-- Populated by JS -->
     </div>
   </section>
 
@@ -616,6 +616,24 @@
           </div>
         </section>
       </main>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SKILL FULLSCREEN MODAL — Vista detalle del Perfil Técnico
+  ══════════════════════════════════════════════════════════ -->
+  <div id="skill-modal" class="skill-modal" aria-hidden="true" role="dialog" aria-label="Detalle de habilidad técnica">
+    <div class="skill-modal__backdrop"></div>
+    <div class="skill-modal__panel">
+      <button class="skill-modal__close" aria-label="Cerrar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M2 2L14 14M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <p class="skill-modal__category"></p>
+      <h2 class="skill-modal__title"></h2>
+      <p class="skill-modal__desc"></p>
+      <div class="skill-modal__pills"></div>
     </div>
   </div>
 
