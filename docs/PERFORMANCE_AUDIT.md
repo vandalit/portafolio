@@ -105,3 +105,4 @@ Al añadir nuevas secciones interactivas, verificar esta lista de control:
 - [ ] **Movimiento:** Animar exclusivamente `transform` (`translate3d`, `scale`, `rotate`) y `opacity`. Evitar animar `top`, `left`, `width`, `height`, `margin` o `padding`.
 - [ ] **Contextos 3D / Canvas:** Implementar siempre pausa con `IntersectionObserver` cuando el canvas salga del campo visual.
 - [ ] **Contención CSS:** Aplicar `contain: content;` o `contain: paint;` en tarjetas de grids y carruseles para evitar invalidaciones masivas de árbol de render.
+
