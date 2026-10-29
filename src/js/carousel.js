@@ -28,6 +28,9 @@ export class Carousel {
     this.lastX = 0;
     this.lastTime = 0;
     this.rafId = null;
+    this.hasDragged = false;
+    this.dragDistance = 0;
+    this.wheelDebounceTimer = null;
 
     this._init();
   }
@@ -66,6 +69,41 @@ export class Carousel {
     this.prevBtn?.addEventListener('click', () => this.prev());
     this.nextBtn?.addEventListener('click', () => this.next());
 
+    // Intercept click on track when user was dragging cards/items
+    this.track.addEventListener('click', (e) => {
+      if (this.hasDragged) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        this.hasDragged = false;
+      }
+    }, true);
+
+    // Touchpad / horizontal wheel scroll
+    this.container.addEventListener('wheel', (e) => {
+      const absX = Math.abs(e.deltaX);
+      const absY = Math.abs(e.deltaY);
+
+      // Only handle dominant horizontal gesture
+      if (absX > absY && absX > 3) {
+        e.preventDefault();
+
+        const containerWidth = this.container.offsetWidth;
+        const trackWidth = this.track.scrollWidth;
+        const minTranslate = Math.min(0, -(trackWidth - containerWidth));
+        const maxTranslate = 0;
+
+        this.track.style.transition = 'none';
+        this.currentTranslate = Math.min(maxTranslate, Math.max(minTranslate, this.currentTranslate - e.deltaX));
+        this._setTranslate(this.currentTranslate);
+
+        clearTimeout(this.wheelDebounceTimer);
+        this.wheelDebounceTimer = setTimeout(() => {
+          this._snapToNearest();
+        }, 120);
+      }
+    }, { passive: false });
+
     // Keyboard
     this.container.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') this.prev();
@@ -86,6 +124,8 @@ export class Carousel {
     this.lastX = x;
     this.lastTime = Date.now();
     this.velocity = 0;
+    this.dragDistance = 0;
+    this.hasDragged = false;
     this.prevTranslate = this.currentTranslate;
     this.track.style.transition = 'none';
     this.track.style.cursor = 'grabbing';
@@ -103,6 +143,11 @@ export class Carousel {
     this.lastTime = now;
 
     const delta = x - this.startX;
+    this.dragDistance = Math.abs(delta);
+    if (this.dragDistance > 6) {
+      this.hasDragged = true;
+    }
+
     this.currentTranslate = this.prevTranslate + delta;
     this._setTranslate(this.currentTranslate);
   }
@@ -111,6 +156,13 @@ export class Carousel {
     if (!this.isDragging) return;
     this.isDragging = false;
     this.track.style.cursor = 'grab';
+
+    // Clear hasDragged after click event dispatch window if no click caught
+    if (this.hasDragged) {
+      setTimeout(() => {
+        this.hasDragged = false;
+      }, 100);
+    }
 
     // Snap based on velocity or position
     if (Math.abs(this.velocity) > 0.3) {
@@ -168,7 +220,7 @@ export class Carousel {
   }
 
   _setTranslate(x) {
-    this.track.style.transform = `translateX(${x}px)`;
+    this.track.style.transform = `translate3d(${x}px, 0, 0)`;
   }
 
   _updateActive(index) {
