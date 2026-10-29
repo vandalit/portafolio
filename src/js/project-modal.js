@@ -11,8 +11,8 @@ export class ProjectModal {
     this.scrollHint = this.modal?.querySelector('.modal__scroll-hint');
     this.backdrop = this.modal?.querySelector('.modal__backdrop');
 
-    // Lightbox / Vista Detalle de Imágenes
-    this.lightbox = this.modal?.querySelector('.modal__lightbox');
+    // Lightbox / Vista Detalle de Imágenes (Compartido a nivel raíz de DOM)
+    this.lightbox = document.querySelector('.modal__lightbox');
     this.lightboxImg = this.lightbox?.querySelector('.modal__lightbox-img');
     this.lightboxCounter = this.lightbox?.querySelector('.modal__lightbox-counter');
     this.lightboxClose = this.lightbox?.querySelector('.modal__lightbox-close');
@@ -37,14 +37,20 @@ export class ProjectModal {
     this.backdrop?.addEventListener('click', () => this.close());
     this.scrollHint?.addEventListener('click', () => this.close());
 
-    // Lightbox listeners
-    this.lightboxClose?.addEventListener('click', () => this.closeLightbox());
-    this.lightboxPrev?.addEventListener('click', () => this.prevPhoto());
-    this.lightboxNext?.addEventListener('click', () => this.nextPhoto());
+    // Lightbox listeners (solo actúan si este modal tiene el lightbox abierto)
+    this.lightboxClose?.addEventListener('click', () => {
+      if (this.isLightboxOpen) this.closeLightbox();
+    });
+    this.lightboxPrev?.addEventListener('click', () => {
+      if (this.isLightboxOpen) this.prevPhoto();
+    });
+    this.lightboxNext?.addEventListener('click', () => {
+      if (this.isLightboxOpen) this.nextPhoto();
+    });
 
     // Click en fondo oscuro para cerrar lightbox
     this.lightbox?.addEventListener('click', (e) => {
-      if (e.target === this.lightbox || e.target.classList.contains('modal__lightbox-stage')) {
+      if (this.isLightboxOpen && (e.target === this.lightbox || e.target.classList.contains('modal__lightbox-stage'))) {
         this.closeLightbox();
       }
     });
@@ -136,20 +142,20 @@ export class ProjectModal {
   }
 
   closeLightbox() {
-    if (!this.lightbox) return;
+    if (!this.lightbox || !this.isLightboxOpen) return;
     this.isLightboxOpen = false;
     this.lightbox.classList.remove('is-open');
     this.lightbox.setAttribute('aria-hidden', 'true');
   }
 
   nextPhoto() {
-    if (!this.photos.length) return;
+    if (!this.isLightboxOpen || !this.photos.length) return;
     this.currentPhotoIndex = (this.currentPhotoIndex + 1) % this.photos.length;
     this._updateLightboxView();
   }
 
   prevPhoto() {
-    if (!this.photos.length) return;
+    if (!this.isLightboxOpen || !this.photos.length) return;
     this.currentPhotoIndex = (this.currentPhotoIndex - 1 + this.photos.length) % this.photos.length;
     this._updateLightboxView();
   }

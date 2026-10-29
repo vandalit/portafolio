@@ -743,7 +743,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   position: relative;
   transition: transform 240ms var(--ease-out),
               border-color 240ms var(--ease-out),
@@ -1078,15 +1078,16 @@
   height: 75px;
   border-radius: 6px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
   flex-shrink: 0;
-  cursor: pointer;
-  transition: transform var(--transition), border-color var(--transition);
+  cursor: zoom-in;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
 }
 
 .lab-gallery-thumb:hover {
   border-color: var(--lime);
-  transform: scale(1.04);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 14px rgba(204, 240, 32, 0.25);
 }
 
 .lab-gallery-thumb img {
@@ -1323,8 +1324,8 @@
 .modal__lightbox {
   position: fixed;
   inset: 0;
-  z-index: 1000;
-  background: rgba(8, 8, 16, 0.94);
+  z-index: 3000;
+  background: rgba(8, 8, 16, 0.95);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   display: flex;
@@ -1355,7 +1356,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all var(--transition);
-  z-index: 1010;
+  z-index: 3010;
 }
 
 .modal__lightbox-close:hover {
@@ -1377,6 +1378,7 @@
   padding: 6px 14px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 3010;
 }
 
 .modal__lightbox-btn {
@@ -1394,7 +1396,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all var(--transition);
-  z-index: 1010;
+  z-index: 3010;
   backdrop-filter: blur(8px);
 }
 

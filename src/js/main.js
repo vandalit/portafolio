@@ -206,13 +206,13 @@ function renderLabGrid(lab) {
         </article>
       `;
     } else {
-      // Wrapper con cards comprimidas
+      // Wrapper con cards comprimidas (Templates / Trabajos anteriores sin modal detalle)
       const items = block.items;
       const isOverlap = items.length >= 4;
 
       const innerCards = items.map(l => `
-        <div class="lab-card--compressed" data-lab-id="${l.id}" tabindex="0" role="button" aria-label="Ver experimento: ${l.title}">
-          <span class="lab-pill-outline">Experimento</span>
+        <div class="lab-card--compressed" aria-label="Template o caso base: ${l.title}">
+          <span class="lab-pill-outline">Ejemplo</span>
           <h4 class="lab-card__title--compressed">${l.title}</h4>
           <p class="lab-card__desc--compressed">${l.description || l.subtitle}</p>
         </div>
@@ -226,8 +226,8 @@ function renderLabGrid(lab) {
     }
   }).join('');
 
-  // Event listener para abrir LabModal
-  track.querySelectorAll('[data-lab-id]').forEach(cardEl => {
+  // Event listener para abrir LabModal SOLO en las cards expandidas
+  track.querySelectorAll('.lab-card--expanded').forEach(cardEl => {
     cardEl.addEventListener('click', (e) => {
       // Si hizo clic en un link o botón dentro de la tarjeta, dejamos que navegue
       if (e.target.closest('a, button')) return;
