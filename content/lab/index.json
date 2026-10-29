@@ -1,5 +1,9 @@
 [
   "cssdriven-v1",
-  "cssdriven-v2",
-  "paprika"
+  "webxr-hands",
+  "neural-audio",
+  "glsl-raymarching",
+  "fluid-particles",
+  "paprika",
+  "cssdriven-v2"
 ]

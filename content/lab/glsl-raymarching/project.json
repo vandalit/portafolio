@@ -1,0 +1,33 @@
+{
+  "id": "glsl-raymarching",
+  "title": "GLSL SDF Raymarching",
+  "subtitle": "Geometrías no-euclidianas a 60fps",
+  "description": "Renderizado volumétrico en fragment shader puro con funciones de distancia con signo (SDF).",
+  "cardType": "compressed",
+  "wrapperGroup": "frontier-micro",
+  "tags": [
+    "shaders",
+    "glsl",
+    "raymarching",
+    "webgl2"
+  ],
+  "techStack": [
+    "WebGL 2.0",
+    "GLSL ES 3.0",
+    "Signed Distance Fields",
+    "Blinn-Phong Shading"
+  ],
+  "challenge": "Cálculo en tiempo real de normales y oclusión ambiental dentro de un solo shader pass.",
+  "solution": "Optimización analítica de gradientes de SDF y pasos adaptativos por distancia de rayo.",
+  "result": "Morphing continuo de sólidos 3D con reflexión especular en cualquier GPU moderna.",
+  "coverPlaceholder": "https://picsum.photos/seed/raymarching/800/450",
+  "cover": "https://picsum.photos/seed/raymarching/800/450",
+  "video": "https://assets.mixkit.co/videos/preview/mixkit-bright-neon-tunnel-41135-large.mp4",
+  "gallery": [
+    "https://picsum.photos/seed/raymarching-1/800/500"
+  ],
+  "links": {
+    "demo": "https://vandalit.github.io/portafolio/#lab",
+    "github": "https://github.com/vandalit/portafolio"
+  }
+}

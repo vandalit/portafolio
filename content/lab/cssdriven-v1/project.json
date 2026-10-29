@@ -3,15 +3,30 @@
   "title": "CSS AI-Driven v1",
   "subtitle": "Exploración CSS generativo",
   "description": "Primera exploración de CSS generativo dirigido por prompts. Límites y posibilidades del stack web cuando la IA actúa como co-piloto técnico.",
+  "cardType": "expanded",
   "tags": [
     "css",
     "coding",
     "ai-workflow"
   ],
+  "techStack": [
+    "CSS Grid & Subgrid",
+    "Custom Properties",
+    "AI Prompting Engine",
+    "Hardware Acceleration"
+  ],
+  "challenge": "¿Hasta dónde puede la IA inferir jerarquías visuales y composición modular compleja sin depender de frameworks pesados?",
+  "solution": "Pipeline de prompts técnicos iterativos con validación visual en navegador en tiempo real.",
+  "result": "Motor de layouts fluido con cero dependencias de JavaScript y 60fps garantizados.",
   "coverPlaceholder": "https://picsum.photos/seed/cssv1/800/450",
+  "cover": "https://picsum.photos/seed/cssv1/800/450",
+  "video": "https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-996-large.mp4",
+  "gallery": [
+    "https://picsum.photos/seed/cssv1-1/800/500",
+    "https://picsum.photos/seed/cssv1-2/800/500"
+  ],
   "links": {
     "demo": "./demos/cssaidriven_v1/index.html",
     "github": "https://github.com/vandalit/portafolio"
-  },
-  "cover": "https://picsum.photos/seed/cssv1/800/450"
+  }
 }

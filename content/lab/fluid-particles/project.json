@@ -1,0 +1,33 @@
+{
+  "id": "fluid-particles",
+  "title": "Navier-Stokes Fluid Sim",
+  "subtitle": "Dinámica de fluidos en WebGL",
+  "description": "Simulación física de advección y vorticidad con 100k partículas flotantes que interactúan con el puntero.",
+  "cardType": "compressed",
+  "wrapperGroup": "frontier-micro",
+  "tags": [
+    "physics",
+    "gpgpu",
+    "particles",
+    "webgl2"
+  ],
+  "techStack": [
+    "Transform Feedback",
+    "Eulerian Grid",
+    "Curl Noise",
+    "Floating-point Textures"
+  ],
+  "challenge": "Simular 100,000 partículas en CPUs móviles sin degradar el thread de eventos.",
+  "solution": "Pipeline GPGPU completo donde tanto la velocidad como la posición se calculan en shaders.",
+  "result": "Comportamiento hiper-fluido a 60fps con interacción táctil y reactividad al cursor.",
+  "coverPlaceholder": "https://picsum.photos/seed/fluids/800/450",
+  "cover": "https://picsum.photos/seed/fluids/800/450",
+  "video": "https://assets.mixkit.co/videos/preview/mixkit-abstract-animation-of-blue-and-purple-liquid-streams-44357-large.mp4",
+  "gallery": [
+    "https://picsum.photos/seed/fluids-1/800/500"
+  ],
+  "links": {
+    "demo": "https://vandalit.github.io/portafolio/#lab",
+    "github": "https://github.com/vandalit/portafolio"
+  }
+}

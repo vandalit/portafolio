@@ -224,6 +224,35 @@
               </div>
             </div>
 
+            <!-- Card condicional: Opciones avanzadas de Lab -->
+            <div id="bo-lab-options-card" class="bo-card" style="border-color: rgba(204, 240, 32, 0.35); display: none;">
+              <h3 class="bo-card__title" style="color: var(--lime);">🧪 Opciones de Laboratorio (Lab)</h3>
+              
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="field-card-type">Tipo de Tarjeta en Carrusel</label>
+                  <select id="field-card-type" class="bo-select">
+                    <option value="expanded">Expandida (con Cover 16:9)</option>
+                    <option value="compressed">Comprimida (para Wrapper apilado)</option>
+                  </select>
+                </div>
+                <div class="bo-field" id="wrap-wrapper-group">
+                  <label for="field-wrapper-group">Grupo de Envoltorio / Wrapper</label>
+                  <input type="text" id="field-wrapper-group" class="bo-input" placeholder="ej: frontier-micro">
+                </div>
+              </div>
+
+              <div class="bo-field">
+                <label for="field-video">Video Demostrativo en Micro-Loop (URL)</label>
+                <input type="url" id="field-video" class="bo-input" placeholder="https://... o ./assets/videos/...">
+              </div>
+
+              <div class="bo-field">
+                <label for="field-tech-stack">Frontier Tech Stack (separados por coma)</label>
+                <input type="text" id="field-tech-stack" class="bo-input" placeholder="WebXR, Three.js, MediaPipe, GLSL Shaders">
+              </div>
+            </div>
+
             <!-- Card: Narrativa del Caso / Proyecto -->
             <div class="bo-card">
               <h3 class="bo-card__title">Narrativa & Metodología</h3>

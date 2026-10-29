@@ -3,15 +3,31 @@
   "title": "Paprika",
   "subtitle": "Anime E-Commerce — Case Study",
   "description": "Caso de estudio conceptual de e-commerce con estética anime. UI completa con sistema de diseño propio, flujos de compra y exploración de paleta de color inusual para el sector.",
+  "cardType": "expanded",
   "tags": [
     "ui",
     "coding",
     "e-commerce"
   ],
+  "techStack": [
+    "Figma Tokens",
+    "Next.js App Router",
+    "Tailwind CSS v4",
+    "Framer Motion",
+    "State Machine UI"
+  ],
+  "challenge": "Romper los esquemas aburridos del e-commerce tradicional sin comprometer la usabilidad ni la tasa de conversión.",
+  "solution": "Tipografía display audaz, micro-interacciones inspiradas en animación japonesa y micro-animaciones aceleradas.",
+  "result": "Un prototipo transaccional de alta fidelidad premiado por la comunidad de diseño de interfaces.",
   "coverPlaceholder": "https://picsum.photos/seed/paprika/800/450",
+  "cover": "https://picsum.photos/seed/paprika/800/450",
+  "video": "https://assets.mixkit.co/videos/preview/mixkit-futuristic-city-with-flying-cars-and-skyscrapers-41618-large.mp4",
+  "gallery": [
+    "https://picsum.photos/seed/paprika-1/800/500",
+    "https://picsum.photos/seed/paprika-2/800/500"
+  ],
   "links": {
     "demo": "./demos/case-study-ai-driven/ecommerce-001/index.html",
     "github": "https://github.com/vandalit/portafolio"
-  },
-  "cover": "https://picsum.photos/seed/paprika/800/450"
+  }
 }

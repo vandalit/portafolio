@@ -1,0 +1,35 @@
+{
+  "id": "webxr-hands",
+  "title": "WebXR Spatial Gestures",
+  "subtitle": "Interacción espacial sin mandos",
+  "description": "Seguimiento de manos con MediaPipe y WebGL en navegadores inmersivos para cascos de VR/AR.",
+  "cardType": "compressed",
+  "wrapperGroup": "frontier-micro",
+  "tags": [
+    "webxr",
+    "vr",
+    "spatial-ui",
+    "mediapipe"
+  ],
+  "techStack": [
+    "WebXR Device API",
+    "Three.js",
+    "MediaPipe Hands",
+    "GLSL Shaders",
+    "Quaternion Physics"
+  ],
+  "challenge": "Minimizar latencia de detección gestual dentro del loop de renderizado a 90hz.",
+  "solution": "Web Workers para cómputo de landmarks en paralelo con interpolación esférica de rotaciones.",
+  "result": "Manipulación de objetos virtuales con feedback háptico visual y menos de 12ms de retraso.",
+  "coverPlaceholder": "https://picsum.photos/seed/webxr/800/450",
+  "cover": "https://picsum.photos/seed/webxr/800/450",
+  "video": "https://assets.mixkit.co/videos/preview/mixkit-hands-holding-a-smartphone-with-green-screen-42583-large.mp4",
+  "gallery": [
+    "https://picsum.photos/seed/webxr-1/800/500",
+    "https://picsum.photos/seed/webxr-2/800/500"
+  ],
+  "links": {
+    "demo": "https://vandalit.github.io/portafolio/#lab",
+    "github": "https://github.com/vandalit/portafolio"
+  }
+}

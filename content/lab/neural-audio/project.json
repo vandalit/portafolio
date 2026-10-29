@@ -1,0 +1,33 @@
+{
+  "id": "neural-audio",
+  "title": "Neural Soundscapes",
+  "subtitle": "Síntesis procedural Web Audio",
+  "description": "Generación de paisajes sonoros dinámicos y bio-retroalimentación sonora mediante Web Audio API.",
+  "cardType": "compressed",
+  "wrapperGroup": "frontier-micro",
+  "tags": [
+    "audio",
+    "web-audio",
+    "dsp",
+    "procedural"
+  ],
+  "techStack": [
+    "Web Audio API",
+    "AudioWorklet Node",
+    "Pink Noise DSP",
+    "Custom Biquad Filters"
+  ],
+  "challenge": "Evitar cortes de audio bajo alta carga gráfica en la UI principal del navegador.",
+  "solution": "Aislamiento de osciladores y filtros en hilo dedicado con AudioWorkletProcessor.",
+  "result": "Atmósferas sonoras infinitas sin consumo perceptible de memoria ni caídas de frame.",
+  "coverPlaceholder": "https://picsum.photos/seed/soundscape/800/450",
+  "cover": "https://picsum.photos/seed/soundscape/800/450",
+  "video": "https://assets.mixkit.co/videos/preview/mixkit-sound-waves-oscillating-on-a-dark-background-48099-large.mp4",
+  "gallery": [
+    "https://picsum.photos/seed/soundscape-1/800/500"
+  ],
+  "links": {
+    "demo": "https://vandalit.github.io/portafolio/#lab",
+    "github": "https://github.com/vandalit/portafolio"
+  }
+}

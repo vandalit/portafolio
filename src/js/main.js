@@ -8,6 +8,7 @@ import { HeroScene } from './three-scene.js';
 import { Carousel } from './carousel.js';
 import { GridFilter } from './grid-filter.js';
 import { ProjectModal } from './project-modal.js';
+import { LabModal } from './lab-modal.js';
 import { initVideoBackground } from './video-bg.js';
 import { bentoManager } from '../components/bentos/bento-manager.js';
 import { loadAllContent, loadSiteSettings } from './content-loader.js';
@@ -157,27 +158,99 @@ function renderClientGrid(clients) {
   }).join('');
 }
 
-function renderLabGrid(lab) {
-  const grid = document.getElementById('lab-grid');
-  if (!grid) return;
+let labModalInstance = null;
 
-  grid.innerHTML = lab.map(l => `
-    <article class="lab-card" tabindex="0">
-      <div class="lab-card__thumb lab-scanline">
-        <img class="lab-card__img" src="${l.coverPlaceholder}" alt="${l.title}" loading="lazy">
-        <span class="lab-card__badge">Experimento</span>
-      </div>
-      <div class="lab-card__body">
-        <h3 class="lab-card__title">${l.title}</h3>
-        <p class="lab-card__subtitle">${l.subtitle}</p>
-        <p class="lab-card__desc">${l.description}</p>
-        <div class="lab-card__links">
-          ${l.links.demo ? `<a href="${l.links.demo}" class="btn btn--lime btn--sm" target="_blank">Demo <span class="btn__icon">↗</span></a>` : ''}
-          ${l.links.github ? `<a href="${l.links.github}" class="btn btn--ghost btn--ghost-lime btn--sm" target="_blank">Código</a>` : ''}
+function renderLabGrid(lab) {
+  const track = document.getElementById('lab-track');
+  if (!track) return;
+
+  // Agrupamiento secuencial: cards comprimidas adyacentes o con el mismo wrapperGroup se empaquetan en un wrapper
+  const blocks = [];
+  let currentGroup = null;
+
+  lab.forEach(item => {
+    if (item.cardType === 'compressed') {
+      const groupKey = item.wrapperGroup || 'default';
+      if (!currentGroup || currentGroup.key !== groupKey) {
+        currentGroup = { type: 'wrapper', key: groupKey, items: [] };
+        blocks.push(currentGroup);
+      }
+      currentGroup.items.push(item);
+    } else {
+      currentGroup = null;
+      blocks.push({ type: 'expanded', item });
+    }
+  });
+
+  track.innerHTML = blocks.map(block => {
+    if (block.type === 'expanded') {
+      const l = block.item;
+      const demoBtn = l.links?.demo ? `<a href="${l.links.demo}" class="btn btn--lime btn--sm" target="_blank" rel="noopener">Demo <span class="btn__icon">↗</span></a>` : '';
+      const codeBtn = l.links?.github ? `<a href="${l.links.github}" class="btn btn--ghost btn--ghost-lime btn--sm" target="_blank" rel="noopener">Código</a>` : '';
+
+      return `
+        <article class="lab-card--expanded" data-lab-id="${l.id}" tabindex="0" role="button" aria-label="Ver experimento: ${l.title}">
+          <div class="lab-card__thumb lab-scanline">
+            <img class="lab-card__img" src="${l.coverPlaceholder || l.cover}" alt="${l.title}" loading="lazy">
+            <span class="lab-card__badge">Experimento</span>
+          </div>
+          <div class="lab-card__body">
+            <h3 class="lab-card__title">${l.title}</h3>
+            <p class="lab-card__subtitle">${l.subtitle || 'Exploración técnica'}</p>
+            <p class="lab-card__desc">${l.description}</p>
+            <div class="lab-card__links">
+              ${demoBtn}
+              ${codeBtn}
+            </div>
+          </div>
+        </article>
+      `;
+    } else {
+      // Wrapper con cards comprimidas
+      const items = block.items;
+      const isOverlap = items.length >= 4;
+
+      const innerCards = items.map(l => `
+        <div class="lab-card--compressed" data-lab-id="${l.id}" tabindex="0" role="button" aria-label="Ver experimento: ${l.title}">
+          <span class="lab-pill-outline">Experimento</span>
+          <h4 class="lab-card__title--compressed">${l.title}</h4>
+          <p class="lab-card__desc--compressed">${l.description || l.subtitle}</p>
         </div>
-      </div>
-    </article>
-  `).join('');
+      `).join('');
+
+      return `
+        <div class="lab-wrapper ${isOverlap ? 'lab-wrapper--overlap' : ''}">
+          ${innerCards}
+        </div>
+      `;
+    }
+  }).join('');
+
+  // Event listener para abrir LabModal
+  track.querySelectorAll('[data-lab-id]').forEach(cardEl => {
+    cardEl.addEventListener('click', (e) => {
+      // Si hizo clic en un link o botón dentro de la tarjeta, dejamos que navegue
+      if (e.target.closest('a, button')) return;
+
+      const id = cardEl.dataset.labId;
+      const project = lab.find(p => p.id === id);
+      if (project && labModalInstance) {
+        labModalInstance.open(project);
+      }
+    });
+
+    cardEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        if (e.target.closest('a, button')) return;
+        e.preventDefault();
+        const id = cardEl.dataset.labId;
+        const project = lab.find(p => p.id === id);
+        if (project && labModalInstance) {
+          labModalInstance.open(project);
+        }
+      }
+    });
+  });
 }
 
 // ── SVG DOODLES ──────────────────────────────────────────
@@ -362,6 +435,7 @@ let modalInstance = null;
 
 function initModal() {
   modalInstance = new ProjectModal();
+  labModalInstance = new LabModal();
 
   // Delegate click to open modal
   document.addEventListener('click', (e) => {
@@ -380,10 +454,13 @@ function initModal() {
       project = projectsData.clients?.find(c => c.id === id);
     } else if (type === 'lab') {
       project = projectsData.lab?.find(c => c.id === id);
+      if (project && labModalInstance) {
+        labModalInstance.open(project);
+        return;
+      }
     } else {
       project = projectsData.cases?.find(c => c.id === id) ||
-                projectsData.clients?.find(c => c.id === id) ||
-                projectsData.lab?.find(c => c.id === id);
+                projectsData.clients?.find(c => c.id === id);
     }
 
     if (project) modalInstance.open(project);
@@ -586,6 +663,9 @@ async function init() {
 
   const skillsCarousel = document.getElementById('skills-carousel');
   if (skillsCarousel) new Carousel(skillsCarousel, { activeClass: '' });
+
+  const labCarousel = document.getElementById('lab-carousel');
+  if (labCarousel) new Carousel(labCarousel, { activeClass: '' });
 
   const workSection = document.getElementById('work');
   if (workSection) new GridFilter(workSection);

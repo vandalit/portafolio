@@ -612,27 +612,45 @@
 .project-thumb[data-category="ux"]::before         { background: var(--magenta); }
 
 /* ── LAB CARD ────────────────────────────────────────────── */
-.lab-card {
+/* ── LAB CAROUSEL & CARDS ARCHITECTURE ───────────────────── */
+.lab-track {
+  display: flex;
+  gap: var(--sp-6);
+  align-items: stretch;
+  padding: var(--sp-4) 0;
+}
+
+/* Card Expandida (Estándar con Cover) */
+.lab-card--expanded {
+  width: 380px;
+  min-width: 380px;
+  height: 520px;
   background: var(--bg-3);
   border: 1px solid var(--border-1);
   border-radius: var(--radius-md);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
   transition: border-color var(--transition),
               transform var(--dur-slow) var(--ease-out),
               box-shadow var(--dur-slow) var(--ease-out);
   position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
-.lab-card:hover {
+.lab-card--expanded:hover {
   border-color: var(--lime);
   transform: translateY(-4px);
-  box-shadow: var(--shadow-lg), 0 0 40px var(--lime-glow-sm);
+  box-shadow: var(--shadow-lg), 0 0 35px var(--lime-glow-sm);
 }
 
 .lab-card__thumb {
-  aspect-ratio: 16/9;
+  height: 210px;
+  width: 100%;
   overflow: hidden;
   position: relative;
+  flex-shrink: 0;
 }
 
 .lab-card__img {
@@ -643,7 +661,7 @@
   filter: saturate(0.7);
 }
 
-.lab-card:hover .lab-card__img {
+.lab-card--expanded:hover .lab-card__img {
   transform: scale(1.05);
   filter: saturate(1);
 }
@@ -660,10 +678,14 @@
   background: var(--lime);
   padding: 3px 10px;
   border-radius: var(--radius-pill);
+  font-weight: 600;
 }
 
 .lab-card__body {
   padding: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .lab-card__title {
@@ -680,19 +702,413 @@
   color: var(--lime);
   letter-spacing: var(--tracking-wider);
   text-transform: uppercase;
-  margin-bottom: var(--sp-4);
+  margin-bottom: var(--sp-3);
 }
 
 .lab-card__desc {
   font-size: var(--text-sm);
   color: var(--text-1);
   line-height: var(--leading-relaxed);
-  margin-bottom: var(--sp-5);
+  margin-bottom: auto;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .lab-card__links {
   display: flex;
   gap: var(--sp-3);
+  margin-top: var(--sp-4);
+}
+
+/* ── WRAPPER DE CARDS COMPRIMIDAS ────────────────────────── */
+.lab-wrapper {
+  width: 380px;
+  min-width: 380px;
+  height: 520px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Card Comprimida (Referente Figma: Contorno redondeado, sin cover, apilamiento) */
+.lab-card--compressed {
+  background: #171d27;
+  border: 1.5px solid rgba(204, 240, 32, 0.45);
+  border-radius: 18px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 240ms var(--ease-out),
+              border-color 240ms var(--ease-out),
+              box-shadow 240ms var(--ease-out),
+              background 240ms var(--ease-out);
+  flex: 1;
+  max-height: 155px;
+}
+
+.lab-card--compressed:hover {
+  border-color: var(--lime);
+  background: #1c2432;
+  transform: translateY(-4px) scale(1.015);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 25px rgba(204, 240, 32, 0.15);
+  z-index: 10;
+}
+
+/* Pill de categoría contorneada (referente exacto) */
+.lab-pill-outline {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--lime);
+  color: var(--lime);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.lab-card__title--compressed {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--lime);
+  font-weight: 500;
+  margin-bottom: 4px;
+  line-height: 1.25;
+}
+
+.lab-card__desc--compressed {
+  font-size: 0.82rem;
+  color: var(--text-1);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Overlap cuando hay 4 o más elementos en el wrapper */
+.lab-wrapper--overlap {
+  justify-content: flex-start;
+}
+
+.lab-wrapper--overlap .lab-card--compressed {
+  flex: none;
+  height: 140px;
+  margin-bottom: -28px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+}
+
+.lab-wrapper--overlap .lab-card--compressed:last-child {
+  margin-bottom: 0;
+}
+
+.lab-wrapper--overlap .lab-card--compressed:hover {
+  transform: translateY(-12px) scale(1.02);
+  z-index: 20;
+}
+
+/* ── MODAL EXCLUSIVO DE LAB (SPLIT TECH SHOWCASE) ────────── */
+.lab-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms var(--ease-out);
+}
+
+.lab-modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lab-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 8, 14, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.lab-modal__inner {
+  position: relative;
+  z-index: 2;
+  width: 92vw;
+  max-width: 1240px;
+  height: 88vh;
+  max-height: 850px;
+  background: var(--bg-1);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-lg);
+  display: grid;
+  grid-template-columns: 44% 56%;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl), 0 0 60px rgba(0, 0, 0, 0.8);
+}
+
+.lab-modal__close {
+  position: absolute;
+  top: var(--sp-4);
+  right: var(--sp-4);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  z-index: 10;
+}
+
+.lab-modal__close:hover {
+  background: var(--lime);
+  color: var(--bg-0);
+  border-color: var(--lime);
+  transform: rotate(90deg);
+}
+
+/* Columna Izquierda: Narrativa & Planteamiento Técnico */
+.lab-modal__narrative {
+  background: #0d1017;
+  padding: var(--sp-8);
+  border-right: 1px solid var(--border-1);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.lab-modal__tag-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-widest);
+  color: var(--lime);
+  margin-bottom: var(--sp-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lab-modal__title {
+  font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+  font-weight: 400;
+  color: var(--text-0);
+  line-height: 1.15;
+  margin-bottom: var(--sp-2);
+}
+
+.lab-modal__subtitle {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--lime);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  margin-bottom: var(--sp-5);
+}
+
+.lab-modal__desc {
+  font-size: var(--text-sm);
+  color: var(--text-1);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--sp-6);
+}
+
+.lab-modal__sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
+}
+
+.lab-modal__block {
+  padding-left: var(--sp-4);
+  border-left: 2px solid var(--lime);
+}
+
+.lab-modal__block-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: 4px;
+}
+
+.lab-modal__block p {
+  font-size: var(--text-xs);
+  color: var(--text-1);
+  line-height: var(--leading-relaxed);
+}
+
+.lab-modal__actions {
+  margin-top: auto;
+  padding-top: var(--sp-4);
+  display: flex;
+  gap: var(--sp-3);
+}
+
+/* Columna Derecha: Stack, Micro-Loop y Galería */
+.lab-modal__showcase {
+  background: #080a10;
+  padding: var(--sp-6) var(--sp-8);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.lab-modal__card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4) var(--sp-5);
+}
+
+.lab-modal__sec-header {
+  margin-bottom: var(--sp-3);
+}
+
+.lab-modal__sec-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-2);
+  text-transform: uppercase;
+}
+
+/* Bloque 1: Stack Pills */
+.lab-modal__stack-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lab-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--lime);
+  background: rgba(204, 240, 32, 0.06);
+  border: 1px solid rgba(204, 240, 32, 0.3);
+  padding: 5px 12px;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+}
+
+/* Bloque 2: Video Stage & Micro-Loop */
+.lab-video-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #000;
+}
+
+.lab-modal__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.lab-video-fallback-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.lab-video-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(8, 8, 16, 0.85);
+  border: 1px solid rgba(204, 240, 32, 0.4);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--lime);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(6px);
+}
+
+.lab-video-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lime);
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+/* Bloque 3: Galería de Capturas al Pie */
+.lab-modal__gallery-grid {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.lab-gallery-thumb {
+  width: 120px;
+  height: 75px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform var(--transition), border-color var(--transition);
+}
+
+.lab-gallery-thumb:hover {
+  border-color: var(--lime);
+  transform: scale(1.04);
+}
+
+.lab-gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 900px) {
+  .lab-modal__inner {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: 94vh;
+  }
+  .lab-modal__narrative {
+    border-right: none;
+    border-bottom: 1px solid var(--border-1);
+    padding: var(--sp-6);
+  }
+  .lab-modal__showcase {
+    padding: var(--sp-6);
+  }
 }
 
 /* ── LAB SECTION NOTE ─────────────────────────────────────── */

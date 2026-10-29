@@ -413,9 +413,28 @@
         </div>
       </header>
 
-      <!-- Lab Grid -->
-      <div id="lab-grid" class="lab-grid stagger">
-        <!-- Populated by JS -->
+      <!-- Lab Carousel con soporte para Cards Expandidas y Wrappers de Comprimidas -->
+      <div id="lab-carousel" class="carousel-wrapper reveal" aria-label="Carrusel de experimentos">
+        <div class="carousel-track-container">
+          <div id="lab-track" class="carousel-track lab-track" role="list">
+            <!-- Cards & Wrappers populated by JS -->
+          </div>
+        </div>
+        <div class="carousel-controls">
+          <div class="carousel-progress">
+            <div class="carousel-progress__fill" style="width: 0%"></div>
+          </div>
+          <button class="carousel-btn" data-carousel-prev aria-label="Anterior experimento">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="carousel-btn" data-carousel-next aria-label="Siguiente experimento">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <!-- Note about AI -->
@@ -538,6 +557,88 @@
           <path d="M7 3L13 9L7 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       MODAL — LABORATORIO & EXPERIMENTOS (SPLIT TECH SHOWCASE)
+  ══════════════════════════════════════════════════════════ -->
+  <div id="lab-modal"
+       class="modal lab-modal"
+       role="dialog"
+       aria-modal="true"
+       aria-hidden="true"
+       aria-label="Detalle del experimento de laboratorio">
+
+    <div class="lab-modal__backdrop"></div>
+
+    <div class="lab-modal__inner">
+      <!-- Botón de Cerrar -->
+      <button class="lab-modal__close" aria-label="Cerrar detalle del experimento">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <!-- Columna Izquierda: Narrativa & Planteamiento Técnico -->
+      <aside class="lab-modal__narrative" role="complementary">
+        <div class="lab-modal__tag-eyebrow">✦ LAB EXPERIMENT // R&amp;D</div>
+        <h2 class="lab-modal__title display"></h2>
+        <p class="lab-modal__subtitle"></p>
+        <p class="lab-modal__desc"></p>
+
+        <div class="lab-modal__sections">
+          <div class="lab-modal__block">
+            <div class="lab-modal__block-label">Hipótesis / Reto</div>
+            <p class="lab-modal__challenge"></p>
+          </div>
+          <div class="lab-modal__block">
+            <div class="lab-modal__block-label">Arquitectura &amp; Solución</div>
+            <p class="lab-modal__solution"></p>
+          </div>
+          <div class="lab-modal__block">
+            <div class="lab-modal__block-label">Hallazgos &amp; Resultado</div>
+            <p class="lab-modal__result"></p>
+          </div>
+        </div>
+
+        <div class="lab-modal__actions">
+          <!-- Botones demo y repo poblados por JS -->
+        </div>
+      </aside>
+
+      <!-- Columna Derecha: Stack, Micro-Loop Demo y Galería al pie -->
+      <main class="lab-modal__showcase" aria-label="Demostración y tecnologías">
+        <!-- Bloque 1: Stack Tecnológico Fronterizo -->
+        <section class="lab-modal__card lab-modal__tech-section">
+          <div class="lab-modal__sec-header">
+            <span class="lab-modal__sec-label">// FRONTIER TECH STACK &amp; APIs</span>
+          </div>
+          <div class="lab-modal__stack-pills">
+            <!-- Pills generadas por JS -->
+          </div>
+        </section>
+
+        <!-- Bloque 2: Video Demostrativo en Micro-Loop -->
+        <section class="lab-modal__card lab-modal__video-section">
+          <div class="lab-modal__sec-header">
+            <span class="lab-modal__sec-label">// LIVE MICRO-LOOP CAPTURE</span>
+          </div>
+          <div class="lab-modal__video-stage">
+            <!-- Video o fallback generado por JS -->
+          </div>
+        </section>
+
+        <!-- Bloque 3: Galería de Capturas al Pie -->
+        <section class="lab-modal__card lab-modal__gallery-section">
+          <div class="lab-modal__sec-header">
+            <span class="lab-modal__sec-label">// SCREENSHOTS &amp; RUNTIME SHOTS</span>
+          </div>
+          <div class="lab-modal__gallery-grid">
+            <!-- Thumbnails generados por JS -->
+          </div>
+        </section>
+      </main>
     </div>
   </div>
 

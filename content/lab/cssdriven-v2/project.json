@@ -1,18 +1,33 @@
 {
   "id": "cssdriven-v2",
   "title": "CSS AI-Driven v2",
-  "subtitle": "Segunda iteración — WIP",
-  "description": "Segunda iteración profundizando en animaciones CSS puras, variables dinámicas y composición generativa. Trabajo en progreso.",
+  "subtitle": "Segunda iteración — Composición dinámica",
+  "description": "Segunda iteración profundizando en animaciones CSS puras, variables dinámicas y composición generativa.",
+  "cardType": "expanded",
   "tags": [
     "css",
     "coding",
     "ai-workflow",
     "wip"
   ],
+  "techStack": [
+    "CSS Houdini Paint API",
+    "Custom State Queries",
+    "SVG Morphing",
+    "Dynamic Theming"
+  ],
+  "challenge": "Componer micro-efectos generativos mediante shaders CSS sin llamadas a APIs de render pesadas.",
+  "solution": "Uso intensivo de filtros SVG combinados con máscaras CSS y funciones trigonométricas nativas de CSS3.",
+  "result": "Efectos cinemáticos de interfaz con tamaño menor a 8KB.",
   "coverPlaceholder": "https://picsum.photos/seed/cssv2/800/450",
+  "cover": "https://picsum.photos/seed/cssv2/800/450",
+  "video": "https://assets.mixkit.co/videos/preview/mixkit-abstract-laser-lights-background-41489-large.mp4",
+  "gallery": [
+    "https://picsum.photos/seed/cssv2-1/800/500",
+    "https://picsum.photos/seed/cssv2-2/800/500"
+  ],
   "links": {
     "demo": "./demos/cssaidriven-v2/index.html",
     "github": "https://github.com/vandalit/portafolio"
-  },
-  "cover": "https://picsum.photos/seed/cssv2/800/450"
+  }
 }

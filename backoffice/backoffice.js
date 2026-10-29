@@ -83,6 +83,13 @@ const el = {
   fieldResult: document.getElementById('field-result'),
   fieldLive: document.getElementById('field-live'),
   fieldGithub: document.getElementById('field-github'),
+
+  // Lab Options Elements
+  boLabOptionsCard: document.getElementById('bo-lab-options-card'),
+  fieldCardType: document.getElementById('field-card-type'),
+  fieldWrapperGroup: document.getElementById('field-wrapper-group'),
+  fieldVideo: document.getElementById('field-video'),
+  fieldTechStack: document.getElementById('field-tech-stack'),
   
   // Cover & Media
   fieldCover: document.getElementById('field-cover'),
@@ -499,6 +506,21 @@ function loadActiveProject() {
   el.fieldLive.value = project.links?.live || '';
   el.fieldGithub.value = project.links?.github || '';
 
+  // Opciones de Lab
+  if (el.boLabOptionsCard) {
+    if (state.currentSection === 'lab') {
+      el.boLabOptionsCard.style.display = 'block';
+      if (el.fieldCardType) el.fieldCardType.value = project.cardType || 'expanded';
+      if (el.fieldWrapperGroup) el.fieldWrapperGroup.value = project.wrapperGroup || '';
+      if (el.fieldVideo) el.fieldVideo.value = project.video || '';
+      if (el.fieldTechStack) {
+        el.fieldTechStack.value = Array.isArray(project.techStack) ? project.techStack.join(', ') : '';
+      }
+    } else {
+      el.boLabOptionsCard.style.display = 'none';
+    }
+  }
+
   // Cover
   const coverVal = project.cover || project.coverPlaceholder || '';
   el.fieldCover.value = coverVal;
@@ -639,7 +661,8 @@ function setupFormListeners() {
     el.fieldId, el.fieldTitle, el.fieldClient, el.fieldSubtitle,
     el.fieldCategory, el.fieldYear, el.fieldAccent, el.fieldRole,
     el.fieldFeatured, el.fieldDesc, el.fieldChallenge, el.fieldSolution,
-    el.fieldResult, el.fieldLive, el.fieldGithub
+    el.fieldResult, el.fieldLive, el.fieldGithub,
+    el.fieldCardType, el.fieldWrapperGroup, el.fieldVideo, el.fieldTechStack
   ];
 
   liveInputs.forEach(input => {
@@ -841,6 +864,15 @@ function saveCurrentFormValues() {
     live: el.fieldLive.value.trim() || null,
     github: el.fieldGithub.value.trim() || null
   };
+
+  if (state.currentSection === 'lab') {
+    if (el.fieldCardType) project.cardType = el.fieldCardType.value;
+    if (el.fieldWrapperGroup) project.wrapperGroup = el.fieldWrapperGroup.value.trim() || undefined;
+    if (el.fieldVideo) project.video = el.fieldVideo.value.trim() || undefined;
+    if (el.fieldTechStack) {
+      project.techStack = el.fieldTechStack.value.split(',').map(s => s.trim()).filter(Boolean);
+    }
+  }
 
   project.cover = el.fieldCover.value.trim();
   project.coverPlaceholder = project.cover;
