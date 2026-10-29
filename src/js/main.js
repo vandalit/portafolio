@@ -193,6 +193,7 @@ function renderLabGrid(lab) {
   track.innerHTML = blocks.map(block => {
     if (block.type === 'expanded') {
       const l = block.item;
+      const badge = l.badge || (l.tags && l.tags[0]) || 'Experimento';
       const demoBtn = l.links?.demo ? `<a href="${l.links.demo}" class="btn btn--lime btn--sm" target="_blank" rel="noopener">Demo <span class="btn__icon">↗</span></a>` : '';
       const codeBtn = l.links?.github ? `<a href="${l.links.github}" class="btn btn--ghost btn--ghost-lime btn--sm" target="_blank" rel="noopener">Código</a>` : '';
 
@@ -200,7 +201,7 @@ function renderLabGrid(lab) {
         <article class="lab-card--expanded" data-lab-id="${l.id}" tabindex="0" role="button" aria-label="Ver experimento: ${l.title}">
           <div class="lab-card__thumb lab-scanline">
             <img class="lab-card__img" src="${l.coverPlaceholder || l.cover}" alt="${l.title}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
-            <span class="lab-card__badge">Experimento</span>
+            <span class="lab-card__badge">${badge}</span>
           </div>
           <div class="lab-card__body">
             <h3 class="lab-card__title">${l.title}</h3>
@@ -218,13 +219,28 @@ function renderLabGrid(lab) {
       const items = block.items;
       const isOverlap = items.length >= 4;
 
-      const innerCards = items.map(l => `
-        <div class="lab-card--compressed" aria-label="Template o caso base: ${l.title}">
-          <span class="lab-pill-outline">Ejemplo</span>
-          <h4 class="lab-card__title--compressed">${l.title}</h4>
-          <p class="lab-card__desc--compressed">${l.description || l.subtitle}</p>
-        </div>
-      `).join('');
+      const innerCards = items.map(l => {
+        const badge = l.badge || (l.tags && l.tags[0]) || 'Ejemplo';
+        const demoBtn = l.links?.demo ? `<a href="${l.links.demo}" class="btn btn--lime btn--sm" target="_blank" rel="noopener">Demo <span class="btn__icon">↗</span></a>` : '';
+        const codeBtn = l.links?.github ? `<a href="${l.links.github}" class="btn btn--ghost btn--ghost-lime btn--sm" target="_blank" rel="noopener">Código</a>` : '';
+
+        return `
+          <div class="lab-card--compressed" data-lab-id="${l.id}" aria-label="Template o caso base: ${l.title}">
+            <div class="lab-card__header--compressed">
+              <span class="lab-pill-outline">${badge}</span>
+            </div>
+            <div class="lab-card__body--compressed">
+              <h4 class="lab-card__title--compressed">${l.title}</h4>
+              <p class="lab-card__desc--compressed">${l.description || l.subtitle || ''}</p>
+            </div>
+            ${(demoBtn || codeBtn) ? `
+            <div class="lab-card__links lab-card__links--compressed">
+              ${demoBtn}
+              ${codeBtn}
+            </div>` : ''}
+          </div>
+        `;
+      }).join('');
 
       return `
         <div class="lab-wrapper ${isOverlap ? 'lab-wrapper--overlap' : ''}">
