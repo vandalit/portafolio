@@ -527,28 +527,26 @@
 }
 
 /* ── WORK SECTION — SCROLLTELL TITLE ─────────────────────── */
-/* Titular arranca left-aligned (por defecto) y migra a center al revelar */
-.work-header .section-header__title {
-  transition: text-align 0ms; /* no animar text-align, sino el transform */
-}
-
+/* Titular arranca left-aligned y migra progresivamente a center con el scroll */
 .work-header {
-  transition: text-align 600ms var(--ease-out);
-}
-
-/* Estado inicial: izquierda */
-.work-header .section-header__title,
-.work-header .section-header__eyebrow,
-.work-header .section-header__desc {
+  position: relative;
   text-align: left;
+  overflow: visible;
 }
 
-/* Estado revelado: centrado */
-.work-header--centered .section-header__title,
-.work-header--centered .section-header__eyebrow,
-.work-header--centered .section-header__desc {
-  text-align: center;
-  transition: text-align 0ms 400ms; /* sin transición visible en text-align, pero con delay del reveal */
+.work-header .section-header__eyebrow,
+.work-header .section-header__title,
+.work-header .section-header__desc {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  text-align: left;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+.work-header .section-header__desc {
+  max-width: min(52ch, 100%);
 }
 
 /* WIP badge sobre tiles vacíos */

@@ -296,21 +296,64 @@ function initReveal() {
   revealEls.forEach(el => obs.observe(el));
 }
 
-// ── WORK TITLE SCROLLTELL — arranca izquierda, centra al aparecer ──
+// ── WORK TITLE SCROLLTELL — transiciona reactivo al scroll (izq -> centro al llegar a mitad de pantalla) ──
 function initWorkTitleScrolltell() {
   const workHeader = document.querySelector('.work-header');
   if (!workHeader) return;
 
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        workHeader.classList.add('work-header--centered');
-        obs.unobserve(workHeader);
-      }
-    });
-  }, { threshold: 0.3 });
+  const titleEl = document.getElementById('work-title');
+  const eyebrowEl = document.getElementById('work-eyebrow');
+  const descEl = document.getElementById('work-desc');
+  const elements = [eyebrowEl, titleEl, descEl].filter(Boolean);
 
-  obs.observe(workHeader);
+  let ticking = false;
+
+  function update() {
+    const rect = workHeader.getBoundingClientRect();
+    const vh = window.innerHeight;
+
+    // Comienza la transición en la parte inferior (88% del viewport)
+    const startY = vh * 0.88;
+    // Alcanza la posición final (centrado exacto) cerca de la mitad vertical (48% del viewport)
+    const endY = vh * 0.48;
+
+    // Progreso dinámico 0 -> 1 estrictamente vinculado a la posición de scroll
+    let progress = (startY - rect.top) / (startY - endY);
+    progress = Math.max(0, Math.min(1, progress));
+
+    // Curva de aceleración/desaceleración suave para sensación natural
+    const ease = progress < 0.5
+      ? 2 * progress * progress
+      : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+    const containerWidth = workHeader.clientWidth;
+
+    elements.forEach(el => {
+      const elWidth = el.offsetWidth;
+      const targetOffset = Math.max(0, (containerWidth - elWidth) / 2);
+      const currentX = targetOffset * ease;
+      el.style.transform = `translate3d(${currentX.toFixed(2)}px, 0, 0)`;
+    });
+
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(update);
+      ticking = true;
+    }
+  }, { passive: true });
+
+  window.addEventListener('resize', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(update);
+      ticking = true;
+    }
+  }, { passive: true });
+
+  // Cálculo inicial al montar
+  update();
 }
 
 // ── SKILL MODAL (fullscreen detail) ──────────────────────
