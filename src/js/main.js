@@ -70,7 +70,7 @@ function renderFeatured(cases) {
   const accentColor = isMultimedia ? 'var(--magenta)' : 'var(--lime)';
 
   el.innerHTML = `
-    <img class="featured-case__img" src="${featured.coverPlaceholder}" alt="${featured.title}" loading="eager">
+    <img class="featured-case__img" src="${featured.coverPlaceholder}" alt="${featured.title}" loading="eager" decoding="async" onload="this.classList.add('is-loaded')">
     <div class="featured-case__overlay"></div>
     <div class="featured-case__strip" style="background:${accentColor}"></div>
     <div class="featured-case__content">
@@ -838,6 +838,18 @@ async function init() {
       renderSkillCards(projectsData.skills);
       renderClientGrid(projectsData.clients);
       renderLabGrid(projectsData.lab);
+
+      // Pre-decodificar bitmaps en GPU de las primeras tarjetas de Casos de Estudio
+      // para eliminar cualquier pausa de rasterizado al scrollear por primera vez
+      if (Array.isArray(projectsData.cases)) {
+        const warmupImgs = projectsData.cases.slice(0, 3).map(c => c.coverPlaceholder || c.cover).filter(Boolean);
+        warmupImgs.forEach(src => {
+          const img = new Image();
+          img.decoding = 'async';
+          img.src = src;
+          if (img.decode) img.decode().catch(() => {});
+        });
+      }
     }
   } catch (err) {
     console.error('[Main] loadData error:', err);

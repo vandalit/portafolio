@@ -39,7 +39,8 @@ portafolio/
 │   ├── ARCHITECTURE.md            # Decisiones técnicas de capas y z-index
 │   ├── BACKEND_HYBRID_PLAN.md     # Arquitectura híbrida y plan de backend
 │   ├── DESIGN_SYSTEM.md           # Tokens, tipografía y paleta
-│   └── MODULAR_CONTENT_STRATEGY.md # Arquitectura del motor de contenidos
+│   ├── MODULAR_CONTENT_STRATEGY.md # Arquitectura del motor de contenidos
+│   └── PERFORMANCE_AUDIT.md       # Auditoría de rendimiento a 60/120fps y eliminación de jank
 │
 ├── content/                       # ── DIRECTORIO UNIFICADO DE CONTENIDO ──
 │   ├── settings/

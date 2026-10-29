@@ -133,17 +133,7 @@
 }
 
 /* ── FEATURED CASE ENTRY ─────────────────────────────────── */
-.featured-case {
-  transform: translateY(20px);
-  opacity: 0;
-  transition: transform var(--dur-reveal) var(--ease-out),
-              opacity var(--dur-reveal) var(--ease-out);
-}
-
-.featured-case.revealed {
-  transform: translateY(0);
-  opacity: 1;
-}
+/* Delegado a .reveal en components.css para evitar transiciones duplicadas */
 
 /* ── TABS INDICATOR ──────────────────────────────────────── */
 .tabs-indicator {
