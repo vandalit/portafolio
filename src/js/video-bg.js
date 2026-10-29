@@ -127,34 +127,59 @@ export async function initVideoBackground() {
     });
   }
 
-  // 4. Listener de scroll para transición a los 300px
+  // 4. Listener de scroll con rAF para transición a los 300px
+  let videoScrollTicking = false;
+  let isVideoOutOfView = false;
+
   const handleScrollTransition = () => {
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+    if (videoScrollTicking) return;
+    videoScrollTicking = true;
 
-    // Si el usuario scrollea antes de idle, asegurar que Video 2 empieza a cargar
-    if (scrollY >= VIDEO_PRELOAD_PX && !isVideo2Injected) {
-      injectVideo2();
-    }
+    requestAnimationFrame(() => {
+      videoScrollTicking = false;
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
 
-    if (scrollY >= VIDEO_TRANSITION_PX) {
-      if (currentStage !== 2) {
-        currentStage = 2;
-        containerEl.classList.add('is-video2-active');
-        if (!isPaused && iframeV2) {
-          sendIframeCommand(iframeV2, 'playVideo');
+      // Si el usuario scrollea mucho más abajo del hero (>1100px), pausar reproducción para liberar GPU
+      if (scrollY > 1100) {
+        if (!isVideoOutOfView) {
+          isVideoOutOfView = true;
+          if (iframeV1) sendIframeCommand(iframeV1, 'pauseVideo');
+          if (iframeV2) sendIframeCommand(iframeV2, 'pauseVideo');
         }
-        console.log(`%c[VideoBG] 🎬 ${VIDEO_TRANSITION_PX}px reached: crossfade to Video 2 (GKq9nKZpmu0)`, 'color: #b8e030; font-weight: bold;');
-      }
-    } else {
-      if (currentStage !== 1) {
-        currentStage = 1;
-        containerEl.classList.remove('is-video2-active');
-        if (!isPaused && iframeV1) {
-          sendIframeCommand(iframeV1, 'playVideo');
+        return;
+      } else if (isVideoOutOfView) {
+        isVideoOutOfView = false;
+        if (!isPaused) {
+          const activeIframe = currentStage === 2 ? iframeV2 : iframeV1;
+          if (activeIframe) sendIframeCommand(activeIframe, 'playVideo');
         }
-        console.log(`%c[VideoBG] 🎬 <${VIDEO_TRANSITION_PX}px: crossfade back to Video 1 (Hse_HTX6KGs)`, 'color: #e8306e; font-weight: bold;');
       }
-    }
+
+      // Si el usuario scrollea antes de idle, asegurar que Video 2 empieza a cargar
+      if (scrollY >= VIDEO_PRELOAD_PX && !isVideo2Injected) {
+        injectVideo2();
+      }
+
+      if (scrollY >= VIDEO_TRANSITION_PX) {
+        if (currentStage !== 2) {
+          currentStage = 2;
+          containerEl.classList.add('is-video2-active');
+          if (!isPaused && iframeV2) {
+            sendIframeCommand(iframeV2, 'playVideo');
+          }
+          console.log(`%c[VideoBG] 🎬 ${VIDEO_TRANSITION_PX}px reached: crossfade to Video 2 (GKq9nKZpmu0)`, 'color: #b8e030; font-weight: bold;');
+        }
+      } else {
+        if (currentStage !== 1) {
+          currentStage = 1;
+          containerEl.classList.remove('is-video2-active');
+          if (!isPaused && iframeV1) {
+            sendIframeCommand(iframeV1, 'playVideo');
+          }
+          console.log(`%c[VideoBG] 🎬 <${VIDEO_TRANSITION_PX}px: crossfade back to Video 1 (Hse_HTX6KGs)`, 'color: #e8306e; font-weight: bold;');
+        }
+      }
+    });
   };
 
   window.addEventListener('scroll', handleScrollTransition, { passive: true });

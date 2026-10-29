@@ -309,6 +309,13 @@ function initWorkTitleScrolltell() {
   const elements = [eyebrowEl, titleEl, descEl].filter(Boolean);
 
   let ticking = false;
+  let cachedOffsets = [];
+
+  // Medir layout solo al montar y en resize (CERO layout thrashing durante scroll)
+  function measure() {
+    const containerWidth = workHeader.clientWidth;
+    cachedOffsets = elements.map(el => Math.max(0, (containerWidth - el.offsetWidth) / 2));
+  }
 
   function update() {
     const rect = workHeader.getBoundingClientRect();
@@ -328,11 +335,8 @@ function initWorkTitleScrolltell() {
       ? 2 * progress * progress
       : 1 - Math.pow(-2 * progress + 2, 2) / 2;
 
-    const containerWidth = workHeader.clientWidth;
-
-    elements.forEach(el => {
-      const elWidth = el.offsetWidth;
-      const targetOffset = Math.max(0, (containerWidth - elWidth) / 2);
+    elements.forEach((el, idx) => {
+      const targetOffset = cachedOffsets[idx] || 0;
       const currentX = targetOffset * ease;
       el.style.transform = `translate3d(${currentX.toFixed(2)}px, 0, 0)`;
     });
@@ -348,13 +352,15 @@ function initWorkTitleScrolltell() {
   }, { passive: true });
 
   window.addEventListener('resize', () => {
+    measure();
     if (!ticking) {
       window.requestAnimationFrame(update);
       ticking = true;
     }
   }, { passive: true });
 
-  // Cálculo inicial al montar
+  // Medición y cálculo inicial
+  measure();
   update();
 }
 
@@ -424,9 +430,14 @@ function initNav() {
     });
   }
 
-  // Scrolled state
+  // Scrolled state — solo modificar DOM si cambia de estado
+  let wasScrolled = false;
   const onScroll = () => {
-    nav.classList.toggle('scrolled', window.scrollY > 50);
+    const isScrolled = window.scrollY > 50;
+    if (isScrolled !== wasScrolled) {
+      wasScrolled = isScrolled;
+      nav.classList.toggle('scrolled', isScrolled);
+    }
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
@@ -489,7 +500,7 @@ function initFxToggle() {
   });
 }
 
-// ── CURSOR GLOW ──────────────────────────────────────────
+// ── CURSOR GLOW (GPU translate3d con amortiguación en reposo) ──
 function initCursorGlow() {
   const glow = document.getElementById('cursor-glow');
   if (!glow || window.matchMedia('(pointer: coarse)').matches) {
@@ -497,19 +508,27 @@ function initCursorGlow() {
     return;
   }
 
-  let mouseX = 0, mouseY = 0;
-  let glowX = 0, glowY = 0;
+  let mouseX = -1000, mouseY = -1000;
+  let glowX = -1000, glowY = -1000;
+  let isMoving = false;
 
   window.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-  });
+    isMoving = true;
+  }, { passive: true });
 
   const animateGlow = () => {
-    glowX += (mouseX - glowX) * 0.08;
-    glowY += (mouseY - glowY) * 0.08;
-    glow.style.left = `${glowX}px`;
-    glow.style.top  = `${glowY}px`;
+    if (isMoving) {
+      glowX += (mouseX - glowX) * 0.1;
+      glowY += (mouseY - glowY) * 0.1;
+      // Operación pura en GPU (translate3d) evitando layout reflows de left/top
+      glow.style.transform = `translate3d(${glowX - 160}px, ${glowY - 160}px, 0)`;
+
+      if (Math.abs(mouseX - glowX) < 0.2 && Math.abs(mouseY - glowY) < 0.2) {
+        isMoving = false;
+      }
+    }
     requestAnimationFrame(animateGlow);
   };
   animateGlow();
@@ -520,32 +539,57 @@ function initHero() {
   const hero = document.getElementById('hero');
   setTimeout(() => hero?.classList.add('hero--loaded'), 100);
 
-  // Parallax doodles on mouse
+  // Parallax doodles on mouse sincronizado con rAF (sin saturación de eventos)
   const doodles = document.querySelectorAll('.hero__doodle');
-  window.addEventListener('mousemove', (e) => {
-    const cx = window.innerWidth / 2;
-    const cy = window.innerHeight / 2;
-    const dx = (e.clientX - cx) / cx;
-    const dy = (e.clientY - cy) / cy;
+  if (!doodles.length) return;
 
-    doodles.forEach((d, i) => {
-      const depth = 0.015 * (i + 1);
-      d.style.transform = `translate(${dx * depth * 80}px, ${dy * depth * 60}px)`;
-    });
+  let mouseTicking = false;
+  let lastClientX = 0, lastClientY = 0;
+
+  window.addEventListener('mousemove', (e) => {
+    lastClientX = e.clientX;
+    lastClientY = e.clientY;
+
+    if (!mouseTicking) {
+      mouseTicking = true;
+      requestAnimationFrame(() => {
+        mouseTicking = false;
+        // Si el hero quedó fuera de pantalla al scrollear, no calcular transformaciones
+        if (window.scrollY > 850) return;
+
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        const dx = (lastClientX - cx) / cx;
+        const dy = (lastClientY - cy) / cy;
+
+        doodles.forEach((d, i) => {
+          const depth = 0.015 * (i + 1);
+          d.style.transform = `translate3d(${dx * depth * 80}px, ${dy * depth * 60}px, 0)`;
+        });
+      });
+    }
   }, { passive: true });
 }
 
 // ── PARALLAX ─────────────────────────────────────────────
 function initParallax() {
   const layers = document.querySelectorAll('[data-parallax]');
+  if (!layers.length) return; // Si no hay capas de data-parallax, no crear listener de scroll inútil
+
+  let parallaxTicking = false;
   window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
-    layers.forEach(layer => {
-      const speed = parseFloat(layer.dataset.parallax) || 0.3;
-      const rect = layer.closest('section')?.getBoundingClientRect() || { top: 0 };
-      const offset = (window.innerHeight - rect.top) * speed;
-      layer.style.transform = `translateY(${offset * 0.1}px)`;
-    });
+    if (!parallaxTicking) {
+      parallaxTicking = true;
+      requestAnimationFrame(() => {
+        parallaxTicking = false;
+        layers.forEach(layer => {
+          const speed = parseFloat(layer.dataset.parallax) || 0.3;
+          const rect = layer.closest('section')?.getBoundingClientRect() || { top: 0 };
+          const offset = (window.innerHeight - rect.top) * speed;
+          layer.style.transform = `translate3d(0, ${offset * 0.1}px, 0)`;
+        });
+      });
+    }
   }, { passive: true });
 }
 

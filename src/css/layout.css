@@ -53,6 +53,7 @@ section {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  transform: translateZ(0);
   transition: background var(--dur-slow) var(--ease-smooth),
               backdrop-filter var(--dur-slow) var(--ease-smooth);
 }

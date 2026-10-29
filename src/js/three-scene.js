@@ -255,6 +255,19 @@ export class HeroScene {
   }
 
   _bindEvents() {
+    this.isHeroVisible = true;
+
+    // Observador para pausar el renderizado 3D cuando el Hero no es visible en pantalla
+    const heroEl = document.getElementById('hero') || document.getElementById('hero-scroll-container');
+    if (heroEl && 'IntersectionObserver' in window) {
+      const heroObs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          this.isHeroVisible = entry.isIntersecting;
+        });
+      }, { threshold: 0 });
+      heroObs.observe(heroEl);
+    }
+
     window.addEventListener('mousemove', (e) => {
       this.targetMouse.x = (e.clientX / window.innerWidth - 0.5) * 2;
       this.targetMouse.y = -(e.clientY / window.innerHeight - 0.5) * 2;
@@ -262,47 +275,56 @@ export class HeroScene {
 
     window.addEventListener('resize', () => this._onResize());
 
+    let scrollTicking = false;
     window.addEventListener('scroll', () => {
-      const container = document.getElementById('hero-scroll-container') || document.getElementById('hero');
-      if (!container) return;
-      const rect = container.getBoundingClientRect();
-      const scrolled = Math.max(0, -rect.top);
-      // Rango de scrolltelling: 600px
-      const progress = Math.min(1, scrolled / 600);
-      this.scrollProgress = progress;
+      if (window.scrollY > 850 && !this.isHeroVisible) return;
 
-      // 1. Matizado rápido de la Capa 3 (overlay de contraste) en los primeros 180px
-      const contrastOverlay = document.getElementById('hero-layer-contrast') || document.getElementById('hero-contrast-overlay');
-      if (contrastOverlay) {
-        contrastOverlay.style.opacity = Math.max(0, 1 - (scrolled / 180));
+      if (!scrollTicking) {
+        scrollTicking = true;
+        requestAnimationFrame(() => {
+          scrollTicking = false;
+          const container = document.getElementById('hero-scroll-container') || document.getElementById('hero');
+          if (!container) return;
+          const rect = container.getBoundingClientRect();
+          const scrolled = Math.max(0, -rect.top);
+          // Rango de scrolltelling: 600px
+          const progress = Math.min(1, scrolled / 600);
+          this.scrollProgress = progress;
+
+          // 1. Matizado rápido de la Capa 3 (overlay de contraste) en los primeros 180px
+          const contrastOverlay = document.getElementById('hero-layer-contrast') || document.getElementById('hero-contrast-overlay');
+          if (contrastOverlay) {
+            contrastOverlay.style.opacity = Math.max(0, 1 - (scrolled / 180));
+          }
+
+          // 2. Transición del Bento Frame modular (Capa 2.b, z-index: 12)
+          const bm = this.bentoManager || (typeof window !== 'undefined' ? window.__bentoManagerInstance : null) || bentoManager;
+          if (bm && typeof bm.updateScroll === 'function') {
+            bm.updateScroll(progress, scrolled);
+          }
+
+          // 3. Reacción visual del contenido tipográfico (Capa 4, z-index: 21)
+          const heroContent = document.getElementById('hero-layer-content') || document.querySelector('.hero__content');
+          if (heroContent) {
+            const textProgress = Math.max(0, (scrolled - 180) / 420);
+            heroContent.style.opacity = Math.max(0, 1 - textProgress * 1.4);
+            heroContent.style.transform = `translate3d(0, ${-textProgress * 45}px, 0)`;
+          }
+
+          const scrollIndicator = document.querySelector('.hero__scroll');
+          if (scrollIndicator) {
+            scrollIndicator.style.opacity = Math.max(0, 1 - progress * 2.5);
+          }
+
+          // 4. Doodles vectoriales (Capa 2.d, z-index: 15)
+          const heroDoodles = document.querySelectorAll('.hero__doodle');
+          heroDoodles.forEach((d, i) => {
+            const factor = (i + 1) * 28;
+            d.style.transform = `translate3d(0, ${-progress * factor}px, 0) scale(${1 + progress * 0.15})`;
+            d.style.opacity = Math.max(0, 1 - progress * 1.3);
+          });
+        });
       }
-
-      // 2. Transición del Bento Frame modular (Capa 2.b, z-index: 12)
-      const bm = this.bentoManager || (typeof window !== 'undefined' ? window.__bentoManagerInstance : null) || bentoManager;
-      if (bm && typeof bm.updateScroll === 'function') {
-        bm.updateScroll(progress, scrolled);
-      }
-
-      // 3. Reacción visual del contenido tipográfico (Capa 4, z-index: 21)
-      const heroContent = document.getElementById('hero-layer-content') || document.querySelector('.hero__content');
-      if (heroContent) {
-        const textProgress = Math.max(0, (scrolled - 180) / 420);
-        heroContent.style.opacity = Math.max(0, 1 - textProgress * 1.4);
-        heroContent.style.transform = `translateY(${-textProgress * 45}px)`;
-      }
-
-      const scrollIndicator = document.querySelector('.hero__scroll');
-      if (scrollIndicator) {
-        scrollIndicator.style.opacity = Math.max(0, 1 - progress * 2.5);
-      }
-
-      // 4. Doodles vectoriales (Capa 2.d, z-index: 15)
-      const heroDoodles = document.querySelectorAll('.hero__doodle');
-      heroDoodles.forEach((d, i) => {
-        const factor = (i + 1) * 28;
-        d.style.transform = `translateY(${-progress * factor}px) scale(${1 + progress * 0.15})`;
-        d.style.opacity = Math.max(0, 1 - progress * 1.3);
-      });
     }, { passive: true });
 
     console.log('[HeroScene] Mouse and 600px scroll event listeners bound.');
@@ -360,6 +382,12 @@ export class HeroScene {
     });
 
     if (this.paused) return;
+
+    // Si el hero no está en viewport, posponer render sin quemar ciclos de GPU
+    if (!this.isHeroVisible) {
+      this.animFrame = requestAnimationFrame(() => this._animate());
+      return;
+    }
 
     try {
       const hasBack = !!(this.rendererBack && this.sceneBack);
