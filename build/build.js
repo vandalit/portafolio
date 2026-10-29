@@ -100,36 +100,58 @@ function loadSkills() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GENERADORES DE HTML POR SECCIÓN
+// GENERADORES DE HTML POR SECCIÓN (Identidad 1:1 con frontend main.js)
 // ─────────────────────────────────────────────────────────────────────────────
+
+const circleIcon = (color) => `
+  <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="28" cy="28" r="24" stroke="${color}" stroke-width="2"/>
+    <circle cx="28" cy="28" r="12" stroke="${color}" stroke-width="1" stroke-dasharray="4 4"/>
+    <circle cx="28" cy="28" r="4" fill="${color}"/>
+  </svg>`;
+
+const squareIcon = (color) => `
+  <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="6" y="6" width="44" height="44" stroke="${color}" stroke-width="2"/>
+    <rect x="18" y="18" width="20" height="20" stroke="${color}" stroke-width="1" stroke-dasharray="4 4"/>
+    <rect x="24" y="24" width="8" height="8" fill="${color}"/>
+  </svg>`;
+
+const triangleIcon = (color) => `
+  <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="28,6 52,50 4,50" stroke="${color}" stroke-width="2" fill="none"/>
+    <polygon points="28,18 42,42 14,42" stroke="${color}" stroke-width="1" stroke-dasharray="4 4" fill="none"/>
+    <circle cx="28" cy="34" r="4" fill="${color}"/>
+  </svg>`;
 
 /**
  * SKILLS — Perfil técnico
- * Genera cards pre-renderizadas en HTML; el carrusel JS funciona como enhancer.
  */
 function renderSkillCards(skills) {
-  return skills.map(skill => {
-    const colorDot    = skill.accentColor || '#d4205a';
-    const filterTag   = skill.filterTag   || skill.category || '';
-    const skillPills  = (skill.skills || [])
-      .map(s => `<span class="skill-pill">${escapeHtml(s)}</span>`)
-      .join('');
+  return skills.map((s, i) => {
+    const isMagenta = s.accentColor.includes('d4') || s.accentColor.includes('e8');
+    const accent = isMagenta ? 'magenta' : 'lime';
+    const accentColor = isMagenta ? 'var(--magenta)' : 'var(--lime)';
+
+    const icons = { circle: circleIcon, square: squareIcon, triangle: triangleIcon };
+    const iconSvg = icons[s.icon] || circleIcon;
 
     return `
-      <article class="skill-card" data-filter="${escapeHtml(filterTag)}" role="listitem">
-        <div class="skill-card__accent" style="background:${colorDot}" aria-hidden="true"></div>
-        <div class="skill-card__body">
-          <div class="skill-card__header">
-            <span class="skill-card__dot" style="background:${colorDot}" aria-hidden="true"></span>
-            <span class="skill-card__category eyebrow">${escapeHtml(filterTag)}</span>
-          </div>
-          <h3 class="skill-card__title">${escapeHtml(skill.title)}</h3>
-          <p class="skill-card__desc">${escapeHtml(skill.description)}</p>
-          <div class="skill-card__pills" aria-label="Tecnologías y herramientas">
-            ${skillPills}
-          </div>
+      <article class="skill-card" data-accent="${accent}" tabindex="0">
+        <div class="skill-card__icon-bg">${iconSvg(accentColor)}</div>
+        <p class="skill-card__category">${escapeHtml(s.category.toUpperCase())}</p>
+        <h3 class="skill-card__title">${escapeHtml(s.title)}</h3>
+        <p class="skill-card__desc">${escapeHtml(s.description)}</p>
+        <div class="skill-card__pills">
+          ${s.skills.map(sk => `<span class="skill-pill">${escapeHtml(sk)}</span>`).join('')}
         </div>
-      </article>`.trim();
+        <button class="skill-card__cta btn--ghost-${accent}"
+                data-filter="${escapeHtml(s.filterTag)}"
+                data-scroll-to="work">
+          Ver ejemplos <span>→</span>
+        </button>
+      </article>
+    `.trim();
   }).join('\n');
 }
 
@@ -140,64 +162,53 @@ function renderFeatured(cases) {
   const featured = cases.find(c => c.featured) || cases[0];
   if (!featured) return '<!-- sin caso destacado -->';
 
-  const tagClass = featured.category === 'coding' ? 'tag--coding' : 'tag--multimedia';
-  const badge    = (featured.tags && featured.tags[0]) || featured.category || '';
+  const isMultimedia = featured.category === 'multimedia';
   const coverSrc = featured.coverPlaceholder || featured.cover || '';
 
   return `
-    <div class="featured-case__content">
-      <div class="featured-case__thumb">
-        <img
-          class="featured-case__img"
-          src="${escapeHtml(coverSrc)}"
-          alt="Portada del proyecto ${escapeHtml(featured.title)}"
-          width="1200" height="675"
-          loading="eager"
-          decoding="async">
-        <span class="tag ${tagClass}">${escapeHtml(badge)}</span>
+    <img class="featured-case__img" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(featured.title)}" loading="eager" decoding="async" onload="this.classList.add('is-loaded')">
+    <div class="featured-case__overlay"></div>
+    <div class="featured-case__body">
+      <p class="featured-case__eyebrow">${escapeHtml(featured.category.toUpperCase())} · ${escapeHtml(featured.role)}</p>
+      <h3 class="featured-case__title">${escapeHtml(featured.title)}</h3>
+      <p class="featured-case__desc">${escapeHtml(featured.description)}</p>
+      <div class="featured-case__tags">
+        ${(featured.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+        <span class="tag ${isMultimedia ? 'tag--magenta' : 'tag--lime'}">${escapeHtml(String(featured.year))}</span>
+        <span class="tag">${escapeHtml(featured.role)}</span>
       </div>
-      <div class="featured-case__info">
-        <p class="eyebrow">${escapeHtml(featured.role || '')}</p>
-        <h3 class="featured-case__title display">${escapeHtml(featured.title)}</h3>
-        <p class="featured-case__desc">${escapeHtml(featured.description)}</p>
-        <div class="featured-case__meta">
-          <span class="featured-case__year">${escapeHtml(String(featured.year || ''))}</span>
-        </div>
-      </div>
-    </div>`.trim();
+    </div>
+  `.trim();
 }
 
 function renderCaseCards(cases) {
   return cases.map((c, i) => {
-    const tagClass = c.category === 'coding' ? 'tag--coding' : 'tag--multimedia';
-    const badge    = (c.tags && c.tags[0]) || c.category || '';
+    const isMultimedia = c.category === 'multimedia';
+    const accentColor = isMultimedia ? 'var(--magenta)' : 'var(--lime)';
+    const tagClass = isMultimedia ? 'tag--magenta' : 'tag--lime';
     const coverSrc = c.coverPlaceholder || c.cover || '';
 
     return `
-      <article
-        class="case-card"
-        data-case-id="${escapeHtml(c.id || c._id)}"
-        tabindex="0"
-        role="listitem button"
-        aria-label="Ver caso: ${escapeHtml(c.title)}">
+      <article class="case-card ${i === 0 ? 'is-active' : ''}"
+               data-project-id="${escapeHtml(c.id || c._id)}"
+               data-type="case"
+               role="button"
+               tabindex="0"
+               style="--card-accent: ${accentColor};">
         <div class="case-card__thumb">
-          <img
-            class="case-card__img"
-            src="${escapeHtml(coverSrc)}"
-            alt="Portada de ${escapeHtml(c.title)}"
-            width="800" height="450"
-            loading="${i < 2 ? 'eager' : 'lazy'}"
-            decoding="async">
+          <img class="case-card__img" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(c.title)}" loading="${i < 2 ? 'eager' : 'lazy'}" decoding="async" onload="this.classList.add('is-loaded')">
+          <div class="case-card__thumb-overlay"></div>
+          <span class="case-card__year">${escapeHtml(String(c.year))}</span>
         </div>
         <div class="case-card__body">
-          <div class="case-card__meta-row">
-            <span class="tag ${tagClass}">${escapeHtml(badge)}</span>
-            <span class="case-card__year">${escapeHtml(String(c.year || ''))}</span>
-          </div>
+          <p class="case-card__role">${escapeHtml(c.role)}</p>
           <h3 class="case-card__title">${escapeHtml(c.title)}</h3>
-          <p class="case-card__subtitle">${escapeHtml(c.subtitle || c.role || '')}</p>
+          <div class="case-card__tags">
+            ${(c.tags || []).map(t => `<span class="tag ${tagClass}">${escapeHtml(t)}</span>`).join('')}
+          </div>
         </div>
-      </article>`.trim();
+      </article>
+    `.trim();
   }).join('\n');
 }
 
@@ -207,43 +218,46 @@ function renderCaseCards(cases) {
 const DEFAULT_COVER_SVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23f4f4f4'/%3E%3C/svg%3E`;
 
 function renderClientGrid(clients) {
-  return clients.map(c => {
-    const coverSrc = c.coverPlaceholder || c.cover || DEFAULT_COVER_SVG;
-    const isWip    = !c.title || c.title === 'Próximamente';
-    const tabTag   = c.category ? `data-tab="${escapeHtml(c.category)}"` : '';
+  const allProjects = clients.map(c => ({ ...c, _type: 'client' }));
+
+  return allProjects.map(c => {
+    const isMultimedia = c.category === 'multimedia' || (c.tags && c.tags.includes('multimedia')) || c.category === 'wordpress';
+    const tagClass = isMultimedia ? 'tag--magenta' : 'tag--lime';
+    const badge = c.client ? c.client : (c.category === 'coding' ? '✦ Coding' : '◈ Multimedia');
+    const tagsStr = (c.tags || []).join(' ');
+    const coverSrc = c.cover || c.coverPlaceholder || DEFAULT_COVER_SVG;
+    const isEmpty = !c.client && !c.description;
 
     return `
-      <article
-        class="project-thumb${isWip ? ' project-thumb--wip' : ''}"
-        ${tabTag}
-        role="listitem"
-        ${!isWip ? `data-client-id="${escapeHtml(c.id || c._id)}" tabindex="0"` : ''}>
-        <img
-          class="project-thumb__img"
-          src="${escapeHtml(coverSrc)}"
-          alt="${isWip ? 'Próximamente' : escapeHtml(c.title)}"
-          width="800" height="450"
-          loading="lazy"
-          decoding="async">
-        ${!isWip ? `
-        <div class="project-thumb__overlay">
-          <div class="project-thumb__meta-row">
-            <span class="tag">${escapeHtml((c.tags && c.tags[0]) || c.category || '')}</span>
+      <article class="project-thumb ${isEmpty ? 'project-thumb--wip' : ''}"
+               data-category="${escapeHtml(c.category || '')}"
+               data-tags="${escapeHtml(tagsStr)}"
+               data-project-id="${isEmpty ? '' : escapeHtml(c.id || c._id)}"
+               data-type="${escapeHtml(c._type)}"
+               ${isEmpty ? '' : 'role="button" tabindex="0"'}
+               aria-label="${isEmpty ? 'Proyecto próximamente' : 'Ver proyecto: ' + escapeHtml(c.title)}">
+        <img class="project-thumb__img" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(c.title || 'Próximamente')}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
+        ${isEmpty ? '<div class="project-thumb__wip-badge">Próximamente</div>' : `
+        <div class="project-thumb__overlay"></div>
+        <div class="project-thumb__info">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--sp-2)">
+            <span class="tag ${tagClass}">${escapeHtml(badge)}</span>
             <span class="project-thumb__meta">${escapeHtml(String(c.year || ''))}</span>
           </div>
           <h3 class="project-thumb__title">${escapeHtml(c.title)}</h3>
-          <p class="project-thumb__meta" style="color:var(--text-1);font-size:var(--text-xs);margin-top:2px;text-transform:none">${escapeHtml(c.subtitle || c.role || '')}</p>
-        </div>` : ''}
-      </article>`.trim();
+          <p class="project-thumb__meta" style="color:var(--text-1); font-size:var(--text-xs); margin-top:2px; text-transform:none">
+            ${escapeHtml(c.subtitle || c.role || '')}
+          </p>
+        </div>`}
+      </article>
+    `.trim();
   }).join('\n');
 }
 
 /**
  * LAB — Carrusel de experimentos
- * Agrupa comprimidos en wrappers igual que el JS actual.
  */
 function renderLabGrid(lab) {
-  // Agrupar por cardType, igual que main.js
   const blocks = [];
   let currentGroup = null;
 
@@ -263,30 +277,16 @@ function renderLabGrid(lab) {
 
   return blocks.map(block => {
     if (block.type === 'expanded') {
-      const l        = block.item;
-      const badge    = l.badge || (l.tags && l.tags[0]) || 'Experimento';
+      const l = block.item;
+      const badge = l.badge || (l.tags && l.tags[0]) || 'Experimento';
+      const demoBtn = l.links?.demo ? `<a href="${escapeHtml(l.links.demo)}" class="btn btn--lime btn--sm" target="_blank" rel="noopener">Demo <span class="btn__icon">↗</span></a>` : '';
+      const codeBtn = l.links?.github ? `<a href="${escapeHtml(l.links.github)}" class="btn btn--ghost btn--ghost-lime btn--sm" target="_blank" rel="noopener">Código</a>` : '';
       const coverSrc = l.coverPlaceholder || l.cover || '';
-      const demoBtn  = l.links?.demo
-        ? `<a href="${escapeHtml(l.links.demo)}" class="btn btn--lime btn--sm" target="_blank" rel="noopener">Demo <span class="btn__icon">↗</span></a>`
-        : '';
-      const codeBtn  = l.links?.github
-        ? `<a href="${escapeHtml(l.links.github)}" class="btn btn--ghost btn--ghost-lime btn--sm" target="_blank" rel="noopener">Código</a>`
-        : '';
 
       return `
-        <article
-          class="lab-card--expanded"
-          data-lab-id="${escapeHtml(l.id || l._id)}"
-          tabindex="0"
-          role="listitem button"
-          aria-label="Ver experimento: ${escapeHtml(l.title)}">
+        <article class="lab-card--expanded" data-lab-id="${escapeHtml(l.id || l._id)}" tabindex="0" role="button" aria-label="Ver experimento: ${escapeHtml(l.title)}">
           <div class="lab-card__thumb lab-scanline">
-            <img
-              class="lab-card__img"
-              src="${escapeHtml(coverSrc)}"
-              alt="${escapeHtml(l.title)}"
-              loading="lazy"
-              decoding="async">
+            <img class="lab-card__img" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(l.title)}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
             <span class="lab-card__badge">${escapeHtml(badge)}</span>
           </div>
           <div class="lab-card__body">
@@ -298,21 +298,19 @@ function renderLabGrid(lab) {
               ${codeBtn}
             </div>
           </div>
-        </article>`.trim();
+        </article>
+      `.trim();
     } else {
-      // Wrapper con cards comprimidas
-      const isOverlap = block.items.length >= 4;
-      const innerCards = block.items.map(l => {
-        const badge   = l.badge || (l.tags && l.tags[0]) || 'Ejemplo';
-        const demoBtn = l.links?.demo
-          ? `<a href="${escapeHtml(l.links.demo)}" class="btn btn--lime btn--sm" target="_blank" rel="noopener">Demo <span class="btn__icon">↗</span></a>`
-          : '';
-        const codeBtn = l.links?.github
-          ? `<a href="${escapeHtml(l.links.github)}" class="btn btn--ghost btn--ghost-lime btn--sm" target="_blank" rel="noopener">Código</a>`
-          : '';
+      const items = block.items;
+      const isOverlap = items.length >= 4;
+
+      const innerCards = items.map(l => {
+        const badge = l.badge || (l.tags && l.tags[0]) || 'Ejemplo';
+        const demoBtn = l.links?.demo ? `<a href="${escapeHtml(l.links.demo)}" class="btn btn--lime btn--sm" target="_blank" rel="noopener">Demo <span class="btn__icon">↗</span></a>` : '';
+        const codeBtn = l.links?.github ? `<a href="${escapeHtml(l.links.github)}" class="btn btn--ghost btn--ghost-lime btn--sm" target="_blank" rel="noopener">Código</a>` : '';
 
         return `
-          <div class="lab-card--compressed" data-lab-id="${escapeHtml(l.id || l._id)}" aria-label="${escapeHtml(l.title)}">
+          <div class="lab-card--compressed" data-lab-id="${escapeHtml(l.id || l._id)}" aria-label="Template o caso base: ${escapeHtml(l.title)}">
             <div class="lab-card__header--compressed">
               <span class="lab-pill-outline">${escapeHtml(badge)}</span>
             </div>
@@ -325,13 +323,15 @@ function renderLabGrid(lab) {
               ${demoBtn}
               ${codeBtn}
             </div>` : ''}
-          </div>`.trim();
+          </div>
+        `.trim();
       }).join('\n');
 
       return `
         <div class="lab-wrapper ${isOverlap ? 'lab-wrapper--overlap' : ''}">
           ${innerCards}
-        </div>`.trim();
+        </div>
+      `.trim();
     }
   }).join('\n');
 }
@@ -382,6 +382,122 @@ function buildHtml({ site, cases, clients, lab, skills }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// METADATA GENERATORS: ROBOTS, SITEMAP, LLMS.TXT & VALIDACIONES
+// ─────────────────────────────────────────────────────────────────────────────
+
+function validateContent({ site, cases, clients, lab, skills }) {
+  console.log('[build] 🔍 Validando coherencia de datos...');
+  const errors = [];
+  const warnings = [];
+
+  if (!site.brand?.fullName) errors.push('site.json: falta brand.fullName');
+  if (!site.hero?.email) errors.push('site.json: falta hero.email');
+
+  cases.forEach(c => {
+    if (!c.title) errors.push(`Caso sin título (${c.id || 'desconocido'})`);
+    if (!c.description) warnings.push(`Caso sin descripción: ${c.title}`);
+  });
+
+  skills.forEach(s => {
+    if (!s.title) errors.push(`Grupo de habilidades sin título (${s.id})`);
+    if (!Array.isArray(s.skills) || s.skills.length === 0) warnings.push(`Habilidades vacías en ${s.title}`);
+  });
+
+  if (warnings.length > 0) {
+    warnings.forEach(w => console.warn(`[build]    ⚠️  ${w}`));
+  }
+
+  if (errors.length > 0) {
+    errors.forEach(e => console.error(`[build]    ❌ ${e}`));
+    throw new Error(`Validación fallida con ${errors.length} error(es) críticos.`);
+  }
+
+  console.log('[build]    ✓ Validación superada exitosamente.');
+}
+
+function generateRobotsTxt() {
+  const robots = `User-agent: *
+Allow: /
+
+Sitemap: https://vandalit.github.io/portafolio/sitemap.xml
+`;
+  writeFileSync(join(DIST, 'robots.txt'), robots, 'utf8');
+  console.log('[build]    ✓ dist/robots.txt generado');
+}
+
+function generateSitemapXml() {
+  const today = new Date().toISOString().split('T')[0];
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://vandalit.github.io/portafolio/</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
+`;
+  writeFileSync(join(DIST, 'sitemap.xml'), sitemap, 'utf8');
+  console.log('[build]    ✓ dist/sitemap.xml generado');
+}
+
+function generateLlmsTxt({ site, cases, clients, lab, skills }) {
+  const brand = site.brand?.fullName || 'vandalit';
+  const tagline = site.hero?.tagline || '';
+  const email = site.hero?.email || '';
+
+  const skillsBlock = skills
+    .map(s => `- **${s.title}** (${s.category}): ${s.description} [Herramientas: ${s.skills.join(', ')}]`)
+    .join('\n');
+
+  const casesBlock = cases
+    .map(c => `- **${c.title}** (${c.year}): ${c.description} (Rol: ${c.role})`)
+    .join('\n');
+
+  const labBlock = lab
+    .map(l => `- **${l.title}**: ${l.description || l.subtitle}`)
+    .join('\n');
+
+  const clientsBlock = clients
+    .filter(c => c.title && c.title !== 'Próximamente')
+    .map(c => `- **${c.title}** (${c.year}): ${c.subtitle || c.role || ''}`)
+    .join('\n');
+
+  const content = `# ${brand}
+> ${site.hero?.eyebrow || 'UX/UI Designer & Front-end Developer'}
+> Ubicación: Valparaíso, Chile
+> Sitio web oficial: https://vandalit.github.io/portafolio/
+> Contacto directo: ${email}
+> GitHub: https://github.com/vandalit
+> Behance: https://behance.net/vandalit
+
+## Resumen de Perfil
+${tagline}
+Especialista en diseño de producto digital (UX/UI, design systems, prototipado) e ingeniería front-end (HTML/CSS nativo, JavaScript moderno, Three.js, WebGL y optimización de rendimiento).
+
+## Capacidades y Perfil Técnico
+${skillsBlock}
+
+## Casos de Estudio Seleccionados
+${casesBlock}
+
+## Proyectos Reales y Trabajos
+${clientsBlock}
+
+## Laboratorio de Experimentación (R&D)
+${labBlock}
+
+## Enlaces y Canales Oficiales
+- Portafolio: https://vandalit.github.io/portafolio/
+- Repositorio código abierto: https://github.com/vandalit/portafolio
+- Contacto: ${email}
+`;
+
+  writeFileSync(join(DIST, 'llms.txt'), content, 'utf8');
+  console.log('[build]    ✓ dist/llms.txt generado');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // COPIADOR DE ASSETS
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -421,22 +537,31 @@ async function main() {
   console.log(`[build]    - ${lab.length} experimentos de lab`);
   console.log(`[build]    - ${skills.length} grupos de habilidades`);
 
-  // 3. Generar dist/index.html
+  // 3. Validar
+  validateContent({ site, cases, clients, lab, skills });
+
+  // 4. Generar dist/index.html
   console.log('\n[build] 🔨 Generando dist/index.html...');
   const html = buildHtml({ site, cases, clients, lab, skills });
   writeFileSync(join(DIST, 'index.html'), html, 'utf8');
   console.log('[build]    ✓ dist/index.html escrito');
 
-  // 4. Copiar assets
+  // 5. Generar robots.txt, sitemap.xml y llms.txt
+  console.log('\n[build] 🌐 Generando artefactos SEO & LLMs...');
+  generateRobotsTxt();
+  generateSitemapXml();
+  generateLlmsTxt({ site, cases, clients, lab, skills });
+
+  // 6. Copiar assets
   console.log('\n[build] 📁 Copiando assets...');
   copyAssets();
   console.log('[build]    ✓ src/ → dist/src/');
   console.log('[build]    ✓ assets/ → dist/assets/');
   console.log('[build]    ✓ content/ → dist/content/');
 
-  // 5. Reporte final
+  // 7. Reporte final
   const distSize = readdirSync(DIST).length;
-  console.log(`\n[build] ✅ Build completado. ${distSize} entradas en dist/`);
+  console.log(`\n[build] ✅ Build completado exitosamente. ${distSize} entradas en dist/`);
   console.log('[build] ══════════════════════════════════════════════════════\n');
 }
 

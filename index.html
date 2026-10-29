@@ -54,6 +54,17 @@
       transform: scale(1.02);
       filter: blur(6px);
     }
+  </style>
+
+  <!-- Progressive Enhancement: Si JS está deshabilitado, ocultar preloader de inmediato -->
+  <noscript>
+    <style>
+      .preloader { display: none !important; }
+      .reveal, .stagger > * { opacity: 1 !important; transform: none !important; }
+    </style>
+  </noscript>
+
+  <style>
     .preloader__inner {
       display: flex;
       flex-direction: column;
