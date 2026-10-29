@@ -22,8 +22,8 @@ El proyecto está diseñado bajo una filosofía **100% modular, desacoplada y es
    - **Capa 3 (`z-index: 14`)**: Escena Three.js frontal que ocluye selectivamente las tarjetas.
    - **Capa 4 (`z-index: 20`)**: Tipografía y branding del Hero.
    - **Capa 5 (`z-index: 30-32`)**: HUD interactivo frontal con animación *pop stroke* en yellow-green (`#ccf020`), flechas de callout informativas, metadata técnica y enlaces de ancla.
-3. **Contenido Desacoplado (`/content/`)**: Los proyectos no están *hardcodeados*. Cada trabajo vive en su propio subdirectorio con su manifiesto `project.json` y sus propios assets locales o URLs en modo mock.
-4. **Studio & Backoffice (`/backoffice/`)**: Interfaz visual de gestión de contenidos con persistencia en `localStorage`, exportación/importación en JSON y soporte de guardado directo a disco local mediante la **File System Access API**.
+3. **Contenido Desacoplado (`/content/`)**: Los proyectos y textos no están *hardcodeados*. Cada trabajo vive en su propio subdirectorio con su manifiesto `project.json`, y la landing entera se hidrata dinámicamente desde `site.json` y `hero.json`.
+4. **Studio & Backoffice Híbrido (`/backoffice/`)**: Interfaz visual de gestión conectada en local a un **Backend Node.js API** con subida real de imágenes por drag & drop y persistencia directa a disco, manteniendo compatibilidad nativa para despliegue 100% estático en **GitHub Pages**.
 
 ---
 
@@ -32,14 +32,18 @@ El proyecto está diseñado bajo una filosofía **100% modular, desacoplada y es
 ```text
 portafolio/
 ├── index.html                     # One-page principal (GitHub Pages entry point)
+├── server.js                      # Backend local Express (API REST y upload de medios)
+├── package.json                   # Dependencias y scripts de ejecución
 ├── README.md                      # Documentación del proyecto
 ├── docs/                          # Especificaciones y estrategias
 │   ├── ARCHITECTURE.md            # Decisiones técnicas de capas y z-index
+│   ├── BACKEND_HYBRID_PLAN.md     # Arquitectura híbrida y plan de backend
 │   ├── DESIGN_SYSTEM.md           # Tokens, tipografía y paleta
 │   └── MODULAR_CONTENT_STRATEGY.md # Arquitectura del motor de contenidos
 │
 ├── content/                       # ── DIRECTORIO UNIFICADO DE CONTENIDO ──
 │   ├── settings/
+│   │   ├── site.json              # Configuración global (Hero, textos de secciones, footer)
 │   │   └── hero.json              # Configuración de 12 bentos y videos de fondo
 │   ├── case-studies/              # Sección: Casos de Estudio Seleccionados
 │   │   ├── index.json             # Lista y orden de slugs en carrusel
@@ -62,9 +66,9 @@ portafolio/
 │       └── skills.json            # 6 Habilidades con doodles SVG y pills
 │
 ├── backoffice/                    # ── PANEL DE ADMINISTRACIÓN / STUDIO ──
-│   ├── index.html                 # UI del estudio (CRUD, media, mover, hero)
+│   ├── index.html                 # UI del estudio (CRUD, media, site copy, hero)
 │   ├── backoffice.css             # Estética de consola oscura y glassmorphism
-│   └── backoffice.js              # Motor reactivo, File System API y export/import
+│   └── backoffice.js              # Motor reactivo, conexión a API local y export/import
 │
 ├── src/                           # ── CÓDIGO FUENTE DE LA APLICACIÓN ──
 │   ├── components/
@@ -78,7 +82,7 @@ portafolio/
 │   │   ├── layout.css             # Grid elástico, sandwich 3D y contenedores
 │   │   └── components.css         # Cards, modal split-canvas, pills y tabs
 │   └── js/
-│       ├── main.js                # Bootstrap del portafolio y render de secciones
+│       ├── main.js                # Bootstrap del portafolio e hidratación de site.json
 │       ├── content-loader.js      # Fetcher universal con resolución CONTENT_BASE_URL
 │       ├── three-scene.js         # Escena Three.js dual-canvas
 │       ├── video-bg.js            # Video YouTube dual-stage crossfade
@@ -253,55 +257,66 @@ El portafolio incluye un panel visual integrado accesible en `/backoffice/` (o h
 
 ---
 
-## 🔄 Flujo de Trabajo Recomendado
+## 🔄 Flujo de Trabajo Recomendado (Paradigma Híbrido)
 
 ```mermaid
 flowchart LR
     A[Modificaciones en /backoffice/] --> B{¿Entorno?}
-    B -->|Local con Servidor| C[💾 Guardar en Disco]
-    C --> D[Archivos .json actualizados físicamente]
-    D --> E[Subir imágenes a /content/.../]
-    E --> F[git add & git commit & git push]
-    F --> G[GitHub Pages actualizado en vivo]
-    B -->|GitHub Pages / Web| H[Borrador en localStorage]
+    B -->|Local con Backend Node| C[💾 Guardar en Disco]
+    C --> D[Archivos .json y assets escritos físicamente]
+    B -->|Arrastrar Imágenes| E[POST /api/upload Multer]
+    E --> D
+    D --> F[git commit & git push / Checkpoint]
+    F --> G[GitHub Pages actualizado en vivo 100% estático]
+    B -->|Web / GitHub Pages| H[Borrador en localStorage]
     H --> I[Descargar vandalit-portfolio-config.json]
-    I --> J[Importar en local cuando se disponga de la máquina]
+    I --> J[Importar en local]
 ```
 
-1. **Gestión de Contenido:** Acceder a `http://localhost:8000/backoffice/`.
-2. **Conectar Disco Local:** Hacer clic en **"📂 Conectar Carpeta Local"** y seleccionar la raíz del repositorio.
-3. **Editar o Mover:** Editar títulos, tags, bentos, videos o mover proyectos entre secciones.
-4. **Guardar:** Pulsar **"💾 Guardar en Disco"** para sincronizar todos los JSONs locales.
-5. **Añadir Imágenes:** Colocar las imágenes físicas en la subcarpeta del proyecto (ej: `content/clients/mi-cliente/cover.webp`).
-6. **Despliegue a Producción:**
+1. **Gestión de Contenido en Vivo:** Iniciar el servidor local (`npm run dev`) y acceder a `http://localhost:3000/backoffice/`.
+2. **Edición Completa:** Modifica proyectos, cambia textos globales de la landing en **🌐 Textos del Sitio**, reordena o traslada elementos.
+3. **Subida Real de Imágenes:** Arrastra archivos a las portadas o sube fotos a la galería; el backend las guarda directamente en sus subcarpetas de destino.
+4. **Guardar a Disco:** Presiona **"💾 Guardar en Disco"**; el backend sincroniza en el acto los manifiestos `site.json`, `hero.json`, `skills.json`, `project.json` e `index.json`.
+5. **Checkpoint Natural y Despliegue:**
    ```bash
+   # Revisar cambios exactos producidos por el Studio
+   git status
+   git diff content/
+   
+   # Publicar a producción
    git add .
-   git commit -m "feat: nuevo proyecto y ajustes en bentos"
+   git commit -m "feat: actualización de proyectos y textos del sitio"
    git push origin main
    ```
+   *GitHub Pages servirá de inmediato la nueva versión 100% estática.*
 
 ---
 
 ## 🚀 Ejecución en Local
 
-No requiere NodeJS, bundlers (Vite, Webpack) ni comandos de compilación. Se ejecuta directamente con cualquier servidor HTTP estático:
+### Opción A (Recomendada): Con Backend Local API (Edición viva + Uploads)
 
 ```bash
-# 1. Clonar el repositorio
-git clone https://github.com/vandalit/portafolio.git
-cd portafolio
+# 1. Instalar dependencias del entorno de estudio
+npm install
 
 # 2. Iniciar servidor local
-# Con Python 3:
-python3 -m http.server 8000
+npm run dev
 
-# O con npx:
-# npx serve .
-
-# 3. Abrir en el navegador:
-# Portafolio:  http://localhost:8000/
-# Backoffice:  http://localhost:8000/backoffice/
+# 3. Acceder en el navegador:
+# Portafolio:  http://localhost:3000/
+# Studio:      http://localhost:3000/backoffice/
+# Status API:  http://localhost:3000/api/status
 ```
+
+### Opción B: Modo Estático Puro (Fallback sin NodeJS)
+
+Puedes continuar usando cualquier servidor estático si solo deseas previsualizar:
+```bash
+python3 -m http.server 8000
+# o: npx serve .
+```
+*(En este modo, el Studio operará guardando borradores en `localStorage` o mediante File System Access API).*
 
 ---
 

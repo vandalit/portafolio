@@ -10,13 +10,19 @@ import { GridFilter } from './grid-filter.js';
 import { ProjectModal } from './project-modal.js';
 import { initVideoBackground } from './video-bg.js';
 import { bentoManager } from '../components/bentos/bento-manager.js';
-import { loadAllContent } from './content-loader.js';
+import { loadAllContent, loadSiteSettings } from './content-loader.js';
 
 // ── DATA ──────────────────────────────────────────────────
 let projectsData = null;
+let siteSettings = null;
 
 async function loadData() {
-  projectsData = await loadAllContent();
+  const [content, site] = await Promise.all([
+    loadAllContent(),
+    loadSiteSettings()
+  ]);
+  projectsData = content;
+  siteSettings = site;
 }
 
 // ── RENDER ────────────────────────────────────────────────
@@ -410,6 +416,114 @@ function initSkillLinks() {
   });
 }
 
+function hydrateSiteSettings(site) {
+  if (!site) return;
+
+  // Hero
+  if (site.hero) {
+    const eyebrow = document.getElementById('hero-eyebrow');
+    if (eyebrow && site.hero.eyebrow) eyebrow.textContent = site.hero.eyebrow;
+
+    const name1 = document.getElementById('hero-name-1');
+    const name2 = document.getElementById('hero-name-2');
+    if (name1 && site.brand?.nameLine1) name1.textContent = site.brand.nameLine1;
+    if (name2 && site.brand?.nameLine2) name2.textContent = site.brand.nameLine2;
+
+    const tagline = document.getElementById('hero-tagline');
+    if (tagline && site.hero.tagline) tagline.textContent = site.hero.tagline;
+
+    const ctaWork = document.getElementById('hero-cta-work');
+    if (ctaWork) {
+      if (site.hero.ctaWorkHref) ctaWork.href = site.hero.ctaWorkHref;
+      if (site.hero.ctaWorkText) ctaWork.innerHTML = `${site.hero.ctaWorkText} <span class="btn__icon">↓</span>`;
+    }
+
+    const ctaContact = document.getElementById('hero-cta-contact');
+    if (ctaContact) {
+      if (site.hero.ctaContactHref || site.hero.email) {
+        ctaContact.href = site.hero.ctaContactHref || `mailto:${site.hero.email}`;
+      }
+      if (site.hero.ctaContactText) ctaContact.innerHTML = `${site.hero.ctaContactText} <span class="btn__icon">✉</span>`;
+    }
+
+    const socialGithub = document.getElementById('hero-social-github');
+    if (socialGithub && site.hero.socials?.github) socialGithub.href = site.hero.socials.github;
+
+    const socialBehance = document.getElementById('hero-social-behance');
+    if (socialBehance && site.hero.socials?.behance) socialBehance.href = site.hero.socials.behance;
+  }
+
+  // Secciones
+  if (site.sections) {
+    const { cases, skills, work, lab } = site.sections;
+
+    if (cases) {
+      const elEyebrow = document.getElementById('cases-eyebrow');
+      const elTitle = document.getElementById('cases-title');
+      const elDesc = document.getElementById('cases-desc');
+      if (elEyebrow && cases.eyebrow) elEyebrow.textContent = cases.eyebrow;
+      if (elTitle && cases.title) elTitle.textContent = cases.title;
+      if (elDesc && cases.description) elDesc.textContent = cases.description;
+    }
+
+    if (skills) {
+      const elEyebrow = document.getElementById('skills-eyebrow');
+      const elTitle = document.getElementById('skills-title');
+      const elDesc = document.getElementById('skills-desc');
+      const elLegM = document.getElementById('skills-legend-multimedia');
+      const elLegC = document.getElementById('skills-legend-coding');
+      if (elEyebrow && skills.eyebrow) elEyebrow.textContent = skills.eyebrow;
+      if (elTitle && skills.title) elTitle.textContent = skills.title;
+      if (elDesc && skills.description) elDesc.textContent = skills.description;
+      if (elLegM && skills.legendMultimedia) elLegM.textContent = skills.legendMultimedia;
+      if (elLegC && skills.legendCoding) elLegC.textContent = skills.legendCoding;
+    }
+
+    if (work) {
+      const elEyebrow = document.getElementById('work-eyebrow');
+      const elTitle = document.getElementById('work-title');
+      const elDesc = document.getElementById('work-desc');
+      if (elEyebrow && work.eyebrow) elEyebrow.textContent = work.eyebrow;
+      if (elTitle && work.title) elTitle.textContent = work.title;
+      if (elDesc && work.description) elDesc.textContent = work.description;
+    }
+
+    if (lab) {
+      const elEyebrow = document.getElementById('lab-eyebrow');
+      const elTitle = document.getElementById('lab-title');
+      const elDesc = document.getElementById('lab-desc');
+      const elNoteTitle = document.getElementById('lab-note-title');
+      const elNoteContent = document.getElementById('lab-note-content');
+      if (elEyebrow && lab.eyebrow) elEyebrow.textContent = lab.eyebrow;
+      if (elTitle && lab.title) elTitle.textContent = lab.title;
+      if (elDesc && lab.description) elDesc.textContent = lab.description;
+      if (elNoteTitle && lab.noteTitle) elNoteTitle.textContent = lab.noteTitle;
+      if (elNoteContent && lab.noteContent) elNoteContent.textContent = lab.noteContent;
+    }
+  }
+
+  // Footer
+  if (site.footer) {
+    const logo = document.getElementById('footer-logo');
+    if (logo && site.footer.logoHtml) logo.innerHTML = site.footer.logoHtml;
+
+    const tagline = document.getElementById('footer-tagline');
+    if (tagline && site.footer.tagline) tagline.innerHTML = site.footer.tagline;
+
+    const contactEyebrow = document.getElementById('footer-contact-eyebrow');
+    if (contactEyebrow && site.footer.contactEyebrow) contactEyebrow.textContent = site.footer.contactEyebrow;
+
+    const contactEmail = document.getElementById('footer-contact-email');
+    if (contactEmail && site.footer.contactEmail) {
+      contactEmail.href = `mailto:${site.footer.contactEmail}`;
+      contactEmail.textContent = site.footer.contactEmail;
+    }
+
+    const copy = document.getElementById('footer-copy');
+    if (copy && site.footer.copyright) copy.textContent = site.footer.copyright;
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────────
 async function init() {
   console.log('%c[Portafolio:Main] ⏳ init() running, readyState:', 'color: #b8e030; font-weight: bold;', document.readyState);
@@ -452,6 +566,9 @@ async function init() {
   // 3. Load projects data & render dynamic sections
   try {
     await loadData();
+    if (siteSettings) {
+      hydrateSiteSettings(siteSettings);
+    }
     if (projectsData) {
       renderFeatured(projectsData.cases);
       renderCaseCards(projectsData.cases);

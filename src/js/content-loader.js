@@ -154,3 +154,37 @@ export async function loadAllContent(forceFromFiles = false) {
   return { cases, clients, lab, skills };
 }
 
+/**
+ * Carga la configuración global del sitio desde content/settings/site.json
+ * Soporta override de borrador en localStorage ('vandalit_site_override').
+ *
+ * @param {boolean} [forceFromFiles=false]
+ * @returns {Promise<Object>}
+ */
+export async function loadSiteSettings(forceFromFiles = false) {
+  if (!forceFromFiles) {
+    try {
+      const localOverride = localStorage.getItem('vandalit_site_override');
+      if (localOverride) {
+        const parsed = JSON.parse(localOverride);
+        if (parsed && (parsed.hero || parsed.sections)) {
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.warn('[ContentLoader] Error leyendo borrador de site settings:', err);
+    }
+  }
+
+  try {
+    const sitePath = `${CONTENT_BASE_URL}/settings/site.json`;
+    const res = await fetch(sitePath);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error('[ContentLoader] Failed to load site settings:', err);
+    return null;
+  }
+}
+
+

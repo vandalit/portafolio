@@ -217,30 +217,30 @@
 
       <!-- ── CAPA 4: CONTENIDO TIPOGRÁFICO & UI (z-index: 21) ── -->
       <div id="hero-layer-content" class="hero__layer-content">
-        <p class="hero__eyebrow">
+        <p id="hero-eyebrow" class="hero__eyebrow">
           UX/UI Designer &amp; Front-end Developer
         </p>
 
-        <h1 class="hero__name display">
-          <span class="line">van·</span>
-          <span class="line">dalit</span>
+        <h1 id="hero-name" class="hero__name display">
+          <span id="hero-name-1" class="line">van·</span>
+          <span id="hero-name-2" class="line">dalit</span>
         </h1>
 
-        <p class="hero__tagline">
+        <p id="hero-tagline" class="hero__tagline">
           Diseño que comunica. Código que respira.
         </p>
 
         <div class="hero__meta">
-          <a href="#cases" class="btn btn--primary">Ver trabajo <span class="btn__icon">↓</span></a>
-          <a href="mailto:vandalit@metamedia.cl" class="btn btn--ghost">Contacto <span class="btn__icon">✉</span></a>
+          <a id="hero-cta-work" href="#cases" class="btn btn--primary">Ver trabajo <span class="btn__icon">↓</span></a>
+          <a id="hero-cta-contact" href="mailto:vandalit@metamedia.cl" class="btn btn--ghost">Contacto <span class="btn__icon">✉</span></a>
           <div class="hero__socials">
-            <a href="https://github.com/vandalit" target="_blank" rel="noopener noreferrer" class="social-badge" aria-label="GitHub de vandalit">
+            <a id="hero-social-github" href="https://github.com/vandalit" target="_blank" rel="noopener noreferrer" class="social-badge" aria-label="GitHub de vandalit">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
               </svg>
               <span>GitHub</span>
             </a>
-            <a href="https://behance.net/vandalit" target="_blank" rel="noopener noreferrer" class="social-badge" aria-label="Behance de vandalit">
+            <a id="hero-social-behance" href="https://behance.net/vandalit" target="_blank" rel="noopener noreferrer" class="social-badge" aria-label="Behance de vandalit">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-5.171 3-3.455 0-5.555-2.529-5.555-5.941 0-3.328 2.05-6.059 5.516-6.059 3.424 0 5.253 2.502 5.034 5.766h-7.669c.071 1.637 1.118 2.684 2.697 2.684 1.206 0 2.051-.555 2.451-1.45h2.697zm-5.171-4.706c-1.328 0-2.12.871-2.261 2.062h4.436c-.059-1.127-.728-2.062-2.175-2.062zm-12.555 4.706h-3v-10h3.582c2.086 0 3.418 1.094 3.418 2.871 0 1.171-.624 2.124-1.637 2.556 1.341.442 2.055 1.564 2.055 2.923 0 1.954-1.517 3.65-4.418 3.65zm-3-4.294h2.464c1.171 0 1.839-.569 1.839-1.469 0-.962-.733-1.474-1.839-1.474h-2.464v2.943zm0-4.412h2.245c1.071 0 1.706-.522 1.706-1.353 0-.853-.635-1.353-1.706-1.353h-2.245v2.706z"/>
               </svg>
@@ -267,9 +267,9 @@
   <section id="cases" aria-label="Casos de estudio">
     <div class="container">
       <header class="section-header reveal">
-        <p class="eyebrow section-header__eyebrow">Proyectos seleccionados</p>
-        <h2 class="section-header__title display">Casos de Estudio</h2>
-        <p class="section-header__desc">
+        <p id="cases-eyebrow" class="eyebrow section-header__eyebrow">Proyectos seleccionados</p>
+        <h2 id="cases-title" class="section-header__title display">Casos de Estudio</h2>
+        <p id="cases-desc" class="section-header__desc">
           Proyectos donde el brief fue el punto de partida, no el límite.
         </p>
       </header>
@@ -313,9 +313,9 @@
     <div class="container">
       <div style="display:grid; grid-template-columns:1fr auto; align-items:end; gap:var(--sp-8); margin-bottom:clamp(3rem,6vw,5rem)">
         <header class="reveal">
-          <p class="eyebrow" style="margin-bottom:var(--sp-4)">Habilidades</p>
-          <h2 class="section-header__title display">Perfil Técnico</h2>
-          <p class="section-header__desc" style="margin-top:var(--sp-4)">
+          <p id="skills-eyebrow" class="eyebrow" style="margin-bottom:var(--sp-4)">Habilidades</p>
+          <h2 id="skills-title" class="section-header__title display">Perfil Técnico</h2>
+          <p id="skills-desc" class="section-header__desc" style="margin-top:var(--sp-4)">
             No una lista de íconos. Un mapa de capacidades reales, con sus conexiones.
           </p>
         </header>
@@ -324,11 +324,11 @@
           <div style="display:flex;flex-direction:column;gap:var(--sp-3)">
             <div style="display:flex;align-items:center;gap:var(--sp-3)">
               <span style="width:10px;height:10px;border-radius:50%;background:var(--magenta);display:block"></span>
-              <span class="eyebrow" style="color:var(--text-2)">Multimedia / Design</span>
+              <span id="skills-legend-multimedia" class="eyebrow" style="color:var(--text-2)">Multimedia / Design</span>
             </div>
             <div style="display:flex;align-items:center;gap:var(--sp-3)">
               <span style="width:10px;height:10px;border-radius:50%;background:var(--lime);display:block"></span>
-              <span class="eyebrow" style="color:var(--text-2)">Coding / Dev</span>
+              <span id="skills-legend-coding" class="eyebrow" style="color:var(--text-2)">Coding / Dev</span>
             </div>
           </div>
         </aside>
@@ -366,9 +366,9 @@
   <section id="work" aria-label="Trabajo de clientes">
     <div class="container">
       <header class="section-header reveal">
-        <p class="eyebrow section-header__eyebrow">Proyectos</p>
-        <h2 class="section-header__title display">Trabajo de Clientes</h2>
-        <p class="section-header__desc">
+        <p id="work-eyebrow" class="eyebrow section-header__eyebrow">Proyectos</p>
+        <h2 id="work-title" class="section-header__title display">Trabajo de Clientes</h2>
+        <p id="work-desc" class="section-header__desc">
           Proyectos reales, problemas reales. Desde el brief hasta el deploy.
         </p>
       </header>
@@ -397,9 +397,9 @@
     <div class="container">
       <header class="section-header reveal" style="display:grid;grid-template-columns:1fr auto;align-items:end;gap:var(--sp-8)">
         <div>
-          <p class="eyebrow section-header__eyebrow">Experimentos</p>
-          <h2 class="section-header__title display">Lab</h2>
-          <p class="section-header__desc" style="margin-top:var(--sp-4)">
+          <p id="lab-eyebrow" class="eyebrow section-header__eyebrow">Experimentos</p>
+          <h2 id="lab-title" class="section-header__title display">Lab</h2>
+          <p id="lab-desc" class="section-header__desc" style="margin-top:var(--sp-4)">
             Exploración técnica como práctica. Prototipos, demos y curiosidades.
           </p>
         </div>
@@ -421,11 +421,11 @@
       <!-- Note about AI -->
       <div class="lab-note reveal">
         <p>
-          <strong>Nota sobre estos proyectos:</strong>
-          Los experimentos en esta sección fueron desarrollados con asistencia de IA generativa como herramienta de flujo de trabajo.
+          <strong id="lab-note-title">Nota sobre estos proyectos:</strong>
+          <span id="lab-note-content">Los experimentos en esta sección fueron desarrollados con asistencia de IA generativa como herramienta de flujo de trabajo.
           La dirección creativa, las decisiones técnicas y el criterio de diseño son propios.
           Los casos de estudio también utilizan IA como parte del proceso —
-          es el nuevo paradigma de producción y los resultados hablan por sí solos.
+          es el nuevo paradigma de producción y los resultados hablan por sí solos.</span>
         </p>
       </div>
     </div>
@@ -438,11 +438,11 @@
     <div class="container">
       <div class="footer__grid">
         <div>
-          <div class="footer-logo reveal">van<span>.</span>dalit</div>
-          <p class="footer-tagline reveal">
+          <div id="footer-logo" class="footer-logo reveal">van<span>.</span>dalit</div>
+          <p id="footer-tagline" class="footer-tagline reveal">
             Diseño que comunica.<br>Código que respira.
           </p>
-          <nav class="footer-links reveal" aria-label="Links sociales">
+          <nav id="footer-links" class="footer-links reveal" aria-label="Links sociales">
             <a href="https://github.com/vandalit" class="footer-link" target="_blank" rel="noopener">GitHub</a>
             <a href="https://twitter.com/vandalittt" class="footer-link" target="_blank" rel="noopener">@vandalittt</a>
             <a href="#cases" class="footer-link">Proyectos</a>
@@ -452,11 +452,11 @@
         </div>
 
         <div class="footer-right reveal">
-          <p class="eyebrow" style="margin-bottom:var(--sp-2)">¿Trabajamos?</p>
-          <a href="mailto:vandalit@metamedia.cl" class="footer-email">
+          <p id="footer-contact-eyebrow" class="eyebrow" style="margin-bottom:var(--sp-2)">¿Trabajamos?</p>
+          <a id="footer-contact-email" href="mailto:vandalit@metamedia.cl" class="footer-email">
             vandalit@metamedia.cl
           </a>
-          <p class="footer-copy">© 2026 vandalit. Diseño + Código.</p>
+          <p id="footer-copy" class="footer-copy">© 2026 vandalit. Diseño + Código.</p>
         </div>
       </div>
     </div>

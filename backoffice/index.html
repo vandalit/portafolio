@@ -84,6 +84,10 @@
           <span class="bo-sec-tab__name">⚡ Hero (Bentos & Video)</span>
           <span class="bo-sec-tab__count" id="count-bentos">12</span>
         </button>
+        <button class="bo-sec-tab bo-sec-tab--site" data-section="site" role="tab" aria-selected="false" style="grid-column: 1 / -1; border-color: rgba(212,32,90,0.35);">
+          <span class="bo-sec-tab__name">🌐 Textos del Sitio (Landing Copy)</span>
+          <span class="bo-sec-tab__count">Global</span>
+        </button>
       </div>
 
       <!-- Action: Add Project -->
@@ -296,7 +300,11 @@
             <div class="bo-card">
               <div class="bo-card__header-flex">
                 <h3 class="bo-card__title">Galería Showcase (Modal)</h3>
-                <button type="button" id="btn-add-gallery-img" class="bo-btn bo-btn--xs bo-btn--outline">+ Añadir Imagen</button>
+                <div style="display:flex; gap:6px;">
+                  <button type="button" id="btn-upload-gallery-img" class="bo-btn bo-btn--xs bo-btn--lime">⬆ Subir Imagen</button>
+                  <button type="button" id="btn-add-gallery-img" class="bo-btn bo-btn--xs bo-btn--outline">+ Ruta</button>
+                  <input type="file" id="gallery-file-input" accept="image/*" style="display:none;">
+                </div>
               </div>
               <p class="bo-help" style="margin-bottom:var(--sp-3)">
                 Imágenes que aparecen en el carrusel de la vista detalle al hacer clic en el proyecto.
@@ -511,6 +519,190 @@
               <h3 class="bo-card__title">Vista Previa en Carrusel</h3>
               <div id="skill-card-preview-wrap" style="padding:16px 0;">
                 <!-- Rendered live -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SITE SETTINGS & LANDING COPY EDITOR ──────────────── -->
+      <div id="site-editor" class="bo-form" style="display:none;">
+        <div class="bo-form__header">
+          <div class="bo-form__title-group">
+            <span class="bo-form__eyebrow">SECCIÓN: AJUSTES GLOBALES</span>
+            <h1 class="bo-form__title">Textos de la Landing Page</h1>
+            <code class="bo-form__slug">content/settings/site.json</code>
+          </div>
+        </div>
+
+        <div class="bo-form__grid">
+          <!-- Columna Izquierda: Hero & Secciones -->
+          <div class="bo-form__col">
+            <!-- Card: Hero y Branding -->
+            <div class="bo-card">
+              <h3 class="bo-card__title">Hero & Marca</h3>
+              
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="site-brand-line1">Nombre (Línea 1)</label>
+                  <input type="text" id="site-brand-line1" class="bo-input" placeholder="van·">
+                </div>
+                <div class="bo-field">
+                  <label for="site-brand-line2">Nombre (Línea 2)</label>
+                  <input type="text" id="site-brand-line2" class="bo-input" placeholder="dalit">
+                </div>
+              </div>
+
+              <div class="bo-field">
+                <label for="site-hero-eyebrow">Eyebrow Principal</label>
+                <input type="text" id="site-hero-eyebrow" class="bo-input" placeholder="UX/UI Designer & Front-end Developer">
+              </div>
+
+              <div class="bo-field">
+                <label for="site-hero-tagline">Tagline / Manifiesto</label>
+                <input type="text" id="site-hero-tagline" class="bo-input" placeholder="Diseño que comunica. Código que respira.">
+              </div>
+
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="site-hero-cta-work">Botón Trabajos (Texto)</label>
+                  <input type="text" id="site-hero-cta-work" class="bo-input" placeholder="Ver trabajo">
+                </div>
+                <div class="bo-field">
+                  <label for="site-hero-cta-contact">Botón Contacto (Texto)</label>
+                  <input type="text" id="site-hero-cta-contact" class="bo-input" placeholder="Contacto">
+                </div>
+              </div>
+
+              <div class="bo-field">
+                <label for="site-hero-email">Email de Contacto</label>
+                <input type="email" id="site-hero-email" class="bo-input" placeholder="vandalit@metamedia.cl">
+              </div>
+
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="site-social-github">GitHub URL</label>
+                  <input type="url" id="site-social-github" class="bo-input" placeholder="https://github.com/vandalit">
+                </div>
+                <div class="bo-field">
+                  <label for="site-social-behance">Behance URL</label>
+                  <input type="url" id="site-social-behance" class="bo-input" placeholder="https://behance.net/vandalit">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card: Casos y Skills -->
+            <div class="bo-card">
+              <h3 class="bo-card__title">Cabecera: Casos de Estudio</h3>
+              <div class="bo-field">
+                <label for="site-cases-eyebrow">Eyebrow</label>
+                <input type="text" id="site-cases-eyebrow" class="bo-input">
+              </div>
+              <div class="bo-field">
+                <label for="site-cases-title">Título</label>
+                <input type="text" id="site-cases-title" class="bo-input">
+              </div>
+              <div class="bo-field">
+                <label for="site-cases-desc">Descripción</label>
+                <textarea id="site-cases-desc" class="bo-textarea" rows="2"></textarea>
+              </div>
+            </div>
+
+            <div class="bo-card">
+              <h3 class="bo-card__title">Cabecera: Perfil Técnico (Skills)</h3>
+              <div class="bo-field">
+                <label for="site-skills-eyebrow">Eyebrow</label>
+                <input type="text" id="site-skills-eyebrow" class="bo-input">
+              </div>
+              <div class="bo-field">
+                <label for="site-skills-title">Título</label>
+                <input type="text" id="site-skills-title" class="bo-input">
+              </div>
+              <div class="bo-field">
+                <label for="site-skills-desc">Descripción</label>
+                <textarea id="site-skills-desc" class="bo-textarea" rows="2"></textarea>
+              </div>
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="site-skills-leg-m">Leyenda Magenta</label>
+                  <input type="text" id="site-skills-leg-m" class="bo-input">
+                </div>
+                <div class="bo-field">
+                  <label for="site-skills-leg-c">Leyenda Lime</label>
+                  <input type="text" id="site-skills-leg-c" class="bo-input">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Clientes, Lab y Footer -->
+          <div class="bo-form__col">
+            <!-- Card: Clientes -->
+            <div class="bo-card">
+              <h3 class="bo-card__title">Cabecera: Trabajo de Clientes</h3>
+              <div class="bo-field">
+                <label for="site-work-eyebrow">Eyebrow</label>
+                <input type="text" id="site-work-eyebrow" class="bo-input">
+              </div>
+              <div class="bo-field">
+                <label for="site-work-title">Título</label>
+                <input type="text" id="site-work-title" class="bo-input">
+              </div>
+              <div class="bo-field">
+                <label for="site-work-desc">Descripción</label>
+                <textarea id="site-work-desc" class="bo-textarea" rows="2"></textarea>
+              </div>
+            </div>
+
+            <!-- Card: Lab & Nota IA -->
+            <div class="bo-card">
+              <h3 class="bo-card__title">Cabecera: Laboratorio & Nota IA</h3>
+              <div class="bo-field">
+                <label for="site-lab-eyebrow">Eyebrow</label>
+                <input type="text" id="site-lab-eyebrow" class="bo-input">
+              </div>
+              <div class="bo-field">
+                <label for="site-lab-title">Título</label>
+                <input type="text" id="site-lab-title" class="bo-input">
+              </div>
+              <div class="bo-field">
+                <label for="site-lab-desc">Descripción</label>
+                <textarea id="site-lab-desc" class="bo-textarea" rows="2"></textarea>
+              </div>
+              <div class="bo-field">
+                <label for="site-lab-note-title">Título de la Nota Editorial</label>
+                <input type="text" id="site-lab-note-title" class="bo-input">
+              </div>
+              <div class="bo-field">
+                <label for="site-lab-note-content">Contenido de la Nota sobre IA</label>
+                <textarea id="site-lab-note-content" class="bo-textarea" rows="3"></textarea>
+              </div>
+            </div>
+
+            <!-- Card: Footer -->
+            <div class="bo-card">
+              <h3 class="bo-card__title">Pie de Página (Footer)</h3>
+              <div class="bo-field">
+                <label for="site-footer-logo">Logo (HTML)</label>
+                <input type="text" id="site-footer-logo" class="bo-input bo-input--mono">
+              </div>
+              <div class="bo-field">
+                <label for="site-footer-tagline">Tagline de Cierre (HTML)</label>
+                <input type="text" id="site-footer-tagline" class="bo-input">
+              </div>
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="site-footer-contact-eyebrow">Eyebrow de Contacto</label>
+                  <input type="text" id="site-footer-contact-eyebrow" class="bo-input">
+                </div>
+                <div class="bo-field">
+                  <label for="site-footer-contact-email">Email de Contacto</label>
+                  <input type="email" id="site-footer-contact-email" class="bo-input">
+                </div>
+              </div>
+              <div class="bo-field">
+                <label for="site-footer-copy">Texto de Copyright</label>
+                <input type="text" id="site-footer-copy" class="bo-input">
               </div>
             </div>
           </div>

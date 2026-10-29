@@ -9,11 +9,11 @@
    - Verificador de rutas relativas de imágenes (OK vs 404)
    ========================================================== */
 
-import { loadAllContent, resolveAssetPath, CONTENT_BASE_URL } from '../src/js/content-loader.js';
+import { loadAllContent, loadSiteSettings, resolveAssetPath, CONTENT_BASE_URL } from '../src/js/content-loader.js';
 
 // ── ESTADO GLOBAL ─────────────────────────────────────────
 const state = {
-  currentSection: 'clients', // 'clients' | 'case-studies' | 'lab' | 'skills' | 'hero'
+  currentSection: 'clients', // 'clients' | 'case-studies' | 'lab' | 'skills' | 'hero' | 'site'
   activeProjectIndex: 0,
   activeBentoIndex: 0,
   data: {
@@ -30,9 +30,11 @@ const state = {
     },
     bentos: []
   },
+  siteData: null, // content/settings/site.json
   pendingMoves: [], // Proyectos movidos entre carpetas físicas
   fsHandle: null, // DirectoryHandle para File System API en Local
-  isLocal: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  isLocal: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
+  hasBackend: false // True si el servidor Node.js responde en /api/status
 };
 
 // ── DOM ELEMENTS ──────────────────────────────────────────
@@ -52,6 +54,7 @@ const el = {
   projectList: document.getElementById('project-list'),
   projectForm: document.getElementById('project-form'),
   heroEditor: document.getElementById('hero-editor'),
+  siteEditor: document.getElementById('site-editor'),
   editorEmpty: document.getElementById('editor-empty'),
   
   // Headers del form
@@ -91,6 +94,8 @@ const el = {
   coverFileInput: document.getElementById('cover-file-input'),
   galleryList: document.getElementById('gallery-list'),
   btnAddGalleryImg: document.getElementById('btn-add-gallery-img'),
+  btnUploadGalleryImg: document.getElementById('btn-upload-gallery-img'),
+  galleryFileInput: document.getElementById('gallery-file-input'),
 
   // Hero & Bentos Elements
   fieldVideo1: document.getElementById('field-video-1'),
@@ -127,6 +132,38 @@ const el = {
   skillFieldPills: document.getElementById('skill-field-pills'),
   skillChipsPreview: document.getElementById('skill-chips-preview'),
   skillCardPreviewWrap: document.getElementById('skill-card-preview-wrap'),
+
+  // Site / Landing Copy Editor Elements
+  siteBrandLine1: document.getElementById('site-brand-line1'),
+  siteBrandLine2: document.getElementById('site-brand-line2'),
+  siteHeroEyebrow: document.getElementById('site-hero-eyebrow'),
+  siteHeroTagline: document.getElementById('site-hero-tagline'),
+  siteHeroCtaWork: document.getElementById('site-hero-cta-work'),
+  siteHeroCtaContact: document.getElementById('site-hero-cta-contact'),
+  siteHeroEmail: document.getElementById('site-hero-email'),
+  siteSocialGithub: document.getElementById('site-social-github'),
+  siteSocialBehance: document.getElementById('site-social-behance'),
+  siteCasesEyebrow: document.getElementById('site-cases-eyebrow'),
+  siteCasesTitle: document.getElementById('site-cases-title'),
+  siteCasesDesc: document.getElementById('site-cases-desc'),
+  siteSkillsEyebrow: document.getElementById('site-skills-eyebrow'),
+  siteSkillsTitle: document.getElementById('site-skills-title'),
+  siteSkillsDesc: document.getElementById('site-skills-desc'),
+  siteSkillsLegM: document.getElementById('site-skills-leg-m'),
+  siteSkillsLegC: document.getElementById('site-skills-leg-c'),
+  siteWorkEyebrow: document.getElementById('site-work-eyebrow'),
+  siteWorkTitle: document.getElementById('site-work-title'),
+  siteWorkDesc: document.getElementById('site-work-desc'),
+  siteLabEyebrow: document.getElementById('site-lab-eyebrow'),
+  siteLabTitle: document.getElementById('site-lab-title'),
+  siteLabDesc: document.getElementById('site-lab-desc'),
+  siteLabNoteTitle: document.getElementById('site-lab-note-title'),
+  siteLabNoteContent: document.getElementById('site-lab-note-content'),
+  siteFooterLogo: document.getElementById('site-footer-logo'),
+  siteFooterTagline: document.getElementById('site-footer-tagline'),
+  siteFooterContactEyebrow: document.getElementById('site-footer-contact-eyebrow'),
+  siteFooterContactEmail: document.getElementById('site-footer-contact-email'),
+  siteFooterCopy: document.getElementById('site-footer-copy'),
   
   toastContainer: document.getElementById('bo-toast-container')
 };
@@ -149,11 +186,26 @@ function showToast(message, type = 'success') {
 
 // ── INICIALIZACIÓN ────────────────────────────────────────
 async function init() {
+  // 0. Detectar si el backend local Node.js está activo
+  try {
+    const statusRes = await fetch('/api/status');
+    if (statusRes.ok) {
+      const statusJson = await statusRes.json();
+      if (statusJson.status === 'ok') {
+        state.hasBackend = true;
+        console.log('[Backoffice] 🚀 Backend Local conectado en puerto:', statusJson.serverPort);
+      }
+    }
+  } catch (err) {
+    state.hasBackend = false;
+  }
+
   setupEnvironmentUI();
   setupNavigation();
   setupFormListeners();
   setupHeroEditorListeners();
   setupSkillEditorListeners();
+  setupSiteEditorListeners();
   setupMoveProject();
   setupFileSystemAPI();
   setupExportImport();
@@ -173,6 +225,13 @@ async function init() {
   // 2. Cargar configuración de Hero & Bentos
   await loadHeroSettings();
 
+  // 3. Cargar textos globales del sitio (site.json)
+  try {
+    state.siteData = await loadSiteSettings();
+  } catch (err) {
+    console.warn('[Backoffice] No se pudo cargar site.json:', err);
+  }
+
   updateCounts();
   renderProjectList();
   loadActiveProject();
@@ -180,9 +239,15 @@ async function init() {
 
 // ── ENTORNO UI ────────────────────────────────────────────
 function setupEnvironmentUI() {
-  if (state.isLocal) {
+  if (state.hasBackend) {
     el.envBadge.className = 'bo-badge bo-badge--local';
-    el.envText.textContent = 'Entorno Local';
+    el.envText.textContent = 'Backend Local Conectado';
+    el.btnConnectFs.style.display = 'none';
+    el.fsStatusLabel.textContent = '⚡ API Activa (Escritura directa a disco)';
+    el.btnSaveDisk.style.display = 'inline-flex';
+  } else if (state.isLocal) {
+    el.envBadge.className = 'bo-badge bo-badge--local';
+    el.envText.textContent = 'Entorno Local (Estático)';
     el.btnConnectFs.style.display = 'inline-flex';
   } else {
     el.envBadge.className = 'bo-badge bo-badge--web';
@@ -211,7 +276,8 @@ function setupNavigation() {
         'case-studies': 'Casos de Estudio',
         'lab': 'Experimentos Lab',
         'skills': 'Perfil Técnico',
-        'hero': '⚡ Hero (Bentos & Video)'
+        'hero': '⚡ Hero (Bentos & Video)',
+        'site': '🌐 Textos del Sitio (Landing Copy)'
       };
       el.currentSectionLabel.textContent = labels[state.currentSection] || state.currentSection;
 
@@ -219,6 +285,7 @@ function setupNavigation() {
         el.btnAddProject.style.display = 'none';
         el.projectForm.style.display = 'none';
         el.skillEditor.style.display = 'none';
+        el.siteEditor.style.display = 'none';
         el.editorEmpty.style.display = 'none';
         el.heroEditor.style.display = 'block';
         renderHeroEditor();
@@ -226,14 +293,25 @@ function setupNavigation() {
         el.btnAddProject.style.display = 'inline-flex';
         el.projectForm.style.display = 'none';
         el.heroEditor.style.display = 'none';
+        el.siteEditor.style.display = 'none';
         el.skillEditor.style.display = 'block';
         el.editorEmpty.style.display = 'none';
         renderProjectList();
         populateSkillForm();
+      } else if (state.currentSection === 'site') {
+        el.btnAddProject.style.display = 'none';
+        el.projectForm.style.display = 'none';
+        el.heroEditor.style.display = 'none';
+        el.skillEditor.style.display = 'none';
+        el.editorEmpty.style.display = 'none';
+        el.siteEditor.style.display = 'block';
+        renderSiteProjectList();
+        populateSiteForm();
       } else {
         el.btnAddProject.style.display = 'inline-flex';
         el.heroEditor.style.display = 'none';
         el.skillEditor.style.display = 'none';
+        el.siteEditor.style.display = 'none';
         renderProjectList();
         loadActiveProject();
       }
@@ -601,7 +679,7 @@ function setupFormListeners() {
     saveCurrentFormValues();
   });
 
-  // Add gallery image
+  // Add gallery image (ruta manual)
   el.btnAddGalleryImg.addEventListener('click', () => {
     const project = state.data[state.currentSection][state.activeProjectIndex];
     if (!project) return;
@@ -611,6 +689,52 @@ function setupFormListeners() {
     saveCurrentFormValues();
     renderGalleryList(project.gallery);
   });
+
+  // Upload gallery image (archivo real)
+  if (el.btnUploadGalleryImg && el.galleryFileInput) {
+    el.btnUploadGalleryImg.addEventListener('click', () => el.galleryFileInput.click());
+    el.galleryFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const project = state.data[state.currentSection][state.activeProjectIndex];
+      if (!project) return;
+      if (!Array.isArray(project.gallery)) project.gallery = [];
+
+      if (state.hasBackend) {
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('section', state.currentSection);
+          formData.append('slug', el.fieldId.value || project.id || 'temp');
+          formData.append('target', 'gallery');
+
+          showToast('Subiendo imagen a galería...', 'success');
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+          });
+          const json = await res.json();
+          if (json.success) {
+            project.gallery.push(json.relativePath);
+            saveCurrentFormValues();
+            renderGalleryList(project.gallery);
+            showToast(`✅ Imagen subida a galería: ${json.relativePath}`);
+            return;
+          }
+        } catch (err) {
+          console.error('[Backoffice] Error subiendo imagen a galería:', err);
+          showToast('Error al subir imagen a galería', 'danger');
+        }
+      }
+
+      // Fallback si no hay backend
+      project.gallery.push(`gallery/${file.name}`);
+      saveCurrentFormValues();
+      renderGalleryList(project.gallery);
+      showToast(`Añadida ruta 'gallery/${file.name}'. Recuerda colocar el archivo en disco.`);
+    });
+  }
 
   // Dropzone de portada
   el.coverDropzone.addEventListener('click', () => el.coverFileInput.click());
@@ -639,6 +763,34 @@ function setupFormListeners() {
 // Guardar archivo arrastrado o seleccionado
 async function handleCoverFileSelected(file) {
   const fileName = file.name;
+
+  if (state.hasBackend) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('section', state.currentSection);
+      formData.append('slug', el.fieldId.value || 'temp');
+      formData.append('target', 'cover');
+
+      showToast('Subiendo portada al servidor...', 'success');
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const json = await res.json();
+      if (json.success) {
+        el.fieldCover.value = json.fileName;
+        saveCurrentFormValues();
+        updateCoverPreview(json.fileName);
+        showToast(`✅ Portada guardada en content/${state.currentSection}/${el.fieldId.value}/${json.fileName}`);
+        return;
+      }
+    } catch (err) {
+      console.error('[Backoffice] Error subiendo portada al backend:', err);
+      showToast('Error subiendo portada al backend', 'danger');
+    }
+  }
+
   el.fieldCover.value = fileName;
 
   if (state.fsHandle) {
@@ -1262,8 +1414,82 @@ function setupFileSystemAPI() {
     }
   });
 
-  // Guardar en Disco
+  // Guardar en Disco (Híbrido: Backend Local API o File System API)
   el.btnSaveDisk.addEventListener('click', async () => {
+    // CASO A: Backend Local API activo
+    if (state.hasBackend) {
+      try {
+        el.btnSaveDisk.disabled = true;
+        el.btnSaveDisk.innerHTML = '<span>Guardando vía API...</span>';
+
+        // 1. Guardar Casos de Estudio
+        await fetch('/api/content/case-studies', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projects: state.data['case-studies'] })
+        });
+
+        // 2. Guardar Clientes
+        await fetch('/api/content/clients', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projects: state.data['clients'] })
+        });
+
+        // 3. Guardar Lab
+        await fetch('/api/content/lab', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projects: state.data['lab'] })
+        });
+
+        // 4. Guardar Skills
+        if (state.data['skills'] && state.data['skills'].length > 0) {
+          await fetch('/api/skills', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(state.data['skills'])
+          });
+        }
+
+        // 5. Guardar Hero & Bentos
+        if (state.heroData) {
+          await fetch('/api/hero', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(state.heroData)
+          });
+        }
+
+        // 6. Guardar Textos del Sitio (site.json)
+        if (state.siteData) {
+          await fetch('/api/site', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(state.siteData)
+          });
+        }
+
+        // Limpiar borradores
+        localStorage.removeItem('vandalit_content_override');
+        localStorage.removeItem('vandalit_hero_override');
+        localStorage.removeItem('vandalit_site_override');
+
+        showToast('✅ ¡Todos los JSONs y archivos se guardaron físicamente en disco mediante el backend local!');
+      } catch (err) {
+        console.error('[Backoffice] Error guardando mediante backend:', err);
+        showToast('Error guardando en el backend: ' + err.message, 'danger');
+      } finally {
+        el.btnSaveDisk.disabled = false;
+        el.btnSaveDisk.innerHTML = `
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+          <span>Guardar en Disco</span>
+        `;
+      }
+      return;
+    }
+
+    // CASO B: File System Access API nativo
     if (!state.fsHandle) return;
 
     try {
@@ -1396,6 +1622,143 @@ function setupExportImport() {
     reader.readAsText(file);
     e.target.value = '';
   });
+}
+
+// ── SITE SETTINGS & LANDING COPY EDITOR ───────────────────
+function renderSiteProjectList() {
+  el.projectList.innerHTML = `
+    <div class="bo-project-item is-selected">
+      <div class="bo-project-item__info">
+        <span class="bo-project-item__title">🌐 Configuración General</span>
+        <span class="bo-project-item__slug">content/settings/site.json</span>
+      </div>
+    </div>
+  `;
+}
+
+function populateSiteForm() {
+  if (!state.siteData) return;
+
+  const site = state.siteData;
+
+  // Hero & Brand
+  if (el.siteBrandLine1) el.siteBrandLine1.value = site.brand?.nameLine1 || 'van·';
+  if (el.siteBrandLine2) el.siteBrandLine2.value = site.brand?.nameLine2 || 'dalit';
+  if (el.siteHeroEyebrow) el.siteHeroEyebrow.value = site.hero?.eyebrow || '';
+  if (el.siteHeroTagline) el.siteHeroTagline.value = site.hero?.tagline || '';
+  if (el.siteHeroCtaWork) el.siteHeroCtaWork.value = site.hero?.ctaWorkText || 'Ver trabajo';
+  if (el.siteHeroCtaContact) el.siteHeroCtaContact.value = site.hero?.ctaContactText || 'Contacto';
+  if (el.siteHeroEmail) el.siteHeroEmail.value = site.hero?.email || '';
+  if (el.siteSocialGithub) el.siteSocialGithub.value = site.hero?.socials?.github || '';
+  if (el.siteSocialBehance) el.siteSocialBehance.value = site.hero?.socials?.behance || '';
+
+  // Secciones
+  const sec = site.sections || {};
+  if (el.siteCasesEyebrow) el.siteCasesEyebrow.value = sec.cases?.eyebrow || '';
+  if (el.siteCasesTitle) el.siteCasesTitle.value = sec.cases?.title || '';
+  if (el.siteCasesDesc) el.siteCasesDesc.value = sec.cases?.description || '';
+
+  if (el.siteSkillsEyebrow) el.siteSkillsEyebrow.value = sec.skills?.eyebrow || '';
+  if (el.siteSkillsTitle) el.siteSkillsTitle.value = sec.skills?.title || '';
+  if (el.siteSkillsDesc) el.siteSkillsDesc.value = sec.skills?.description || '';
+  if (el.siteSkillsLegM) el.siteSkillsLegM.value = sec.skills?.legendMultimedia || '';
+  if (el.siteSkillsLegC) el.siteSkillsLegC.value = sec.skills?.legendCoding || '';
+
+  if (el.siteWorkEyebrow) el.siteWorkEyebrow.value = sec.work?.eyebrow || '';
+  if (el.siteWorkTitle) el.siteWorkTitle.value = sec.work?.title || '';
+  if (el.siteWorkDesc) el.siteWorkDesc.value = sec.work?.description || '';
+
+  if (el.siteLabEyebrow) el.siteLabEyebrow.value = sec.lab?.eyebrow || '';
+  if (el.siteLabTitle) el.siteLabTitle.value = sec.lab?.title || '';
+  if (el.siteLabDesc) el.siteLabDesc.value = sec.lab?.description || '';
+  if (el.siteLabNoteTitle) el.siteLabNoteTitle.value = sec.lab?.noteTitle || '';
+  if (el.siteLabNoteContent) el.siteLabNoteContent.value = sec.lab?.noteContent || '';
+
+  // Footer
+  const footer = site.footer || {};
+  if (el.siteFooterLogo) el.siteFooterLogo.value = footer.logoHtml || '';
+  if (el.siteFooterTagline) el.siteFooterTagline.value = footer.tagline || '';
+  if (el.siteFooterContactEyebrow) el.siteFooterContactEyebrow.value = footer.contactEyebrow || '';
+  if (el.siteFooterContactEmail) el.siteFooterContactEmail.value = footer.contactEmail || '';
+  if (el.siteFooterCopy) el.siteFooterCopy.value = footer.copyright || '';
+}
+
+function setupSiteEditorListeners() {
+  const siteInputs = [
+    el.siteBrandLine1, el.siteBrandLine2, el.siteHeroEyebrow, el.siteHeroTagline,
+    el.siteHeroCtaWork, el.siteHeroCtaContact, el.siteHeroEmail, el.siteSocialGithub,
+    el.siteSocialBehance, el.siteCasesEyebrow, el.siteCasesTitle, el.siteCasesDesc,
+    el.siteSkillsEyebrow, el.siteSkillsTitle, el.siteSkillsDesc, el.siteSkillsLegM,
+    el.siteSkillsLegC, el.siteWorkEyebrow, el.siteWorkTitle, el.siteWorkDesc,
+    el.siteLabEyebrow, el.siteLabTitle, el.siteLabDesc, el.siteLabNoteTitle,
+    el.siteLabNoteContent, el.siteFooterLogo, el.siteFooterTagline,
+    el.siteFooterContactEyebrow, el.siteFooterContactEmail, el.siteFooterCopy
+  ];
+
+  siteInputs.forEach(input => {
+    if (!input) return;
+    input.addEventListener('input', () => {
+      saveSiteValuesFromForm();
+    });
+  });
+}
+
+function saveSiteValuesFromForm() {
+  if (!state.siteData) state.siteData = {};
+
+  const s = state.siteData;
+  if (!s.brand) s.brand = {};
+  s.brand.nameLine1 = el.siteBrandLine1.value.trim();
+  s.brand.nameLine2 = el.siteBrandLine2.value.trim();
+  s.brand.fullName = `${s.brand.nameLine1}${s.brand.nameLine2}`.replace(/·/g, '');
+
+  if (!s.hero) s.hero = {};
+  s.hero.eyebrow = el.siteHeroEyebrow.value.trim();
+  s.hero.tagline = el.siteHeroTagline.value.trim();
+  s.hero.ctaWorkText = el.siteHeroCtaWork.value.trim();
+  s.hero.ctaContactText = el.siteHeroCtaContact.value.trim();
+  s.hero.email = el.siteHeroEmail.value.trim();
+  if (!s.hero.socials) s.hero.socials = {};
+  s.hero.socials.github = el.siteSocialGithub.value.trim();
+  s.hero.socials.behance = el.siteSocialBehance.value.trim();
+
+  if (!s.sections) s.sections = {};
+  if (!s.sections.cases) s.sections.cases = {};
+  s.sections.cases.eyebrow = el.siteCasesEyebrow.value.trim();
+  s.sections.cases.title = el.siteCasesTitle.value.trim();
+  s.sections.cases.description = el.siteCasesDesc.value.trim();
+
+  if (!s.sections.skills) s.sections.skills = {};
+  s.sections.skills.eyebrow = el.siteSkillsEyebrow.value.trim();
+  s.sections.skills.title = el.siteSkillsTitle.value.trim();
+  s.sections.skills.description = el.siteSkillsDesc.value.trim();
+  s.sections.skills.legendMultimedia = el.siteSkillsLegM.value.trim();
+  s.sections.skills.legendCoding = el.siteSkillsLegC.value.trim();
+
+  if (!s.sections.work) s.sections.work = {};
+  s.sections.work.eyebrow = el.siteWorkEyebrow.value.trim();
+  s.sections.work.title = el.siteWorkTitle.value.trim();
+  s.sections.work.description = el.siteWorkDesc.value.trim();
+
+  if (!s.sections.lab) s.sections.lab = {};
+  s.sections.lab.eyebrow = el.siteLabEyebrow.value.trim();
+  s.sections.lab.title = el.siteLabTitle.value.trim();
+  s.sections.lab.description = el.siteLabDesc.value.trim();
+  s.sections.lab.noteTitle = el.siteLabNoteTitle.value.trim();
+  s.sections.lab.noteContent = el.siteLabNoteContent.value.trim();
+
+  if (!s.footer) s.footer = {};
+  s.footer.logoHtml = el.siteFooterLogo.value.trim();
+  s.footer.tagline = el.siteFooterTagline.value.trim();
+  s.footer.contactEyebrow = el.siteFooterContactEyebrow.value.trim();
+  s.footer.contactEmail = el.siteFooterContactEmail.value.trim();
+  s.footer.copyright = el.siteFooterCopy.value.trim();
+
+  try {
+    localStorage.setItem('vandalit_site_override', JSON.stringify(state.siteData));
+  } catch (err) {
+    console.error('[Backoffice] Error guardando borrador de site.json en localStorage:', err);
+  }
 }
 
 // ── BOOTSTRAP ─────────────────────────────────────────────

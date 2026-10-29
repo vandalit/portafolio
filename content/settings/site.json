@@ -1,0 +1,61 @@
+{
+  "brand": {
+    "nameLine1": "van·",
+    "nameLine2": "dalit",
+    "fullName": "vandalit"
+  },
+  "hero": {
+    "eyebrow": "UX/UI Designer & Front-end Developer",
+    "tagline": "Diseño que comunica. Código que respira.",
+    "ctaWorkText": "Ver trabajo",
+    "ctaWorkHref": "#cases",
+    "ctaContactText": "Contacto",
+    "ctaContactHref": "mailto:vandalit@metamedia.cl",
+    "email": "vandalit@metamedia.cl",
+    "socials": {
+      "github": "https://github.com/vandalit",
+      "behance": "https://behance.net/vandalit",
+      "twitter": "https://twitter.com/vandalittt"
+    }
+  },
+  "sections": {
+    "cases": {
+      "eyebrow": "Proyectos seleccionados",
+      "title": "Casos de Estudio",
+      "description": "Proyectos donde el brief fue el punto de partida, no el límite."
+    },
+    "skills": {
+      "eyebrow": "Habilidades",
+      "title": "Perfil Técnico",
+      "description": "No una lista de íconos. Un mapa de capacidades reales, con sus conexiones.",
+      "legendMultimedia": "Multimedia / Design",
+      "legendCoding": "Coding / Dev"
+    },
+    "work": {
+      "eyebrow": "Proyectos",
+      "title": "Trabajo de Clientes",
+      "description": "Proyectos reales, problemas reales. Desde el brief hasta el deploy."
+    },
+    "lab": {
+      "eyebrow": "Experimentos",
+      "title": "Lab",
+      "description": "Exploración técnica como práctica. Prototipos, demos y curiosidades.",
+      "noteTitle": "Nota sobre estos proyectos:",
+      "noteContent": "Los experimentos en esta sección fueron desarrollados con asistencia de IA generativa como herramienta de flujo de trabajo. La dirección creativa, las decisiones técnicas y el criterio de diseño son propios. Los casos de estudio también utilizan IA como parte del proceso — es el nuevo paradigma de producción y los resultados hablan por sí solos."
+    }
+  },
+  "footer": {
+    "logoHtml": "van<span>.</span>dalit",
+    "tagline": "Diseño que comunica.<br>Código que respira.",
+    "contactEyebrow": "¿Trabajamos?",
+    "contactEmail": "vandalit@metamedia.cl",
+    "copyright": "© 2026 vandalit. Diseño + Código.",
+    "links": [
+      { "label": "GitHub", "url": "https://github.com/vandalit", "external": true },
+      { "label": "@vandalittt", "url": "https://twitter.com/vandalittt", "external": true },
+      { "label": "Proyectos", "url": "#cases", "external": false },
+      { "label": "Skills", "url": "#skills", "external": false },
+      { "label": "Studio", "url": "./backoffice/", "external": false, "subtle": true }
+    ]
+  }
+}
