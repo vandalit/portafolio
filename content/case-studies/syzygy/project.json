@@ -13,14 +13,14 @@
   ],
   "accentColor": "#b6e030",
   "featured": true,
-  "coverPlaceholder": "http://localhost:3000/content/case-studies/syzygy/ondas-ne--n-sobre-panel-oscuro.png",
+  "coverPlaceholder": "ondas-ne--n-sobre-panel-oscuro.png",
   "gallery": [
     "https://picsum.photos/seed/syzygy-1/1200/800",
     "https://picsum.photos/seed/syzygy-2/800/1000",
     "https://picsum.photos/seed/syzygy-3/900/600",
     "https://picsum.photos/seed/syzygy-4/800/1200",
     "https://picsum.photos/seed/syzygy-5/1200/700",
-    "http://localhost:3000/content/case-studies/syzygy/gallery/ondas-ne--n-sobre-panel-oscuro.png"
+    "ondas-ne--n-sobre-panel-oscuro.png"
   ],
   "links": {
     "live": null,
@@ -29,7 +29,7 @@
   "challenge": "Crear un sistema de diseño que pueda escalar sin perder su carácter propio, integrando motion como parte fundamental del lenguaje.",
   "solution": "Tokens semánticos + motion principles documentados + biblioteca de componentes con estados animados.",
   "result": "Sistema funcional desplegado, utilizable como base para proyectos futuros.",
-  "cover": "http://localhost:3000/content/case-studies/syzygy/ondas-ne--n-sobre-panel-oscuro.png",
+  "cover": "ondas-ne--n-sobre-panel-oscuro.png",
   "client": "",
   "stack": []
 }

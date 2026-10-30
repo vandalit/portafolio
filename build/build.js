@@ -57,6 +57,15 @@ function copyDir(src, dest) {
 // LECTORES DE CONTENIDO
 // ─────────────────────────────────────────────────────────────────────────────
 
+function resolveAssetPath(section, slug, assetPath) {
+  if (!assetPath) return '';
+  if (/^(https?:|\/\/|data:)/i.test(assetPath)) {
+    return assetPath;
+  }
+  const cleanAsset = assetPath.replace(/^\.?\/+/, '');
+  return `./content/${section}/${slug}/${cleanAsset}`;
+}
+
 function loadSiteSettings() {
   return readJSON(join(CONTENT, 'settings', 'site.json'));
 }
@@ -69,6 +78,11 @@ function loadCaseStudies() {
       const p = join(CONTENT, 'case-studies', id, 'project.json');
       const data = readJSON(p);
       data._id = id;
+      data.cover = resolveAssetPath('case-studies', id, data.cover || data.coverPlaceholder);
+      data.coverPlaceholder = data.cover;
+      if (Array.isArray(data.gallery)) {
+        data.gallery = data.gallery.map(img => resolveAssetPath('case-studies', id, img));
+      }
       return data;
     });
 }
@@ -81,6 +95,11 @@ function loadClients() {
       const p = join(CONTENT, 'clients', id, 'project.json');
       const data = readJSON(p);
       data._id = id;
+      data.cover = resolveAssetPath('clients', id, data.cover || data.coverPlaceholder);
+      data.coverPlaceholder = data.cover;
+      if (Array.isArray(data.gallery)) {
+        data.gallery = data.gallery.map(img => resolveAssetPath('clients', id, img));
+      }
       return data;
     });
 }
@@ -91,6 +110,11 @@ function loadLab() {
     const p = join(CONTENT, 'lab', id, 'project.json');
     const data = readJSON(p);
     data._id = id;
+    data.cover = resolveAssetPath('lab', id, data.cover || data.coverPlaceholder);
+    data.coverPlaceholder = data.cover;
+    if (Array.isArray(data.gallery)) {
+      data.gallery = data.gallery.map(img => resolveAssetPath('lab', id, img));
+    }
     return data;
   });
 }
@@ -411,6 +435,21 @@ function validateContent({ site, cases, clients, lab, skills }) {
   cases.forEach(c => {
     if (!c.title) errors.push(`Caso sin título (${c.id || 'desconocido'})`);
     if (!c.description) warnings.push(`Caso sin descripción: ${c.title}`);
+    if (c.cover && (c.cover.includes('localhost') || c.cover.includes('127.0.0.1'))) {
+      errors.push(`Ruta prohibida con localhost en portada de caso: ${c.title} -> ${c.cover}`);
+    }
+  });
+
+  clients.forEach(cl => {
+    if (cl.cover && (cl.cover.includes('localhost') || cl.cover.includes('127.0.0.1'))) {
+      errors.push(`Ruta prohibida con localhost en portada de trabajo: ${cl.title} -> ${cl.cover}`);
+    }
+  });
+
+  lab.forEach(lb => {
+    if (lb.cover && (lb.cover.includes('localhost') || lb.cover.includes('127.0.0.1'))) {
+      errors.push(`Ruta prohibida con localhost en portada de lab: ${lb.title} -> ${lb.cover}`);
+    }
   });
 
   (skills.categories || []).forEach(s => {

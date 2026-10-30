@@ -41,6 +41,7 @@ const state = {
 const el = {
   envBadge: document.getElementById('env-badge'),
   envText: document.getElementById('env-text'),
+  readOnlyBanner: document.getElementById('bo-readonly-banner'),
   btnConnectFs: document.getElementById('btn-connect-fs'),
   fsStatusLabel: document.getElementById('fs-status-label'),
   btnSaveDisk: document.getElementById('btn-save-disk'),
@@ -255,6 +256,21 @@ async function init() {
   loadActiveProject();
 }
 
+// ── SANITIZACIÓN DE RUTAS DE ASSETS ───────────────────────
+export function sanitizeAssetInput(val) {
+  if (!val) return '';
+  let cleaned = String(val).trim();
+  // Quitar localhost o 127.0.0.1 con o sin puerto y protocolo
+  cleaned = cleaned.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/?/i, '');
+  // Quitar prefijo de GitHub Pages si alguien copió la URL completa del navegador
+  cleaned = cleaned.replace(/^https?:\/\/[^\/]+\/portafolio\/?/i, '');
+  // Quitar cualquier prefijo content/<section>/<slug>/
+  cleaned = cleaned.replace(/^\/?content\/[^\/]+\/[^\/]+\//i, '');
+  // Quitar slash o punto-slash inicial
+  cleaned = cleaned.replace(/^(\.\/|\/)+/, '');
+  return cleaned;
+}
+
 // ── ENTORNO UI ────────────────────────────────────────────
 function setupEnvironmentUI() {
   if (state.hasBackend) {
@@ -263,14 +279,51 @@ function setupEnvironmentUI() {
     el.btnConnectFs.style.display = 'none';
     el.fsStatusLabel.textContent = '⚡ API Activa (Escritura directa a disco)';
     el.btnSaveDisk.style.display = 'inline-flex';
+    if (el.readOnlyBanner) el.readOnlyBanner.style.display = 'none';
   } else if (state.isLocal) {
     el.envBadge.className = 'bo-badge bo-badge--local';
     el.envText.textContent = 'Entorno Local (Estático)';
     el.btnConnectFs.style.display = 'inline-flex';
+    if (el.readOnlyBanner) el.readOnlyBanner.style.display = 'none';
   } else {
+    // ENTORNO WEB DESPLEGADO (GitHub Pages) -> MODO SOLO LECTURA
     el.envBadge.className = 'bo-badge bo-badge--web';
-    el.envText.textContent = 'Web / GitHub Pages';
+    el.envText.textContent = 'Web / Solo Lectura';
     el.btnConnectFs.style.display = 'none';
+    el.btnSaveDisk.style.display = 'none';
+    if (el.readOnlyBanner) el.readOnlyBanner.style.display = 'block';
+
+    // Desactivar o restringir acciones de modificación física en repositorio
+    if (el.btnAddProject) {
+      el.btnAddProject.title = 'Crear proyectos en repositorio solo está disponible en local (npm run dev)';
+      el.btnAddProject.disabled = true;
+      el.btnAddProject.style.opacity = '0.4';
+      el.btnAddProject.style.cursor = 'not-allowed';
+    }
+    if (el.btnMoveProject) {
+      el.btnMoveProject.title = 'Mover carpetas físicas solo disponible en local';
+      el.btnMoveProject.disabled = true;
+      el.btnMoveProject.style.opacity = '0.4';
+      el.btnMoveProject.style.cursor = 'not-allowed';
+    }
+    if (el.btnDeleteProject) {
+      el.btnDeleteProject.title = 'Eliminar proyectos físicos solo disponible en local';
+      el.btnDeleteProject.disabled = true;
+      el.btnDeleteProject.style.opacity = '0.4';
+      el.btnDeleteProject.style.cursor = 'not-allowed';
+    }
+    if (el.btnDeleteSkill) {
+      el.btnDeleteSkill.title = 'Eliminar skills físicas solo disponible en local';
+      el.btnDeleteSkill.disabled = true;
+      el.btnDeleteSkill.style.opacity = '0.4';
+      el.btnDeleteSkill.style.cursor = 'not-allowed';
+    }
+    if (el.btnUploadGalleryImg) {
+      el.btnUploadGalleryImg.style.display = 'none';
+    }
+    if (el.coverDropzone) {
+      el.coverDropzone.title = 'Subida directa de archivos a disco deshabilitada en versión web';
+    }
   }
 }
 
@@ -556,14 +609,15 @@ function renderChips(container, items, isLime = false) {
 
 // ── VERIFICADOR DE RUTAS DE IMÁGENES (OK vs 404) ──────────
 function updateCoverPreview(assetPath) {
+  const cleanPath = sanitizeAssetInput(assetPath);
   const slug = el.fieldId.value || 'slug';
   const section = state.currentSection;
   const projectDir = `${CONTENT_BASE_URL}/${section}/${slug}`;
-  const resolvedUrl = resolveAssetPath(projectDir, assetPath);
+  const resolvedUrl = resolveAssetPath(projectDir, cleanPath);
 
   el.coverResolvedPath.textContent = resolvedUrl;
 
-  if (!assetPath) {
+  if (!cleanPath) {
     el.coverStatusBadge.className = 'bo-status-badge bo-status-badge--neutral';
     el.coverStatusBadge.textContent = 'Sin portada';
     el.coverPreviewImg.classList.remove('is-loaded');
@@ -631,7 +685,8 @@ function renderGalleryList(gallery) {
 
     const input = item.querySelector('.bo-gallery-item__input');
     input.addEventListener('change', () => {
-      gallery[idx] = input.value.trim();
+      gallery[idx] = sanitizeAssetInput(input.value);
+      input.value = gallery[idx];
       saveCurrentFormValues();
       renderGalleryList(gallery);
     });
@@ -708,7 +763,8 @@ function setupFormListeners() {
 
   // Cover input change
   el.fieldCover.addEventListener('change', () => {
-    const val = el.fieldCover.value.trim();
+    const val = sanitizeAssetInput(el.fieldCover.value);
+    el.fieldCover.value = val;
     updateCoverPreview(val);
     saveCurrentFormValues();
   });
@@ -797,7 +853,12 @@ function setupFormListeners() {
 
 // Guardar archivo arrastrado o seleccionado
 async function handleCoverFileSelected(file) {
-  const fileName = file.name;
+  if (!state.isLocal) {
+    showToast('Subida de archivos deshabilitada en la versión web desplegada.', 'danger');
+    return;
+  }
+
+  const fileName = sanitizeAssetInput(file.name);
 
   if (state.hasBackend) {
     try {
@@ -887,8 +948,10 @@ function saveCurrentFormValues() {
     }
   }
 
-  project.cover = el.fieldCover.value.trim();
-  project.coverPlaceholder = project.cover;
+  const cleanCover = sanitizeAssetInput(el.fieldCover.value);
+  el.fieldCover.value = cleanCover;
+  project.cover = cleanCover;
+  project.coverPlaceholder = cleanCover;
 
   el.formDisplayTitle.textContent = project.title || 'Proyecto sin título';
   el.formDisplaySlug.textContent = project.id || 'slug';
@@ -1481,6 +1544,12 @@ function persistHeroSettings() {
 
 // ── FILE SYSTEM ACCESS API (LOCAL DISK SAVE) ──────────────
 function setupFileSystemAPI() {
+  // En entorno web desplegado, JAMÁS solicitar acceso al sistema de archivos ni disparar permisos del navegador
+  if (!state.isLocal) {
+    if (el.btnConnectFs) el.btnConnectFs.style.display = 'none';
+    return;
+  }
+
   if (!window.showDirectoryPicker) {
     el.btnConnectFs.title = 'Tu navegador no soporta File System Access API (se recomienda Chrome/Edge/Brave).';
     return;

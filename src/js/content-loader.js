@@ -23,7 +23,7 @@ export function resolveAssetPath(basePath, assetPath) {
     return assetPath;
   }
   const cleanBase = basePath.replace(/\/+$/, '');
-  const cleanAsset = assetPath.replace(/^\/+/, '');
+  const cleanAsset = assetPath.replace(/^(\.\/|\/)+/, '');
   return `${cleanBase}/${cleanAsset}`;
 }
 

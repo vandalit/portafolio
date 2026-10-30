@@ -1,9 +1,11 @@
 [
+  "card-tools",
   "afk",
+  "multipip",
+  "paprika",
   "cssdriven-v1",
   "cssdriven-v2",
   "webxr-hands",
   "fluid-particles",
-  "glsl-raymarching",
-  "paprika"
+  "glsl-raymarching"
 ]
