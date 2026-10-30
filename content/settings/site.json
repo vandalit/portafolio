@@ -51,11 +51,32 @@
     "contactEmail": "vandalit@metamedia.cl",
     "copyright": "© 2026 vandalit. Diseño + Código.",
     "links": [
-      { "label": "GitHub", "url": "https://github.com/vandalit", "external": true },
-      { "label": "@vandalittt", "url": "https://twitter.com/vandalittt", "external": true },
-      { "label": "Proyectos", "url": "#cases", "external": false },
-      { "label": "Skills", "url": "#skills", "external": false },
-      { "label": "Studio", "url": "./backoffice/", "external": false, "subtle": true }
+      {
+        "label": "GitHub",
+        "url": "https://github.com/vandalit",
+        "external": true
+      },
+      {
+        "label": "@vandalittt",
+        "url": "https://twitter.com/vandalittt",
+        "external": true
+      },
+      {
+        "label": "Proyectos",
+        "url": "#cases",
+        "external": false
+      },
+      {
+        "label": "Skills",
+        "url": "#skills",
+        "external": false
+      },
+      {
+        "label": "Studio",
+        "url": "./backoffice/",
+        "external": false,
+        "subtle": true
+      }
     ]
   }
 }

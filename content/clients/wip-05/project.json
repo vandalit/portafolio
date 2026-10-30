@@ -7,14 +7,18 @@
   "description": "",
   "year": 2024,
   "role": "",
-  "tags": ["ux"],
-  "cover": null,
-  "coverPlaceholder": null,
+  "tags": [
+    "ux"
+  ],
+  "cover": "",
+  "coverPlaceholder": "",
   "challenge": "",
   "solution": "",
   "result": "",
   "stack": [],
   "gallery": [],
-  "links": { "live": null, "github": null }
+  "links": {
+    "live": null,
+    "github": null
+  }
 }
-

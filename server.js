@@ -66,12 +66,13 @@ const storage = multer.diskStorage({
     cb(null, destDir);
   },
   filename: (req, file, cb) => {
-    // Sanitizar nombre de archivo
+    // Sanitizar nombre de archivo (remover acentos y diacríticos, pasar a minúsculas)
     const originalExt = path.extname(file.originalname);
     const baseName = path.basename(file.originalname, originalExt)
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
-      .replace(/[^a-z0-9_-]/g, '-');
-    cb(null, `${baseName}${originalExt}`);
+      .replace(/[^a-z0-9_-]+/g, '-');
+    cb(null, `${baseName}${originalExt.toLowerCase()}`);
   }
 });
 

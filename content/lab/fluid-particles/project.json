@@ -27,8 +27,14 @@
     "https://picsum.photos/seed/fluids-1/800/500"
   ],
   "links": {
-    "demo": "https://vandalit.github.io/portafolio/#lab",
+    "live": null,
     "github": "https://github.com/vandalit/portafolio"
-  }
+  },
+  "client": "",
+  "category": "wordpress",
+  "year": 2024,
+  "accentColor": "#ccf020",
+  "role": "",
+  "featured": false,
+  "stack": []
 }
-

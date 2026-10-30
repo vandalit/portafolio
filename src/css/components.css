@@ -1075,7 +1075,8 @@
   height: 520px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: var(--sp-5);
   position: relative;
   flex-shrink: 0;
 }
@@ -1095,8 +1096,8 @@
               border-color 240ms var(--ease-out),
               box-shadow 240ms var(--ease-out),
               background 240ms var(--ease-out);
-  flex: 1;
-  max-height: 160px;
+  flex: 0 0 160px;
+  height: 160px;
 }
 
 .lab-card--compressed:hover {

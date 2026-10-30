@@ -3,7 +3,7 @@
   "title": "CSS AI-Driven v2",
   "subtitle": "Segunda iteración — Composición dinámica",
   "description": "Segunda iteración profundizando en animaciones CSS puras, variables dinámicas y composición generativa.",
-  "cardType": "expanded",
+  "cardType": "compressed",
   "tags": [
     "css",
     "coding",
@@ -27,7 +27,15 @@
     "https://picsum.photos/seed/cssv2-2/800/500"
   ],
   "links": {
-    "demo": "./demos/cssaidriven-v2/index.html",
+    "live": null,
     "github": "https://github.com/vandalit/portafolio"
-  }
+  },
+  "client": "",
+  "category": "wordpress",
+  "year": 2024,
+  "accentColor": "#ccf020",
+  "role": "",
+  "featured": false,
+  "stack": [],
+  "wrapperGroup": "css ai-driven"
 }

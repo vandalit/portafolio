@@ -738,10 +738,11 @@ function setupFormListeners() {
       if (state.hasBackend) {
         try {
           const formData = new FormData();
-          formData.append('file', file);
+          // Importante: los campos de texto deben añadirse ANTES de 'file' para que Multer procese req.body antes de destination()
           formData.append('section', state.currentSection);
           formData.append('slug', el.fieldId.value || project.id || 'temp');
           formData.append('target', 'gallery');
+          formData.append('file', file);
 
           showToast('Subiendo imagen a galería...', 'success');
           const res = await fetch('/api/upload', {
@@ -801,10 +802,11 @@ async function handleCoverFileSelected(file) {
   if (state.hasBackend) {
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      // Importante: los campos de texto deben añadirse ANTES de 'file' para que Multer procese req.body antes de destination()
       formData.append('section', state.currentSection);
       formData.append('slug', el.fieldId.value || 'temp');
       formData.append('target', 'cover');
+      formData.append('file', file);
 
       showToast('Subiendo portada al servidor...', 'success');
       const res = await fetch('/api/upload', {

@@ -3,7 +3,7 @@
   "title": "CSS AI-Driven v1",
   "subtitle": "Exploración CSS generativo",
   "description": "Primera exploración de CSS generativo dirigido por prompts. Límites y posibilidades del stack web cuando la IA actúa como co-piloto técnico.",
-  "cardType": "expanded",
+  "cardType": "compressed",
   "tags": [
     "css",
     "coding",
@@ -26,7 +26,15 @@
     "https://picsum.photos/seed/cssv1-2/800/500"
   ],
   "links": {
-    "demo": "./demos/cssaidriven_v1/index.html",
+    "live": null,
     "github": "https://github.com/vandalit/portafolio"
-  }
+  },
+  "client": "",
+  "category": "wordpress",
+  "year": 2024,
+  "accentColor": "#ccf020",
+  "role": "",
+  "featured": false,
+  "stack": [],
+  "wrapperGroup": "css ai-driven"
 }

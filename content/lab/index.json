@@ -1,9 +1,9 @@
 [
+  "afk",
   "cssdriven-v1",
+  "cssdriven-v2",
   "webxr-hands",
-  "neural-audio",
-  "glsl-raymarching",
   "fluid-particles",
-  "paprika",
-  "cssdriven-v2"
+  "glsl-raymarching",
+  "paprika"
 ]
