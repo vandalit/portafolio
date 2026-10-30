@@ -29,7 +29,8 @@
     "https://picsum.photos/seed/webxr-2/800/500"
   ],
   "links": {
-    "demo": "https://vandalit.github.io/portafolio/#lab",
+    "live": null,
+    "demo": null,
     "github": "https://github.com/vandalit/portafolio"
   }
 }

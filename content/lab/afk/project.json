@@ -13,12 +13,12 @@
   ],
   "accentColor": "#b6e030",
   "featured": true,
-  "coverPlaceholder": "interfaz-hologra-fica-de-gestos-nea-n.png",
+  "coverPlaceholder": "http://localhost:3000/content/lab/afk/interfaz-hologra-fica-de-gestos-nea-n.png",
   "gallery": [
     "https://picsum.photos/seed/afk-1/1200/800",
     "https://picsum.photos/seed/afk-2/800/1100",
     "https://picsum.photos/seed/afk-3/1000/700",
-    "gallery/interfaz-hologra-fica-de-gestos-nea-n.png"
+    "http://localhost:3000/content/lab/afk/gallery/interfaz-hologra-fica-de-gestos-nea-n.png"
   ],
   "links": {
     "live": null,
@@ -27,7 +27,7 @@
   "challenge": "El ecosistema gaming tiene interfaces complejas que priorizan funcionalidad sobre UX. Diseñar algo intuitivo para un usuario con alta exigencia técnica.",
   "solution": "Research con streamers reales + sistema de navegación por comandos + dark UI con densidad controlada.",
   "result": "Prototipo funcional con flujo completo de onboarding y gestión de sesiones.",
-  "cover": "interfaz-hologra-fica-de-gestos-nea-n.png",
+  "cover": "http://localhost:3000/content/lab/afk/interfaz-hologra-fica-de-gestos-nea-n.png",
   "client": "",
   "stack": []
 }

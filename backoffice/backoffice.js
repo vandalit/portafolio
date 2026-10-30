@@ -22,6 +22,7 @@ const state = {
     'lab': [],
     'skills': []
   },
+  skillsLegend: {},
   heroData: {
     videos: {
       stage1Id: 'Hse_HTX6KGs',
@@ -235,7 +236,16 @@ async function init() {
     state.data['case-studies'] = rawData.cases || [];
     state.data['clients'] = rawData.clients || [];
     state.data['lab'] = rawData.lab || [];
-    state.data['skills'] = rawData.skills || [];
+    if (rawData.skills && Array.isArray(rawData.skills.categories)) {
+      state.skillsLegend = rawData.skills.legend || {};
+      state.data['skills'] = rawData.skills.categories;
+    } else if (Array.isArray(rawData.skills)) {
+      state.skillsLegend = {};
+      state.data['skills'] = rawData.skills;
+    } else {
+      state.skillsLegend = {};
+      state.data['skills'] = [];
+    }
   } catch (err) {
     showToast('Error cargando contenidos del portafolio', 'danger');
     console.error('[Backoffice] Error loading data:', err);
@@ -567,7 +577,7 @@ function loadActiveProject() {
   el.fieldResult.value = project.result || '';
 
   // Links
-  el.fieldLive.value = project.links?.live || '';
+  el.fieldLive.value = project.links?.demo || project.links?.live || '';
   el.fieldGithub.value = project.links?.github || '';
 
   // Opciones de Lab
@@ -934,9 +944,12 @@ function saveCurrentFormValues() {
   project.solution = el.fieldSolution.value;
   project.result = el.fieldResult.value;
 
+  const liveVal = el.fieldLive.value.trim() || null;
+  const githubVal = el.fieldGithub.value.trim() || null;
   project.links = {
-    live: el.fieldLive.value.trim() || null,
-    github: el.fieldGithub.value.trim() || null
+    live: liveVal,
+    demo: liveVal,
+    github: githubVal
   };
 
   if (state.currentSection === 'lab') {
@@ -973,7 +986,14 @@ function persistDraft() {
       cases: state.data['case-studies'],
       clients: state.data['clients'],
       lab: state.data['lab'],
-      skills: state.data['skills'],
+      skills: {
+        legend: state.skillsLegend || {
+          autoral: { label: "Multimedia y diseño", color: "magenta" },
+          desarrollo: { label: "Desarrollo", color: "lime" },
+          comercial: { label: "Comercial", color: "mango" }
+        },
+        categories: state.data['skills']
+      },
       updatedAt: new Date().toISOString()
     };
     localStorage.setItem('vandalit_content_override', JSON.stringify(payload));
@@ -984,17 +1004,37 @@ function persistDraft() {
 
 // ── CREAR Y ELIMINAR PROYECTOS ────────────────────────────
 function addNewProject() {
-  const slug = prompt('Ingresa el ID / slug único para la carpeta del nuevo proyecto (ej: nuevo-cliente):');
-  if (!slug) return;
-
   if (state.currentSection === 'skills') {
     const slug = prompt('Ingresa el ID único para la nueva tarjeta de habilidad (ej: devops):');
     if (!slug) return;
     const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
     const newSkill = {
       id: cleanSlug,
-      category: 'coding',
-      filterTag: 'coding',
+      order: state.data['skills'].length + 1,
+      title: 'Nueva Capacidad Técnica',
+      technicalName: 'Especialidad y Metodología',
+      description: 'Descripción de las herramientas y metodologías...',
+      icon: 'circle',
+      dots: ['autoral'],
+      workTab: 'ux',
+      items: [
+        { name: 'Capacidad 1', level: 'intermedio', state: 'confirmado' },
+        { name: 'Capacidad 2', level: 'avanzado', state: 'confirmado' }
+      ],
+      skills: ['Capacidad 1', 'Capacidad 2']
+    };
+    state.data['skills'].push(newSkill);
+    state.activeProjectIndex = state.data['skills'].length - 1;
+    updateCounts();
+    persistDraft();
+    renderProjectList();
+    populateSkillForm();
+    showToast(`Habilidad '${cleanSlug}' creada.`);
+    return;
+  }
+
+  const slug = prompt('Ingresa el ID / slug único para la carpeta del nuevo proyecto (ej: nuevo-cliente):');
+  if (!slug) return;
       title: 'Nueva Capacidad Técnica',
       description: 'Descripción de las herramientas y metodologías...',
       skills: ['Capacidad 1', 'Capacidad 2'],

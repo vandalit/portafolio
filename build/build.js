@@ -221,7 +221,10 @@ function renderFeatured(cases) {
 }
 
 function renderCaseCards(cases) {
-  return cases.map((c, i) => {
+  const featured = cases.find(c => c.featured) || cases[0];
+  const carouselCases = featured ? cases.filter(c => (c.id || c._id) !== (featured.id || featured._id)) : cases;
+
+  return carouselCases.map((c, i) => {
     const isMultimedia = c.category === 'multimedia';
     const accentColor = isMultimedia ? 'var(--magenta)' : 'var(--lime)';
     const tagClass = isMultimedia ? 'tag--magenta' : 'tag--lime';
@@ -318,8 +321,10 @@ function renderLabGrid(lab) {
     if (block.type === 'expanded') {
       const l = block.item;
       const badge = l.badge || (l.tags && l.tags[0]) || 'Experimento';
-      const demoBtn = l.links?.demo ? `<a href="${escapeHtml(l.links.demo)}" class="btn btn--lime btn--sm" target="_blank" rel="noopener">Demo <span class="btn__icon">↗</span></a>` : '';
-      const codeBtn = l.links?.github ? `<a href="${escapeHtml(l.links.github)}" class="btn btn--ghost btn--ghost-lime btn--sm" target="_blank" rel="noopener">Código</a>` : '';
+      const demoUrl = (l.links?.demo || l.links?.live || '').trim();
+      const codeUrl = (l.links?.github || '').trim();
+      const demoBtn = demoUrl ? `<a href="${escapeHtml(demoUrl)}" class="btn btn--lime btn--sm" target="_blank" rel="noopener">Demo <span class="btn__icon">↗</span></a>` : '';
+      const codeBtn = codeUrl ? `<a href="${escapeHtml(codeUrl)}" class="btn btn--ghost btn--ghost-lime btn--sm" target="_blank" rel="noopener">Código</a>` : '';
       const coverSrc = l.coverPlaceholder || l.cover || '';
 
       return `
@@ -345,8 +350,10 @@ function renderLabGrid(lab) {
 
       const innerCards = items.map(l => {
         const badge = l.badge || (l.tags && l.tags[0]) || 'Ejemplo';
-        const demoBtn = l.links?.demo ? `<a href="${escapeHtml(l.links.demo)}" class="btn btn--lime btn--sm" target="_blank" rel="noopener">Demo <span class="btn__icon">↗</span></a>` : '';
-        const codeBtn = l.links?.github ? `<a href="${escapeHtml(l.links.github)}" class="btn btn--ghost btn--ghost-lime btn--sm" target="_blank" rel="noopener">Código</a>` : '';
+        const demoUrl = (l.links?.demo || l.links?.live || '').trim();
+        const codeUrl = (l.links?.github || '').trim();
+        const demoBtn = demoUrl ? `<a href="${escapeHtml(demoUrl)}" class="btn btn--lime btn--sm" target="_blank" rel="noopener">Demo <span class="btn__icon">↗</span></a>` : '';
+        const codeBtn = codeUrl ? `<a href="${escapeHtml(codeUrl)}" class="btn btn--ghost btn--ghost-lime btn--sm" target="_blank" rel="noopener">Código</a>` : '';
 
         return `
           <div class="lab-card--compressed" data-lab-id="${escapeHtml(l.id || l._id)}" aria-label="Template o caso base: ${escapeHtml(l.title)}">

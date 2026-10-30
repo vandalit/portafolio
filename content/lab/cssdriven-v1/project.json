@@ -26,8 +26,9 @@
     "https://picsum.photos/seed/cssv1-2/800/500"
   ],
   "links": {
-    "live": null,
-    "github": "https://github.com/vandalit/portafolio"
+    "live": "https://vandalit.github.io/portafolio/demos/cssaidriven_v1/index.html",
+    "demo": "https://vandalit.github.io/portafolio/demos/cssaidriven_v1/index.html",
+    "github": "https://github.com/vandalit/portafolio/tree/main/demos/cssaidriven_v1"
   },
   "client": "",
   "category": "wordpress",
