@@ -13,19 +13,20 @@
   ],
   "accentColor": "#b6e030",
   "featured": false,
-  "coverPlaceholder": "http://localhost:3000/content/lab/card-tools/baraja-nea-n-de-ca-digo-cyberpunk.png",
+  "coverPlaceholder": "baraja-nea-n-de-ca-digo-cyberpunk.png",
   "gallery": [
     "https://picsum.photos/seed/cardtools-1/1400/800",
     "https://picsum.photos/seed/cardtools-2/1000/700"
   ],
   "links": {
     "live": null,
+    "demo": null,
     "github": "https://github.com/vandalit/Card-Tools"
   },
   "challenge": "Las librerías de componentes sacrifican flexibilidad por conveniencia. ¿Se puede tener ambas?",
   "solution": "CSS Custom Properties como API de componente + variantes via data-attributes.",
   "result": "Biblioteca de 8 variantes de card con documentación y demos interactivos.",
-  "cover": "http://localhost:3000/content/lab/card-tools/baraja-nea-n-de-ca-digo-cyberpunk.png",
+  "cover": "baraja-nea-n-de-ca-digo-cyberpunk.png",
   "client": "",
   "stack": [],
   "cardType": "expanded",

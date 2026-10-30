@@ -13,7 +13,7 @@
   ],
   "accentColor": "#d4205a",
   "featured": false,
-  "coverPlaceholder": "http://localhost:3000/content/case-studies/twitch-redesign/chat-nea-n-cyberpunk-en-vivo.png",
+  "coverPlaceholder": "chat-nea-n-cyberpunk-en-vivo.png",
   "gallery": [
     "https://picsum.photos/seed/twitch-1/1400/800",
     "https://picsum.photos/seed/twitch-2/1200/900"
@@ -25,7 +25,7 @@
   "challenge": "Twitch tiene una deuda de UX acumulada por años de crecimiento sin dirección de diseño unificada.",
   "solution": "Auditoría heurística → identificación de 8 problemas críticos → propuesta de rediseño modular.",
   "result": "Case study completo con 20+ pantallas rediseñadas y sistema de componentes.",
-  "cover": "http://localhost:3000/content/case-studies/twitch-redesign/chat-nea-n-cyberpunk-en-vivo.png",
+  "cover": "chat-nea-n-cyberpunk-en-vivo.png",
   "client": "",
   "stack": []
 }

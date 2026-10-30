@@ -516,6 +516,10 @@ function moveProjectOrder(fromIndex, delta) {
   list.splice(toIndex, 0, item);
   state.activeProjectIndex = toIndex;
 
+  if (state.currentSection === 'skills') {
+    list.forEach((it, idx) => { it.order = idx + 1; });
+  }
+
   persistDraft();
   renderProjectList();
   if (state.currentSection === 'skills') {
@@ -1314,15 +1318,22 @@ function populateSkillForm() {
 
   el.skillFieldId.value = skill.id || '';
   el.skillFieldTitle.value = skill.title || '';
-  el.skillFieldCategory.value = (skill.category || 'ux').toUpperCase();
-  el.skillFieldFilter.value = skill.filterTag || 'ux';
+  el.skillFieldCategory.value = skill.technicalName || skill.category || '';
+  el.skillFieldFilter.value = skill.workTab !== undefined ? (skill.workTab || '') : (skill.filterTag || '');
   el.skillFieldIcon.value = skill.icon || 'circle';
-  el.skillFieldAccent.value = skill.accentColor?.includes('b6') || skill.accentColor?.includes('cc') ? '#b6e030' : '#d4205a';
+
+  // Dots / Eje principal
+  const primaryDot = (skill.dots && skill.dots[0]) || (skill.accentColor?.includes('d4') ? 'autoral' : (skill.accentColor?.includes('ff') ? 'comercial' : 'desarrollo'));
+  el.skillFieldAccent.value = primaryDot;
+
   el.skillFieldDesc.value = skill.description || '';
 
-  const pills = Array.isArray(skill.skills) ? skill.skills : [];
-  el.skillFieldPills.value = pills.join(', ');
-  renderChips(el.skillChipsPreview, pills, el.skillFieldAccent.value === '#b6e030');
+  // Pills / Items
+  const items = Array.isArray(skill.items) && skill.items.length > 0
+    ? skill.items.map(i => i.name || i)
+    : (Array.isArray(skill.skills) ? skill.skills : []);
+  el.skillFieldPills.value = items.join(', ');
+  renderChips(el.skillChipsPreview, items, primaryDot === 'desarrollo');
 
   updateSkillLivePreview();
 }
@@ -1334,15 +1345,32 @@ function saveActiveSkillValues() {
 
   skill.id = el.skillFieldId.value.trim();
   skill.title = el.skillFieldTitle.value.trim();
-  skill.category = el.skillFieldCategory.value.trim().toLowerCase();
-  skill.filterTag = el.skillFieldFilter.value;
+  skill.technicalName = el.skillFieldCategory.value.trim();
+  skill.category = skill.technicalName; // retrocompatibilidad
+  skill.workTab = el.skillFieldFilter.value || null;
+  skill.filterTag = skill.workTab || 'ux'; // retrocompatibilidad
   skill.icon = el.skillFieldIcon.value;
-  skill.accentColor = el.skillFieldAccent.value;
+
+  const chosenDot = el.skillFieldAccent.value;
+  skill.dots = [chosenDot];
+  skill.accentColor = chosenDot === 'autoral' ? '#d4205a' : (chosenDot === 'comercial' ? '#ffaa00' : '#b6e030');
+
   skill.description = el.skillFieldDesc.value;
 
-  const pills = el.skillFieldPills.value.split(',').map(s => s.trim()).filter(Boolean);
-  skill.skills = pills;
-  renderChips(el.skillChipsPreview, pills, skill.accentColor === '#b6e030');
+  const names = el.skillFieldPills.value.split(',').map(s => s.trim()).filter(Boolean);
+
+  // Actualizar items preservando level y state existentes
+  const prevItems = Array.isArray(skill.items) ? skill.items : [];
+  skill.items = names.map(name => {
+    const existing = prevItems.find(it => (it.name || it) === name);
+    if (existing && typeof existing === 'object') {
+      return existing;
+    }
+    return { name, level: 'intermedio', state: 'confirmado' };
+  });
+  skill.skills = names; // retrocompatibilidad
+
+  renderChips(el.skillChipsPreview, names, chosenDot === 'desarrollo');
 
   el.skillDisplayTitle.textContent = skill.title || 'Habilidad sin título';
   el.skillDisplaySlug.textContent = skill.id || 'slug';
@@ -1352,7 +1380,7 @@ function saveActiveSkillValues() {
     const titleEl = activeSidebarItem.querySelector('.bo-project-item__title');
     const slugEl = activeSidebarItem.querySelector('.bo-project-item__slug');
     if (titleEl) titleEl.textContent = skill.title || 'Sin título';
-    if (slugEl) slugEl.textContent = `${skill.id || 'slug'} · ${skill.category || ''}`;
+    if (slugEl) slugEl.textContent = `${skill.id || 'slug'} · ${skill.technicalName || ''}`;
   }
 
   persistDraft();
@@ -1363,22 +1391,28 @@ function updateSkillLivePreview() {
   const skill = list[state.activeProjectIndex];
   if (!skill) return;
 
-  const isMagenta = skill.accentColor?.includes('d4') || skill.accentColor?.includes('e8');
-  const accent = isMagenta ? 'magenta' : 'lime';
-  const accentColor = isMagenta ? 'var(--magenta, #d4205a)' : 'var(--lime, #b6e030)';
+  const dot = (skill.dots && skill.dots[0]) || 'autoral';
+  const accent = dot === 'desarrollo' ? 'lime' : (dot === 'comercial' ? 'mango' : 'magenta');
+  const accentColor = accent === 'magenta' ? 'var(--magenta, #d4205a)' : (accent === 'lime' ? 'var(--lime, #b6e030)' : '#ffaa00');
   const iconSvg = skillDoodles[skill.icon] ? skillDoodles[skill.icon](accentColor) : skillDoodles.circle(accentColor);
-  const pills = Array.isArray(skill.skills) ? skill.skills : [];
+
+  const items = Array.isArray(skill.items) && skill.items.length > 0
+    ? skill.items.map(i => i.name || i)
+    : (Array.isArray(skill.skills) ? skill.skills : []);
+
+  const hasFilter = skill.workTab;
 
   el.skillCardPreviewWrap.innerHTML = `
     <article class="skill-card" data-accent="${accent}" style="position:relative; width:100%; max-width:320px; margin:0 auto; cursor:default;">
       <div class="skill-card__icon-bg">${iconSvg}</div>
-      <p class="skill-card__category">${(skill.category || 'SKILL').toUpperCase()}</p>
+      <p class="skill-card__category">${(skill.technicalName || skill.category || 'SKILL').toUpperCase()}</p>
       <h3 class="skill-card__title">${skill.title || 'Título'}</h3>
       <p class="skill-card__desc">${skill.description || 'Descripción...'}</p>
       <div class="skill-card__pills">
-        ${pills.map(sk => `<span class="skill-pill">${sk}</span>`).join('')}
+        ${items.slice(0, 6).map(sk => `<span class="skill-pill">${sk}</span>`).join('')}
+        ${items.length > 6 ? `<span class="skill-pill skill-pill--more">+${items.length - 6} más</span>` : ''}
       </div>
-      <button type="button" class="skill-card__cta btn--ghost-${accent}" style="pointer-events:none;">
+      <button type="button" class="skill-card__cta ${hasFilter ? `btn--ghost-${accent}` : 'skill-card__cta--disabled'}" style="pointer-events:none;">
         Ver ejemplos <span>→</span>
       </button>
     </article>
@@ -1661,10 +1695,18 @@ function setupFileSystemAPI() {
 
         // 4. Guardar Skills
         if (state.data['skills'] && state.data['skills'].length > 0) {
+          const skillsPayload = {
+            legend: state.skillsLegend || {
+              autoral: { label: "Multimedia y diseño", color: "magenta" },
+              desarrollo: { label: "Desarrollo", color: "lime" },
+              comercial: { label: "Comercial", color: "mango" }
+            },
+            categories: state.data['skills']
+          };
           await fetch('/api/skills', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(state.data['skills'])
+            body: JSON.stringify(skillsPayload)
           });
         }
 
@@ -1725,10 +1767,18 @@ function setupFileSystemAPI() {
 
       // 4. Guardar Skills
       if (state.data['skills'] && state.data['skills'].length > 0) {
+        const skillsPayload = {
+          legend: state.skillsLegend || {
+            autoral: { label: "Multimedia y diseño", color: "magenta" },
+            desarrollo: { label: "Desarrollo", color: "lime" },
+            comercial: { label: "Comercial", color: "mango" }
+          },
+          categories: state.data['skills']
+        };
         const skillsDir = await contentDir.getDirectoryHandle('skills', { create: true });
         const skillsFile = await skillsDir.getFileHandle('skills.json', { create: true });
         const writable = await skillsFile.createWritable();
-        await writable.write(JSON.stringify(state.data['skills'], null, 2) + '\n');
+        await writable.write(JSON.stringify(skillsPayload, null, 2) + '\n');
         await writable.close();
       }
 
@@ -1791,7 +1841,10 @@ function setupExportImport() {
       'case-studies': state.data['case-studies'],
       'clients': state.data['clients'],
       'lab': state.data['lab'],
-      'skills': state.data['skills'],
+      'skills': {
+        legend: state.skillsLegend || {},
+        categories: state.data['skills']
+      },
       'hero': state.heroData
     };
 
@@ -1820,7 +1873,14 @@ function setupExportImport() {
         if (imported['case-studies']) state.data['case-studies'] = imported['case-studies'];
         if (imported['clients']) state.data['clients'] = imported['clients'];
         if (imported['lab']) state.data['lab'] = imported['lab'];
-        if (imported['skills']) state.data['skills'] = imported['skills'];
+        if (imported['skills']) {
+          if (Array.isArray(imported['skills'].categories)) {
+            state.skillsLegend = imported['skills'].legend || {};
+            state.data['skills'] = imported['skills'].categories;
+          } else if (Array.isArray(imported['skills'])) {
+            state.data['skills'] = imported['skills'];
+          }
+        }
         if (imported['hero']) state.heroData = imported['hero'];
 
         persistDraft();

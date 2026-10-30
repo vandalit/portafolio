@@ -59,11 +59,14 @@ function copyDir(src, dest) {
 
 function resolveAssetPath(section, slug, assetPath) {
   if (!assetPath) return '';
-  if (/^(https?:|\/\/|data:)/i.test(assetPath)) {
-    return assetPath;
+  // Quitar localhost o 127.0.0.1 si estuviera presente
+  let cleaned = assetPath.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/?/i, '');
+  cleaned = cleaned.replace(/^\/?content\/[^\/]+\/[^\/]+\//i, '');
+  if (/^(https?:|\/\/|data:)/i.test(cleaned)) {
+    return cleaned;
   }
-  const cleanAsset = assetPath.replace(/^\.?\/+/, '');
-  return `./content/${section}/${slug}/${cleanAsset}`;
+  cleaned = cleaned.replace(/^(\.\/|\/)+/, '');
+  return `./content/${section}/${slug}/${cleaned}`;
 }
 
 function loadSiteSettings() {

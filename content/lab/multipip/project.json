@@ -13,19 +13,20 @@
   ],
   "accentColor": "#b6e030",
   "featured": false,
-  "coverPlaceholder": "http://localhost:3000/content/lab/multipip/collage-de-videos-nea-n-retro.png",
+  "coverPlaceholder": "collage-de-videos-nea-n-retro.png",
   "gallery": [
     "https://picsum.photos/seed/multipip-1/1400/800",
     "https://picsum.photos/seed/multipip-2/900/700"
   ],
   "links": {
     "live": null,
+    "demo": null,
     "github": "https://github.com/vandalit/multiPiP"
   },
   "challenge": "El navegador permite PiP nativo pero no gestión múltiple. Implementar sin APIs externas.",
   "solution": "Vanilla JS + CSS Grid adaptativo + estado persistente en sessionStorage.",
   "result": "Herramienta funcional deployada, usable sin instalación.",
-  "cover": "http://localhost:3000/content/lab/multipip/collage-de-videos-nea-n-retro.png",
+  "cover": "collage-de-videos-nea-n-retro.png",
   "client": "",
   "stack": [],
   "cardType": "expanded",

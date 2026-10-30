@@ -175,6 +175,21 @@ app.put('/api/content/:section', (req, res) => {
     for (const proj of projects) {
       const slug = proj.id || proj.slug;
       if (!slug) continue;
+
+      // Sanitizar rutas de portada y placeholders para garantizar que sean siempre relativas y portables
+      const sanitizePath = (p) => {
+        if (!p || typeof p !== 'string') return p;
+        return p.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/?/i, '')
+                .replace(/^\/?content\/[^\/]+\/[^\/]+\//i, '')
+                .replace(/^(\.\/|\/)+/, '');
+      };
+
+      if (proj.cover) proj.cover = sanitizePath(proj.cover);
+      if (proj.coverPlaceholder) proj.coverPlaceholder = sanitizePath(proj.coverPlaceholder);
+      if (Array.isArray(proj.gallery)) {
+        proj.gallery = proj.gallery.map(img => sanitizePath(img));
+      }
+
       const projDir = contentPath(section, slug);
       if (!fs.existsSync(projDir)) {
         fs.mkdirSync(projDir, { recursive: true });
