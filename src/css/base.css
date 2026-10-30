@@ -3,7 +3,7 @@
    vandalit portfolio
    ========================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@300;400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@500;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@300;400&display=swap');
 
 /* ── COLOR TOKENS ─────────────────────────────────────────── */
 :root {
@@ -72,7 +72,7 @@
   --grad-hero:    linear-gradient(135deg, rgba(212,32,90,0.15) 0%, rgba(204,240,32,0.08) 100%);
 
   /* ── TYPOGRAPHY ─────────────────────────────────────────── */
-  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-display: 'Darker Grotesque', system-ui, -apple-system, sans-serif;
   --font-sans:    'DM Sans', system-ui, sans-serif;
   --font-mono:    'DM Mono', 'Courier New', monospace;
 
@@ -231,9 +231,9 @@ input, textarea { font: inherit; }
 .section-title {
   font-family: var(--font-display);
   font-size: var(--text-4xl);
-  font-weight: 300;
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.025em;
   color: var(--text-0);
 }
 

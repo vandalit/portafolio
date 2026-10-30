@@ -1,11 +1,12 @@
 # vandalit · Portfolio & Content Studio
 
 > Portafolio personal de diseño UX/UI, desarrollo front-end y experimentación visual.  
-> Desplegado como sitio estático de alto rendimiento en **GitHub Pages** con arquitectura modular y panel de administración **Studio / Backoffice** integrado.
+> Desplegado como sitio estático de alto rendimiento en **GitHub Pages** mediante **Static Site Generation (SSG)** con hidratación en cliente, pipeline CI/CD en **GitHub Actions** y panel de administración **Studio / Backoffice** integrado.
 
-[![Deploy](https://img.shields.io/badge/Deploy-GitHub%20Pages-0d1117?style=flat-square&logo=github)](https://vandalit.github.io/portafolio)
-[![Backoffice](https://img.shields.io/badge/Studio-Backoffice%20Integrated-b8e030?style=flat-square)](http://localhost:8000/backoffice/)
-[![Status](https://img.shields.io/badge/Status-Producci%C3%B3n%20%2F%20Modular-ccf020?style=flat-square)]()
+[![Deploy](https://img.shields.io/badge/Deploy-GitHub%20Pages%20via%20Actions-0d1117?style=flat-square&logo=github)](https://vandalit.github.io/portafolio)
+[![Backoffice](https://img.shields.io/badge/Studio-Backoffice%20Integrated-b8e030?style=flat-square)](http://localhost:3000/backoffice/)
+[![Build](https://img.shields.io/badge/Build-SSG%20Pre--rendered-ccf020?style=flat-square)]()
+[![SEO & LLMs](https://img.shields.io/badge/AI%20Ready-llms.txt%20%2B%20sitemap-e8306e?style=flat-square)]()
 
 ---
 
@@ -23,7 +24,11 @@ El proyecto está diseñado bajo una filosofía **100% modular, desacoplada y es
    - **Capa 4 (`z-index: 20`)**: Tipografía y branding del Hero.
    - **Capa 5 (`z-index: 30-32`)**: HUD interactivo frontal con animación *pop stroke* en yellow-green (`#ccf020`), flechas de callout informativas, metadata técnica y enlaces de ancla.
 3. **Contenido Desacoplado (`/content/`)**: Los proyectos y textos no están *hardcodeados*. Cada trabajo vive en su propio subdirectorio con su manifiesto `project.json`, y la landing entera se hidrata dinámicamente desde `site.json` y `hero.json`.
-4. **Studio & Backoffice Híbrido (`/backoffice/`)**: Interfaz visual de gestión conectada en local a un **Backend Node.js API** con subida real de imágenes por drag & drop y persistencia directa a disco, manteniendo compatibilidad nativa para despliegue 100% estático en **GitHub Pages**.
+4. **Studio & Backoffice Híbrido (`/backoffice/`)**: Interfaz visual de gestión conectada en local a un **Backend Node.js API** con subida real de imágenes por drag & drop, reorganización con migración física de proyectos entre secciones (`/api/content/move`) y persistencia directa a disco.
+5. **Generador Estático y Pipeline CI/CD (`build/build.js` + GitHub Actions)**:
+   - **Zero-latency First Paint (SSG):** Al compilar con `npm run build`, se inyectan las tarjetas de casos, habilidades, trabajos y lab directamente en el HTML. Los crawlers y visitantes reciben el DOM completo de inmediato sin pantallas en blanco ni peticiones bloqueantes en el cliente.
+   - **Optimización para Asistentes y Motores Generativos (GEO):** Generación automática de `llms.txt`, `sitemap.xml` y `robots.txt` con la metadata de proyectos y perfil técnico calibrado.
+   - **Despliegue Continuo a GitHub Pages:** El workflow `.github/workflows/deploy.yml` compila y publica automáticamente la carpeta `./dist/` en cada push a `main`.
 
 ---
 
@@ -240,56 +245,88 @@ El portafolio incluye un panel visual integrado accesible en `/backoffice/` (o h
 
 ### C. Habilidades y Perfil (`content/skills/skills.json`)
 
+Estructura calibrada por 3 ejes transversales (**Autoral/Multimedia**, **Desarrollo** y **Comercial**), con niveles técnicos y revelado porcentual en modal:
+
 ```json
 {
+  "legend": {
+    "autoral":    { "label": "Multimedia y diseño", "color": "magenta" },
+    "desarrollo": { "label": "Desarrollo",           "color": "lime"    },
+    "comercial":  { "label": "Comercial",            "color": "mango"   }
+  },
   "categories": [
     {
-      "id": "ux-ui",
-      "filterTag": "ux",
-      "title": "UX / UI & Product Design",
-      "description": "Diseño centrado en el usuario desde el wireframe hasta el prototipo funcional.",
-      "accentColor": "#d4205a",
-      "doodle": "circle",
-      "skills": ["Design Systems", "Figma", "User Research", "Prototyping", "Design Tokens"]
+      "id": "diseno-producto",
+      "order": 1,
+      "title": "Diseño de producto",
+      "technicalName": "UX/UI y diseño de producto",
+      "description": "Investigación de usuarios, arquitectura de información, interfaces y sistemas de diseño.",
+      "icon": "circle",
+      "dots": ["autoral"],
+      "workTab": "ux",
+      "items": [
+        { "name": "UX research y síntesis",     "level": "intermedio", "state": "confirmado" },
+        { "name": "Arquitectura de información", "level": "intermedio", "state": "confirmado" },
+        { "name": "Figma, UI y design systems",  "level": "intermedio", "state": "confirmado" },
+        { "name": "Docencia UX/UI",              "level": "avanzado",   "state": "confirmado" }
+      ]
     }
   ]
 }
 ```
 
+> **Interactividad & Filtros:**
+> - Clic en los puntos de la leyenda filtra las tarjetas colapsándolas sin dejar huecos en el carrusel.
+> - Botón `×` brutalista para deseleccionar rápidamente cualquier filtro activo.
+> - Botón de "ojo" en el modal de detalle para visualizar la barra de nivel porcentual (`LEVEL_PCT`) por tecnología.
+
 ---
 
-## 🔄 Flujo de Trabajo Recomendado (Paradigma Híbrido)
+## 🔄 Flujo de Trabajo y Pipeline de Despliegue (CI/CD)
 
 ```mermaid
-flowchart LR
-    A[Modificaciones en /backoffice/] --> B{¿Entorno?}
-    B -->|Local con Backend Node| C[💾 Guardar en Disco]
-    C --> D[Archivos .json y assets escritos físicamente]
-    B -->|Arrastrar Imágenes| E[POST /api/upload Multer]
-    E --> D
-    D --> F[git commit & git push / Checkpoint]
-    F --> G[GitHub Pages actualizado en vivo 100% estático]
-    B -->|Web / GitHub Pages| H[Borrador en localStorage]
-    H --> I[Descargar vandalit-portfolio-config.json]
-    I --> J[Importar en local]
+flowchart TD
+    subgraph Local [1. Entorno Local de Creación]
+        A[Backoffice Studio /backoffice] -->|Upload / Edit| B[Backend Local Express API]
+        B -->|Escribe a disco| C[Directorio /content/]
+        A -->|Modal Mover| D[POST /api/content/move]
+        D -->|Mueve carpetas & index.json| C
+    end
+
+    subgraph Git [2. Control de Versiones]
+        C -->|git commit & push| E[GitHub Repository: main]
+    end
+
+    subgraph CI_CD [3. GitHub Actions Pipeline]
+        E -->|Dispara workflow deploy.yml| F[npm run build: SSG Engine]
+        F --> G[dist/index.html pre-renderizado]
+        F --> H[Artefactos SEO: robots, sitemap, llms.txt]
+        F --> I[Copia de assets, content, backoffice]
+    end
+
+    subgraph Pages [4. Producción Web]
+        G & H & I --> J[GitHub Pages: vandalit.github.io/portafolio]
+    end
 ```
 
+### Pasos habituales de publicación:
+
 1. **Gestión de Contenido en Vivo:** Iniciar el servidor local (`npm run dev`) y acceder a `http://localhost:3000/backoffice/`.
-2. **Edición Completa:** Modifica proyectos, cambia textos globales de la landing en **🌐 Textos del Sitio**, reordena o traslada elementos.
+2. **Edición Completa & Transferencia:** Modifica proyectos, traslada elementos entre secciones con el botón **"Mover a..."**, o edita textos globales en **🌐 Textos del Sitio**.
 3. **Subida Real de Imágenes:** Arrastra archivos a las portadas o sube fotos a la galería; el backend las guarda directamente en sus subcarpetas de destino.
 4. **Guardar a Disco:** Presiona **"💾 Guardar en Disco"**; el backend sincroniza en el acto los manifiestos `site.json`, `hero.json`, `skills.json`, `project.json` e `index.json`.
-5. **Checkpoint Natural y Despliegue:**
+5. **Compilación y Verificación Local (Opcional):**
    ```bash
-   # Revisar cambios exactos producidos por el Studio
-   git status
-   git diff content/
-   
-   # Publicar a producción
+   npm run build
+   ```
+   *Genera y valida la integridad de `./dist` antes de subir.*
+6. **Despliegue Automático:**
+   ```bash
    git add .
-   git commit -m "feat: actualización de proyectos y textos del sitio"
+   git commit -m "content: actualización de proyectos y nuevas habilidades"
    git push origin main
    ```
-   *GitHub Pages servirá de inmediato la nueva versión 100% estática.*
+   *GitHub Actions detecta el commit, compila el sitio estático y actualiza GitHub Pages en segundos.*
 
 ---
 

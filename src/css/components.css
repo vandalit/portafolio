@@ -203,9 +203,9 @@
 .featured-case__title {
   font-family: var(--font-display);
   font-size: var(--text-4xl);
-  font-weight: 300;
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.025em;
   color: var(--text-0);
   margin-bottom: var(--sp-3);
 }
@@ -296,8 +296,9 @@
 .case-card__title {
   font-family: var(--font-display);
   font-size: var(--text-2xl);
-  font-weight: 400;
-  line-height: var(--leading-tight);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
   color: var(--text-0);
   margin-bottom: var(--sp-2);
 }
@@ -442,9 +443,9 @@
 .skill-card__title {
   font-family: var(--font-display);
   font-size: var(--text-2xl);
-  font-weight: 400;
-  line-height: var(--leading-snug);
-  letter-spacing: var(--tracking-tight);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
   color: var(--text-0);
   margin-bottom: var(--sp-4);
 }
@@ -766,9 +767,10 @@
 .skill-modal__title {
   font-family: var(--font-display);
   font-size: clamp(2.4rem, 6vw, 5rem);
-  font-weight: 400;
+  font-weight: 900;
   color: var(--text-0);
-  line-height: 1.05;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
   margin: 0;
 }
 
@@ -921,7 +923,8 @@
 .project-thumb__title {
   font-family: var(--font-display);
   font-size: var(--text-xl);
-  font-weight: 400;
+  font-weight: 600;
+  letter-spacing: -0.015em;
   color: var(--text-0);
   margin-bottom: var(--sp-1);
 }
@@ -1033,7 +1036,8 @@
 .lab-card__title {
   font-family: var(--font-display);
   font-size: var(--text-xl);
-  font-weight: 400;
+  font-weight: 600;
+  letter-spacing: -0.015em;
   color: var(--text-0);
   margin-bottom: var(--sp-2);
 }
@@ -1609,9 +1613,9 @@
 .modal__project-title {
   font-family: var(--font-display);
   font-size: var(--text-3xl);
-  font-weight: 300;
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.025em;
   color: var(--text-0);
   margin-bottom: var(--sp-6);
 }
@@ -1991,8 +1995,8 @@
 .footer-logo {
   font-family: var(--font-display);
   font-size: clamp(3rem, 8vw, 6rem);
-  font-weight: 300;
-  line-height: 1;
+  font-weight: 900;
+  line-height: 0.9;
   letter-spacing: -0.04em;
   color: var(--text-0);
   margin-bottom: var(--sp-6);
@@ -2004,8 +2008,10 @@
 
 .footer-tagline {
   font-family: var(--font-display);
-  font-style: italic;
   font-size: var(--text-xl);
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: -0.01em;
   color: var(--text-1);
   margin-bottom: var(--sp-8);
 }
@@ -2048,7 +2054,8 @@
 .footer-email {
   font-family: var(--font-display);
   font-size: var(--text-3xl);
-  font-weight: 300;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--text-0);
   transition: color var(--transition-fast);
 }

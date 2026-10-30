@@ -29,9 +29,9 @@ section {
 .section-header__title {
   font-family: var(--font-display);
   font-size: var(--text-4xl);
-  font-weight: 300;
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.025em;
 }
 
 .section-header__desc {
@@ -67,8 +67,8 @@ section {
 .nav__logo {
   font-family: var(--font-display);
   font-size: var(--text-xl);
-  font-weight: 400;
-  letter-spacing: var(--tracking-tight);
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--text-0);
 }
 
@@ -394,9 +394,9 @@ body.fx-off .hero__canvas-front {
 .hero__name {
   font-family: var(--font-display);
   font-size: var(--text-hero);
-  font-weight: 300;
-  line-height: var(--leading-none);
-  letter-spacing: var(--tracking-tight);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
   color: var(--text-0);
   margin-bottom: var(--sp-6);
   overflow: hidden;
@@ -417,8 +417,9 @@ body.fx-off .hero__canvas-front {
 .hero__tagline {
   font-family: var(--font-display);
   font-size: var(--text-2xl);
-  font-weight: 300;
-  font-style: italic;
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: -0.01em;
   color: var(--text-1);
   line-height: var(--leading-snug);
   opacity: 0;

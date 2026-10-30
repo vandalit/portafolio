@@ -817,3 +817,118 @@ body.bo-body {
   color: var(--bo-lime);
 }
 
+/* ── MODAL ───────────────────────────────────────────────── */
+.bo-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.bo-modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.bo-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 8, 16, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.bo-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: 90%;
+  max-width: 480px;
+  background: var(--bo-surface-1);
+  border: 1px solid var(--bo-border);
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bo-modal.is-open .bo-modal__panel {
+  transform: translateY(0) scale(1);
+}
+
+.bo-modal__header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--bo-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bo-modal__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--bo-text);
+}
+
+.bo-modal__close {
+  background: transparent;
+  border: none;
+  color: var(--bo-text-muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.bo-modal__close:hover {
+  color: var(--bo-text);
+  background: var(--bo-surface-2);
+}
+
+.bo-modal__body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bo-modal__desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--bo-text-muted);
+  line-height: 1.5;
+}
+
+.bo-modal__desc strong {
+  color: var(--bo-text);
+}
+
+.bo-modal__desc code {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: var(--bo-lime);
+  background: rgba(204, 240, 32, 0.08);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.bo-modal__footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--bo-border);
+  background: var(--bo-surface-2);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+

@@ -743,6 +743,35 @@
   <!-- Toast Notification Container -->
   <div id="bo-toast-container" class="bo-toast-container" aria-live="polite"></div>
 
+  <!-- Modal Mover Proyecto entre Secciones -->
+  <div id="bo-modal-move" class="bo-modal" aria-hidden="true" role="dialog" aria-labelledby="modal-move-title">
+    <div class="bo-modal__backdrop"></div>
+    <div class="bo-modal__panel">
+      <div class="bo-modal__header">
+        <h3 id="modal-move-title" class="bo-modal__title">Mover Proyecto de Sección</h3>
+        <button type="button" class="bo-modal__close" id="modal-move-close" aria-label="Cerrar modal">&times;</button>
+      </div>
+      <div class="bo-modal__body">
+        <p class="bo-modal__desc">
+          Vas a transferir <strong id="modal-move-project-title">...</strong> (<code id="modal-move-project-slug">...</code>) desde <span id="modal-move-from-label" class="bo-badge"></span> hacia una nueva sección física.
+        </p>
+        <div class="bo-field">
+          <label for="modal-move-select">Sección destino</label>
+          <select id="modal-move-select" class="bo-select">
+            <!-- Opciones renderizadas dinámicamente -->
+          </select>
+        </div>
+      </div>
+      <div class="bo-modal__footer">
+        <button type="button" class="bo-btn bo-btn--outline" id="modal-move-btn-cancel">Cancelar</button>
+        <button type="button" class="bo-btn bo-btn--lime" id="modal-move-btn-confirm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+          <span>Confirmar y Mover</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script type="module" src="./backoffice.js"></script>
 </body>

@@ -50,6 +50,17 @@ const el = {
   btnAddProject: document.getElementById('btn-add-project'),
   btnMoveProject: document.getElementById('btn-move-project'),
   btnDeleteProject: document.getElementById('btn-delete-project'),
+
+  // Modal Mover Proyecto
+  modalMove: document.getElementById('bo-modal-move'),
+  modalMoveClose: document.getElementById('modal-move-close'),
+  modalMoveCancel: document.getElementById('modal-move-btn-cancel'),
+  modalMoveConfirm: document.getElementById('modal-move-btn-confirm'),
+  modalMoveTitle: document.getElementById('modal-move-project-title'),
+  modalMoveSlug: document.getElementById('modal-move-project-slug'),
+  modalMoveFromLabel: document.getElementById('modal-move-from-label'),
+  modalMoveSelect: document.getElementById('modal-move-select'),
+
   currentSectionLabel: document.getElementById('current-section-label'),
   projectList: document.getElementById('project-list'),
   projectForm: document.getElementById('project-form'),
@@ -987,67 +998,129 @@ function deleteActiveProject() {
   }
 }
 
-// ── MOVER PROYECTO A OTRA SECCIÓN ─────────────────────────
+// ── MOVER PROYECTO A OTRA SECCIÓN (MODAL + API) ───────────
 function setupMoveProject() {
-  el.btnMoveProject.addEventListener('click', async () => {
+  if (!el.btnMoveProject || !el.modalMove) return;
+
+  const ALL_SECTIONS = [
+    { key: 'clients', label: 'Trabajo de Clientes' },
+    { key: 'case-studies', label: 'Casos de Estudio' },
+    { key: 'lab', label: 'Laboratorio' }
+  ];
+
+  function closeModal() {
+    el.modalMove.classList.remove('is-open');
+    el.modalMove.setAttribute('aria-hidden', 'true');
+    el.modalMoveConfirm.disabled = false;
+    el.modalMoveConfirm.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+      <span>Confirmar y Mover</span>
+    `;
+  }
+
+  function openModal() {
     const currentList = state.data[state.currentSection];
-    const project = currentList[state.activeProjectIndex];
-    if (!project) return;
-
-    const sections = [
-      { key: 'clients', label: 'Trabajo de Clientes' },
-      { key: 'case-studies', label: 'Casos de Estudio' },
-      { key: 'lab', label: 'Laboratorio' }
-    ].filter(s => s.key !== state.currentSection);
-
-    const targetSection = prompt(
-      `¿A qué sección deseas mover '${project.title || project.id}'?\n\nOpciones disponibles:\n` +
-      sections.map((s, i) => `${i + 1}. ${s.label} (${s.key})`).join('\n') +
-      `\n\nEscribe el nombre de la sección (${sections.map(s => s.key).join(' / ')}):`
-    );
-
-    if (!targetSection) return;
-
-    const chosenSection = targetSection.trim().toLowerCase();
-    const valid = sections.find(s => s.key === chosenSection || s.label.toLowerCase() === chosenSection);
-
-    if (!valid) {
-      showToast('Sección no válida seleccionada.', 'danger');
+    const project = currentList ? currentList[state.activeProjectIndex] : null;
+    if (!project) {
+      showToast('No hay ningún proyecto activo seleccionado para mover.', 'warning');
       return;
     }
 
-    const sourceSection = state.currentSection;
-    const destSection = valid.key;
+    const currentSecObj = ALL_SECTIONS.find(s => s.key === state.currentSection) || { label: state.currentSection };
+    const availableSections = ALL_SECTIONS.filter(s => s.key !== state.currentSection);
 
-    // Registrar en pendingMoves para File System API
+    el.modalMoveTitle.textContent = project.title || project.id;
+    el.modalMoveSlug.textContent = project.id;
+    el.modalMoveFromLabel.textContent = currentSecObj.label;
+
+    el.modalMoveSelect.innerHTML = availableSections.map(s => 
+      `<option value="${s.key}">${s.label} (${s.key})</option>`
+    ).join('');
+
+    el.modalMove.setAttribute('aria-hidden', 'false');
+    el.modalMove.classList.add('is-open');
+  }
+
+  // Triggers de apertura y cierre
+  el.btnMoveProject.addEventListener('click', openModal);
+  el.modalMoveClose?.addEventListener('click', closeModal);
+  el.modalMoveCancel?.addEventListener('click', closeModal);
+
+  // Cerrar al hacer clic en el backdrop
+  el.modalMove.querySelector('.bo-modal__backdrop')?.addEventListener('click', closeModal);
+
+  // Cerrar con Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && el.modalMove.classList.contains('is-open')) {
+      closeModal();
+    }
+  });
+
+  // Confirmar movimiento
+  el.modalMoveConfirm?.addEventListener('click', async () => {
+    const currentList = state.data[state.currentSection];
+    const project = currentList ? currentList[state.activeProjectIndex] : null;
+    if (!project) return;
+
+    const sourceSection = state.currentSection;
+    const destSection = el.modalMoveSelect.value;
+    const destSecObj = ALL_SECTIONS.find(s => s.key === destSection);
+
+    el.modalMoveConfirm.disabled = true;
+    el.modalMoveConfirm.innerHTML = '<span>Moviendo proyecto...</span>';
+
+    // 1. Si Backend API Express está activo, mover físicamente carpetas en servidor
+    if (state.hasBackend) {
+      try {
+        const res = await fetch('/api/content/move', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            slug: project.id,
+            fromSection: sourceSection,
+            toSection: destSection
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `HTTP ${res.status}`);
+        }
+        console.log(`[Backoffice] ✅ /api/content/move exitoso: ${project.id} de ${sourceSection} a ${destSection}`);
+      } catch (err) {
+        console.warn('[Backoffice] Error en endpoint /api/content/move:', err);
+        showToast(`Advertencia de servidor: ${err.message}. Los cambios se sincronizarán al Guardar en Disco.`, 'warning');
+      }
+    }
+
+    // 2. Si File System Access API está conectada en Chrome, mover en disco cliente
+    if (state.fsHandle) {
+      try {
+        await moveProjectDirectoryOnDisk(project.id, sourceSection, destSection, project);
+      } catch (err) {
+        console.warn('[Backoffice] No se pudo mover la carpeta física vía FS API:', err);
+      }
+    }
+
+    // Registrar en pendingMoves
     state.pendingMoves.push({
       slug: project.id,
       from: sourceSection,
       to: destSection
     });
 
-    // 1. Extraer de la sección actual
+    // 3. Mover datos en memoria
     currentList.splice(state.activeProjectIndex, 1);
-
-    // 2. Agregar a la sección destino
     if (!state.data[destSection]) state.data[destSection] = [];
     state.data[destSection].push(project);
 
     persistDraft();
     updateCounts();
 
-    // 3. Si File System está conectado en local, mover los archivos en disco
-    if (state.fsHandle) {
-      try {
-        await moveProjectDirectoryOnDisk(project.id, sourceSection, destSection, project);
-      } catch (err) {
-        console.warn('[Backoffice] No se pudo mover la carpeta física inmediatamente, se guardará al presionar Guardar en Disco:', err);
-      }
-    }
+    closeModal();
+    showToast(`✅ Proyecto '${project.title || project.id}' movido a '${destSecObj ? destSecObj.label : destSection}'.`);
 
-    showToast(`✅ Proyecto '${project.title}' movido a '${valid.label}'.`);
-
-    // Cambiar a la sección destino
+    // 4. Cambiar a la pestaña de la sección destino y activar el proyecto transferido
     const targetTab = document.querySelector(`.bo-sec-tab[data-section="${destSection}"]`);
     targetTab?.click();
     state.activeProjectIndex = state.data[destSection].length - 1;
