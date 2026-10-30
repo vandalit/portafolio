@@ -1,0 +1,37 @@
+{
+  "id": "giftcard",
+  "category": "wordpress",
+  "title": "Giftcards",
+  "client": "Nombre del Cliente",
+  "subtitle": "Síntesis descriptiva",
+  "description": "Descripción del trabajo realizado...",
+  "year": 2026,
+  "role": "UX/UI Design + Dev",
+  "tags": [
+    "wordpress",
+    "ux"
+  ],
+  "stack": [
+    "Figma",
+    "CSS",
+    "JavaScript"
+  ],
+  "accentColor": "#ccf020",
+  "featured": false,
+  "cover": "cover.webp",
+  "coverPlaceholder": "cover.webp",
+  "gallery": [
+    "gallery/01.webp"
+  ],
+  "challenge": "Desafío del proyecto...",
+  "solution": "Solución implementada...",
+  "result": "Resultado obtenido...",
+  "links": {
+    "live": null,
+    "demo": null,
+    "github": "https://github.com/vandalit/giftcard"
+  },
+  "cardType": "compressed",
+  "wrapperGroup": "grafico",
+  "techStack": []
+}

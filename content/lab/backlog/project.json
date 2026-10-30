@@ -1,0 +1,36 @@
+{
+  "id": "backlog",
+  "category": "wordpress",
+  "title": "Backlog",
+  "client": "Nombre del Cliente",
+  "subtitle": "Síntesis descriptiva",
+  "description": "Descripción del trabajo realizado...",
+  "year": 2026,
+  "role": "UX/UI Design + Dev",
+  "tags": [
+    "wordpress",
+    "ux"
+  ],
+  "stack": [
+    "Figma",
+    "CSS",
+    "JavaScript"
+  ],
+  "accentColor": "#ccf020",
+  "featured": false,
+  "cover": "cover.webp",
+  "coverPlaceholder": "cover.webp",
+  "gallery": [
+    "gallery/01.webp"
+  ],
+  "challenge": "Desafío del proyecto...",
+  "solution": "Solución implementada...",
+  "result": "Resultado obtenido...",
+  "links": {
+    "live": "https://vandalit.github.io/backlog/stub/index.html",
+    "demo": "https://vandalit.github.io/backlog/stub/index.html",
+    "github": "https://github.com/vandalit/backlog"
+  },
+  "cardType": "expanded",
+  "techStack": []
+}

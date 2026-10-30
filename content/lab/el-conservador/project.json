@@ -1,0 +1,37 @@
+{
+  "id": "el-conservador",
+  "category": "wordpress",
+  "title": "El Conservador",
+  "client": "Nombre del Cliente",
+  "subtitle": "Síntesis descriptiva",
+  "description": "Descripción del trabajo realizado...",
+  "year": 2026,
+  "role": "UX/UI Design + Dev",
+  "tags": [
+    "wordpress",
+    "ux"
+  ],
+  "stack": [
+    "Figma",
+    "CSS",
+    "JavaScript"
+  ],
+  "accentColor": "#ccf020",
+  "featured": false,
+  "cover": "cover.webp",
+  "coverPlaceholder": "cover.webp",
+  "gallery": [
+    "gallery/01.webp"
+  ],
+  "challenge": "Desafío del proyecto...",
+  "solution": "Solución implementada...",
+  "result": "Resultado obtenido...",
+  "links": {
+    "live": "https://vandalit.github.io/el-conservador/",
+    "demo": "https://vandalit.github.io/el-conservador/",
+    "github": "https://github.com/vandalit/el-conservador"
+  },
+  "cardType": "compressed",
+  "wrapperGroup": "grafico",
+  "techStack": []
+}

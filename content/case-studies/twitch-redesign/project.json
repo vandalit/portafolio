@@ -16,10 +16,12 @@
   "coverPlaceholder": "chat-nea-n-cyberpunk-en-vivo.png",
   "gallery": [
     "https://picsum.photos/seed/twitch-1/1400/800",
-    "https://picsum.photos/seed/twitch-2/1200/900"
+    "https://picsum.photos/seed/twitch-2/1200/900",
+    "gallery/chat-nea-n-cyberpunk-en-vivo.png"
   ],
   "links": {
     "live": null,
+    "demo": null,
     "github": "https://github.com/vandalit/twitch-redesign"
   },
   "challenge": "Twitch tiene una deuda de UX acumulada por años de crecimiento sin dirección de diseño unificada.",

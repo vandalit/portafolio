@@ -28,7 +28,8 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@500;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@300;400&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@500;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@300;400&display=swap">
 
   <!-- CSS -->
   <link rel="stylesheet" href="./src/css/base.css">
@@ -40,8 +41,15 @@
   <!-- Progressive Enhancement: Si JS está deshabilitado, ocultar preloader de inmediato -->
   <noscript>
     <style>
-      .preloader { display: none !important; }
-      .reveal, .stagger > * { opacity: 1 !important; transform: none !important; }
+      .preloader {
+        display: none !important;
+      }
+
+      .reveal,
+      .stagger>* {
+        opacity: 1 !important;
+        transform: none !important;
+      }
     </style>
   </noscript>
 
@@ -56,8 +64,8 @@
       align-items: center;
       justify-content: center;
       transition: opacity 500ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
-                  transform 600ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
-                  filter 500ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+        transform 600ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+        filter 500ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
     }
 
     .preloader.is-loaded {
@@ -92,11 +100,14 @@
     }
 
     @keyframes preloaderDotPulse {
-      0%, 100% {
+
+      0%,
+      100% {
         color: var(--lime, #ccf020);
         transform: scale(1);
         filter: drop-shadow(0 0 8px var(--lime-glow, rgba(204, 240, 32, 0.4)));
       }
+
       50% {
         color: var(--magenta, #d4205a);
         transform: scale(1.2);
@@ -379,7 +390,7 @@
           <div class="skills-legend">
             <div class="skills-legend__item" data-dot="autoral" role="button" tabindex="0" aria-pressed="false">
               <span class="skills-legend__dot skills-legend__dot--magenta" aria-hidden="true"></span>
-              <span class="eyebrow skills-legend__label">Multimedia y diseño</span>
+              <span class="eyebrow skills-legend__label">Diseño</span>
             </div>
             <div class="skills-legend__item" data-dot="desarrollo" role="button" tabindex="0" aria-pressed="false">
               <span class="skills-legend__dot skills-legend__dot--lime" aria-hidden="true"></span>

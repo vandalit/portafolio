@@ -27,7 +27,8 @@
     "https://picsum.photos/seed/paprika-2/800/500"
   ],
   "links": {
-    "live": null,
+    "live": "https://vandalit.github.io/portafolio/demos/case-study-ai-driven/ecommerce-001/index.html",
+    "demo": "https://vandalit.github.io/portafolio/demos/case-study-ai-driven/ecommerce-001/index.html",
     "github": "https://github.com/vandalit/portafolio"
   },
   "client": "",
