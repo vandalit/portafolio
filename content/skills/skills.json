@@ -1,8 +1,8 @@
 {
   "legend": {
-    "autoral":    { "label": "Autoral · multimedia y diseño", "color": "magenta" },
-    "desarrollo": { "label": "Desarrollo",                    "color": "lime"    },
-    "comercial":  { "label": "Comercial",                     "color": "mango"   }
+    "autoral":    { "label": "Multimedia y diseño", "color": "magenta" },
+    "desarrollo": { "label": "Desarrollo",           "color": "lime"    },
+    "comercial":  { "label": "Comercial",            "color": "mango"   }
   },
   "categories": [
     {
@@ -13,6 +13,7 @@
       "description": "Investigación de usuarios, arquitectura de información, interfaces y sistemas de diseño. Formación en diseño industrial aplicado a productos digitales y físicos.",
       "icon": "circle",
       "dots": ["autoral"],
+      "workTab": "ux",
       "items": [
         { "name": "UX research y síntesis",       "level": "intermedio", "state": "confirmado" },
         { "name": "Arquitectura de información",   "level": "intermedio", "state": "confirmado" },
@@ -28,6 +29,7 @@
       "description": "WordPress como base, con desarrollo a medida en Laravel y Angular, y front-end con HTML, CSS y JavaScript. Trabajo con CMS headless y React en formación.",
       "icon": "square",
       "dots": ["desarrollo"],
+      "workTab": "wordpress",
       "items": [
         { "name": "WordPress (ecosistema Crocoblock)", "level": "avanzado",   "state": "confirmado" },
         { "name": "Laravel",                          "level": "avanzado",   "state": "confirmado" },
@@ -45,6 +47,7 @@
       "description": "Contenido, SEO técnico y on-page, y campañas pagadas con criterio comercial para pymes. Marketing con IA como puente hacia la enseñanza.",
       "icon": "triangle",
       "dots": ["comercial"],
+      "workTab": "content",
       "items": [
         { "name": "Estrategia de contenido",                     "level": "intermedio", "state": "confirmado" },
         { "name": "SEO técnico y on-page",                       "level": "intermedio", "state": "confirmado" },
@@ -62,7 +65,8 @@
       "technicalName": "Ingeniería en Fabricación y Diseño Industrial",
       "description": "Formación en Ingeniería en Fabricación y Diseño Industrial (UTFSM). Modelado paramétrico, render de producto, prototipado y fabricación digital.",
       "icon": "circle",
-      "dots": ["autoral"],
+      "dots": ["comercial"],
+      "workTab": "productos",
       "items": [
         { "name": "Autodesk Inventor",          "level": "avanzado",   "state": "confirmado" },
         { "name": "Fusion 360",                 "level": "avanzado",   "state": "confirmado" },
@@ -83,6 +87,7 @@
       "description": "Experimentos de interacción espacial, realidad extendida y 3D en el navegador. Área en formación, con estado honesto de cada pieza.",
       "icon": "square",
       "dots": ["autoral", "desarrollo"],
+      "workTab": "coding",
       "items": [
         { "name": "Three.js",                        "level": "intermedio",   "state": "confirmado" },
         { "name": "MediaPipe (gestos y seguimiento)", "level": "intermedio",   "state": "confirmado" },
@@ -98,6 +103,7 @@
       "description": "Flujos con modelos de lenguaje y generación de imágenes, automatización con n8n y pipelines de contenido. Orientado a pymes y emprendedores.",
       "icon": "triangle",
       "dots": ["desarrollo", "comercial"],
+      "workTab": null,
       "items": [
         { "name": "Midjourney y prompting visual",   "level": "avanzado",   "state": "confirmado" },
         { "name": "LLM con API y flujos de trabajo", "level": "intermedio", "state": "confirmado" },
@@ -113,6 +119,7 @@
       "description": "Video, motion y 3D para proyectos autorales, eventos y productoras. Rama autoral en desarrollo.",
       "icon": "circle",
       "dots": ["autoral"],
+      "workTab": "multimedia",
       "draft": true,
       "items": [
         { "name": "Blender",                    "level": "basico",        "state": "confirmado" },

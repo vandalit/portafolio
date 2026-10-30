@@ -118,18 +118,24 @@ function renderSkillCards(categories) {
     const cardItems = (s.items || []).slice(0, MAX_CARD_PILLS);
     const extraCount = (s.items || []).length - cardItems.length;
 
-    // Dots visuals (puede tener varios ejes)
-    const dotsHtml = (s.dots || []).map(d =>
-      `<span class="skill-card__dot skill-card__dot--${d}" aria-hidden="true"></span>`
-    ).join('');
-
     // Data para el modal: serializar items a JSON en data-atributo
     const modalData = JSON.stringify({ id: s.id, title: s.title, technicalName: s.technicalName, description: s.description, dots: s.dots, items: s.items || [] });
 
     const draftClass = s.draft ? ' skill-card--draft' : '';
 
+    // Backdrop image: si existe s.bgImage se aplica como CSS custom property
+    const bgStyle = s.bgImage ? ` style="--card-bg-image: url('${s.bgImage}')"` : '';
+    const bgImgEl = s.bgImage ? `<div class="skill-card__bg-img" aria-hidden="true"></div>` : '';
+
+    // CTA "Ver ejemplos": linked to work tab if workTab exists, disabled otherwise
+    const hasWorkTab = s.workTab && s.workTab !== null;
+    const ctaHtml = hasWorkTab
+      ? `<button class="skill-card__cta btn--ghost-${accent}" data-filter="${s.workTab}" data-scroll-to="work">Ver ejemplos <span>→</span></button>`
+      : `<button class="skill-card__cta skill-card__cta--disabled btn--ghost-${accent}" disabled aria-disabled="true">Ver ejemplos <span>→</span></button>`;
+
     return `
-      <article class="skill-card${draftClass}" data-accent="${accent}" data-dots="${(s.dots || []).join(',')}" data-skill='${modalData.replace(/'/g, '&#39;')}' tabindex="0">
+      <article class="skill-card${draftClass}" data-accent="${accent}" data-dots="${(s.dots || []).join(',')}" data-skill='${modalData.replace(/'/g, '&#39;')}'${bgStyle} tabindex="0">
+        ${bgImgEl}
         <div class="skill-card__icon-bg">${iconSvg(accentColor)}</div>
         <p class="skill-card__category">${s.technicalName.toUpperCase()}</p>
         <h3 class="skill-card__title">${s.title}</h3>
@@ -138,10 +144,7 @@ function renderSkillCards(categories) {
           ${cardItems.map(item => `<span class="skill-pill">${item.name}</span>`).join('')}
           ${extraCount > 0 ? `<span class="skill-pill skill-pill--more">+${extraCount} más</span>` : ''}
         </div>
-        <button class="skill-card__cta btn--ghost-${accent}"
-                data-scroll-to="work">
-          Ver ejemplos <span>→</span>
-        </button>
+        ${ctaHtml}
       </article>
     `;
   }).join('');
@@ -494,37 +497,40 @@ function initSkillModal() {
 // ── SKILL LEGEND FILTER ───────────────────────────────────
 function initSkillLegendFilter(skillsCarouselInstance) {
   const legendItems = document.querySelectorAll('.skills-legend__item[data-dot]');
+  const clearBtn    = document.querySelector('.skills-legend__clear');
   if (!legendItems.length) return;
 
   const cards = () => document.querySelectorAll('#skills-carousel .skill-card');
+
+  function clearFilter() {
+    legendItems.forEach(el => el.classList.remove('is-active'));
+    cards().forEach(card => card.classList.remove('is-filtered-out'));
+    if (clearBtn) clearBtn.classList.remove('is-visible');
+    if (skillsCarouselInstance) skillsCarouselInstance.refresh();
+  }
 
   legendItems.forEach(item => {
     item.addEventListener('click', () => {
       const dot = item.dataset.dot;
       const isActive = item.classList.contains('is-active');
 
-      // Deactivate all, then activate clicked if not already active
       legendItems.forEach(el => el.classList.remove('is-active'));
 
       if (isActive) {
-        // Toggle off: show all
-        cards().forEach(card => card.classList.remove('is-filtered-out'));
+        clearFilter();
       } else {
         item.classList.add('is-active');
+        if (clearBtn) clearBtn.classList.add('is-visible');
         cards().forEach(card => {
           const cardDots = (card.dataset.dots || '').split(',').filter(Boolean);
-          if (!cardDots.includes(dot)) {
-            card.classList.add('is-filtered-out');
-          } else {
-            card.classList.remove('is-filtered-out');
-          }
+          card.classList.toggle('is-filtered-out', !cardDots.includes(dot));
         });
+        if (skillsCarouselInstance) skillsCarouselInstance.refresh();
       }
-
-      // Refresh carousel to skip hidden cards
-      if (skillsCarouselInstance) skillsCarouselInstance.refresh();
     });
   });
+
+  clearBtn?.addEventListener('click', clearFilter);
 }
 
 // ── NAV ──────────────────────────────────────────────────

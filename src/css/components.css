@@ -563,6 +563,39 @@
   font-style: italic;
 }
 
+/* CTA disabled — sin correspondencia en trabajo */
+.skill-card__cta--disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Card backdrop image — opcional, editorial
+   El article recibe style="--card-bg-image: url('...')"
+   Si no está asignada, la card se ve exactamente igual que ahora.
+   El div .skill-card__bg-img se inyecta vía JS si la imagen existe. */
+.skill-card__bg-img {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--card-bg-image);
+  background-size: cover;
+  background-position: center;
+  opacity: 0.08;
+  mix-blend-mode: luminosity;
+  border-radius: inherit;
+  pointer-events: none;
+  transition: opacity var(--transition);
+}
+.skill-card:hover .skill-card__bg-img { opacity: 0.14; }
+/* Asegurar que el contenido de la card quede sobre el backdrop */
+.skill-card__icon-bg,
+.skill-card__category,
+.skill-card__title,
+.skill-card__desc,
+.skill-card__pills,
+.skill-card__cta { position: relative; z-index: 1; }
+
 .skill-card:hover .skill-card__cta { gap: var(--sp-3); }
 
 /* ── TABS ─────────────────────────────────────────────────── */
@@ -2107,6 +2140,31 @@
 .skills-legend__label {
   color: var(--text-2);
   transition: color var(--transition-fast);
+}
+
+/* Clear filter button — X brutalista */
+.skills-legend__clear {
+  display: none;
+  margin-top: var(--sp-4);
+  font-family: 'Impact', 'Arial Black', 'Franklin Gothic Heavy', var(--font-body);
+  font-size: 1.4rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text-3);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  align-self: flex-start;
+}
+.skills-legend__clear.is-visible {
+  display: block;
+}
+.skills-legend__clear:hover {
+  color: var(--text-0);
+  transform: scale(1.15) rotate(5deg);
 }
 
 /* ── PROJECT THUMB META & SUBTITLE (DESACOPLADO DE INLINE STYLE) ── */

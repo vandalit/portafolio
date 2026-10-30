@@ -145,9 +145,17 @@ function renderSkillCards(categories) {
     const extraCount = (s.items || []).length - cardItems.length;
     const modalData = JSON.stringify({ id: s.id, title: s.title, technicalName: s.technicalName, description: s.description, dots: s.dots, items: s.items || [] });
     const draftClass = s.draft ? ' skill-card--draft' : '';
+    const bgStyle = s.bgImage ? ` style="--card-bg-image: url('${escapeHtml(s.bgImage)}')"` : '';
+    const bgImgEl = s.bgImage ? `<div class="skill-card__bg-img" aria-hidden="true"></div>` : '';
+
+    const hasWorkTab = s.workTab && s.workTab !== null;
+    const ctaHtml = hasWorkTab
+      ? `<button class="skill-card__cta btn--ghost-${accent}" data-filter="${escapeHtml(s.workTab)}" data-scroll-to="work">Ver ejemplos <span>→</span></button>`
+      : `<button class="skill-card__cta skill-card__cta--disabled btn--ghost-${accent}" disabled aria-disabled="true">Ver ejemplos <span>→</span></button>`;
 
     return `
-      <article class="skill-card${draftClass}" data-accent="${accent}" data-dots="${(s.dots || []).join(',')}" data-skill='${modalData.replace(/'/g, '&#39;')}' tabindex="0">
+      <article class="skill-card${draftClass}" data-accent="${accent}" data-dots="${(s.dots || []).join(',')}" data-skill='${modalData.replace(/'/g, '&#39;')}'${bgStyle} tabindex="0">
+        ${bgImgEl}
         <div class="skill-card__icon-bg">${iconSvg(accentColor)}</div>
         <p class="skill-card__category">${escapeHtml(s.technicalName.toUpperCase())}</p>
         <h3 class="skill-card__title">${escapeHtml(s.title)}</h3>
@@ -156,10 +164,7 @@ function renderSkillCards(categories) {
           ${cardItems.map(item => `<span class="skill-pill">${escapeHtml(item.name)}</span>`).join('')}
           ${extraCount > 0 ? `<span class="skill-pill skill-pill--more">+${extraCount} más</span>` : ''}
         </div>
-        <button class="skill-card__cta btn--ghost-${accent}"
-                data-scroll-to="work">
-          Ver ejemplos <span>→</span>
-        </button>
+        ${ctaHtml}
       </article>
     `.trim();
   }).join('\n');
