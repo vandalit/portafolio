@@ -19,8 +19,8 @@
     "https://picsum.photos/seed/cardtools-2/1000/700"
   ],
   "links": {
-    "live": null,
-    "demo": null,
+    "live": "https://vandalit.github.io/Card-Tools/stub/01/index.html",
+    "demo": "https://vandalit.github.io/Card-Tools/stub/01/index.html",
     "github": "https://github.com/vandalit/Card-Tools"
   },
   "challenge": "Las librerías de componentes sacrifican flexibilidad por conveniencia. ¿Se puede tener ambas?",

@@ -334,6 +334,39 @@ function setupEnvironmentUI() {
     if (el.coverDropzone) {
       el.coverDropzone.title = 'Subida directa de archivos a disco deshabilitada en versión web';
     }
+    return;
+  }
+
+  // Restaurar controles activos en entorno Local
+  if (el.btnAddProject) {
+    el.btnAddProject.disabled = false;
+    el.btnAddProject.style.opacity = '1';
+    el.btnAddProject.style.cursor = 'pointer';
+    el.btnAddProject.title = 'Añadir nuevo proyecto a esta sección';
+  }
+  if (el.btnMoveProject) {
+    el.btnMoveProject.disabled = false;
+    el.btnMoveProject.style.opacity = '1';
+    el.btnMoveProject.style.cursor = 'pointer';
+    el.btnMoveProject.title = 'Mover proyecto completo a otra sección';
+  }
+  if (el.btnDeleteProject) {
+    el.btnDeleteProject.disabled = false;
+    el.btnDeleteProject.style.opacity = '1';
+    el.btnDeleteProject.style.cursor = 'pointer';
+    el.btnDeleteProject.title = 'Eliminar proyecto';
+  }
+  if (el.btnDeleteSkill) {
+    el.btnDeleteSkill.disabled = false;
+    el.btnDeleteSkill.style.opacity = '1';
+    el.btnDeleteSkill.style.cursor = 'pointer';
+    el.btnDeleteSkill.title = 'Eliminar habilidad';
+  }
+  if (el.btnUploadGalleryImg) {
+    el.btnUploadGalleryImg.style.display = 'inline-flex';
+  }
+  if (el.coverDropzone) {
+    el.coverDropzone.title = 'Haz clic o arrastra una imagen para subir la portada';
   }
 }
 
@@ -1039,21 +1072,6 @@ function addNewProject() {
 
   const slug = prompt('Ingresa el ID / slug único para la carpeta del nuevo proyecto (ej: nuevo-cliente):');
   if (!slug) return;
-      title: 'Nueva Capacidad Técnica',
-      description: 'Descripción de las herramientas y metodologías...',
-      skills: ['Capacidad 1', 'Capacidad 2'],
-      accentColor: '#b6e030',
-      icon: 'triangle'
-    };
-    state.data['skills'].push(newSkill);
-    state.activeProjectIndex = state.data['skills'].length - 1;
-    updateCounts();
-    persistDraft();
-    renderProjectList();
-    populateSkillForm();
-    showToast(`Habilidad '${cleanSlug}' creada.`);
-    return;
-  }
 
   const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
   const isCase = state.currentSection === 'case-studies';

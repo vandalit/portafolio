@@ -73,3 +73,4 @@
 3. **Paso 3:** Aplicar corrección del BUG 2 en `backoffice/backoffice.js` y `backoffice/index.html` para reconectar el CMS de Skills con el esquema moderno `{ legend, categories }`.
 4. **Paso 4:** Ejecutar `npm run build` y verificar en `dist/index.html` que no haya redundancias y que las cards y badges se rendericen con total exactitud.
 5. **Paso 5:** Commit local de las correcciones.
+

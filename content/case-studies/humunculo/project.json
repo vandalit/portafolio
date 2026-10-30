@@ -1,0 +1,34 @@
+{
+  "id": "humunculo",
+  "category": "coding",
+  "title": "humunculo",
+  "client": "",
+  "subtitle": "Síntesis descriptiva",
+  "description": "Descripción del trabajo realizado...",
+  "year": 2026,
+  "role": "UX/UI Design + Dev",
+  "tags": [
+    "coding",
+    "ux"
+  ],
+  "stack": [
+    "Figma",
+    "CSS",
+    "JavaScript"
+  ],
+  "accentColor": "#ccf020",
+  "featured": false,
+  "cover": "el-genio-en-la-botella-neon.png",
+  "coverPlaceholder": "el-genio-en-la-botella-neon.png",
+  "gallery": [
+    "gallery/01.webp"
+  ],
+  "challenge": "Desafío del proyecto...",
+  "solution": "Solución implementada...",
+  "result": "Resultado obtenido...",
+  "links": {
+    "live": null,
+    "demo": null,
+    "github": null
+  }
+}

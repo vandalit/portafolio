@@ -21,8 +21,8 @@
     "gallery/interfaz-hologra-fica-de-gestos-nea-n.png"
   ],
   "links": {
-    "live": null,
-    "demo": null,
+    "live": "https://afk-nine-tawny.vercel.app/",
+    "demo": "https://afk-nine-tawny.vercel.app/",
     "github": "https://github.com/vandalit/AFK"
   },
   "challenge": "El ecosistema gaming tiene interfaces complejas que priorizan funcionalidad sobre UX. Diseñar algo intuitivo para un usuario con alta exigencia técnica.",
@@ -30,5 +30,7 @@
   "result": "Prototipo funcional con flujo completo de onboarding y gestión de sesiones.",
   "cover": "interfaz-hologra-fica-de-gestos-nea-n.png",
   "client": "",
-  "stack": []
+  "stack": [],
+  "cardType": "expanded",
+  "techStack": []
 }
