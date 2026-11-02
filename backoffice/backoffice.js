@@ -1308,10 +1308,13 @@ function setupSkillEditorListeners() {
     });
   });
 
-  el.skillFieldPills.addEventListener('change', () => {
-    saveActiveSkillValues();
-    updateSkillLivePreview();
-  });
+  // Botón añadir capacidad
+  const btnAddSkillItem = document.getElementById('btn-add-skill-item');
+  if (btnAddSkillItem) {
+    btnAddSkillItem.addEventListener('click', () => {
+      addNewSkillItem();
+    });
+  }
 
   el.btnDeleteSkill.addEventListener('click', () => {
     deleteActiveSkill();
@@ -1346,12 +1349,18 @@ function populateSkillForm() {
 
   el.skillFieldDesc.value = skill.description || '';
 
-  // Pills / Items
-  const items = Array.isArray(skill.items) && skill.items.length > 0
-    ? skill.items.map(i => i.name || i)
-    : (Array.isArray(skill.skills) ? skill.skills : []);
-  el.skillFieldPills.value = items.join(', ');
-  renderChips(el.skillChipsPreview, items, primaryDot === 'desarrollo');
+  // Pills / Items - Renderizar editor dinámico
+  const itemsList = document.getElementById('skill-items-list');
+  if (itemsList) {
+    itemsList.innerHTML = '';
+    const items = Array.isArray(skill.items) && skill.items.length > 0
+      ? skill.items
+      : (Array.isArray(skill.skills) ? skill.skills.map(name => ({ name, level: 'intermedio', state: 'confirmado' })) : []);
+    
+    items.forEach((item, idx) => {
+      renderSkillItem(item, idx);
+    });
+  }
 
   updateSkillLivePreview();
 }
@@ -1375,20 +1384,19 @@ function saveActiveSkillValues() {
 
   skill.description = el.skillFieldDesc.value;
 
-  const names = el.skillFieldPills.value.split(',').map(s => s.trim()).filter(Boolean);
+  // Leer items del editor dinámico
+  const itemsList = document.getElementById('skill-items-list');
+  const itemEls = itemsList ? itemsList.querySelectorAll('.bo-skill-item') : [];
+  
+  skill.items = Array.from(itemEls).map(itemEl => {
+    return {
+      name: itemEl.querySelector('.bo-skill-item__name').value.trim(),
+      level: itemEl.querySelector('.bo-skill-item__level').value,
+      state: itemEl.querySelector('.bo-skill-item__state').value
+    };
+  }).filter(item => item.name); // Filtrar items vacíos
 
-  // Actualizar items preservando level y state existentes
-  const prevItems = Array.isArray(skill.items) ? skill.items : [];
-  skill.items = names.map(name => {
-    const existing = prevItems.find(it => (it.name || it) === name);
-    if (existing && typeof existing === 'object') {
-      return existing;
-    }
-    return { name, level: 'intermedio', state: 'confirmado' };
-  });
-  skill.skills = names; // retrocompatibilidad
-
-  renderChips(el.skillChipsPreview, names, chosenDot === 'desarrollo');
+  skill.skills = skill.items.map(i => i.name); // retrocompatibilidad
 
   el.skillDisplayTitle.textContent = skill.title || 'Habilidad sin título';
   el.skillDisplaySlug.textContent = skill.id || 'slug';
@@ -1435,6 +1443,111 @@ function updateSkillLivePreview() {
       </button>
     </article>
   `;
+}
+
+// ── SKILL ITEMS DYNAMIC EDITOR ────────────────────────────
+function renderSkillItem(item, index) {
+  const itemsList = document.getElementById('skill-items-list');
+  if (!itemsList) return;
+
+  const itemEl = document.createElement('div');
+  itemEl.className = 'bo-skill-item';
+  itemEl.dataset.index = index;
+  
+  const itemName = typeof item === 'string' ? item : (item.name || '');
+  const itemLevel = typeof item === 'object' ? (item.level || 'intermedio') : 'intermedio';
+  const itemState = typeof item === 'object' ? (item.state || 'confirmado') : 'confirmado';
+
+  itemEl.innerHTML = `
+    <div class="bo-skill-item__header">
+      <span class="bo-skill-item__drag" title="Arrastra para reordenar">⠿</span>
+      <input type="text" 
+             class="bo-skill-item__name" 
+             value="${itemName}" 
+             placeholder="Nombre de la capacidad"
+             data-index="${index}">
+      <button type="button" class="bo-skill-item__remove" title="Eliminar capacidad">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="bo-skill-item__fields">
+      <div class="bo-skill-item__field">
+        <label>Nivel de dominio</label>
+        <select class="bo-skill-item__select bo-skill-item__level" data-index="${index}">
+          <option value="avanzado" ${itemLevel === 'avanzado' ? 'selected' : ''}>Avanzado (95%)</option>
+          <option value="intermedio" ${itemLevel === 'intermedio' ? 'selected' : ''}>Intermedio (70%)</option>
+          <option value="basico" ${itemLevel === 'basico' ? 'selected' : ''}>Básico (40%)</option>
+          <option value="en-formacion" ${itemLevel === 'en-formacion' ? 'selected' : ''}>En formación (20%)</option>
+          <option value="en-desarrollo" ${itemLevel === 'en-desarrollo' ? 'selected' : ''}>En desarrollo (20%)</option>
+          <option value="en-proceso" ${itemLevel === 'en-proceso' ? 'selected' : ''}>En proceso (20%)</option>
+        </select>
+      </div>
+      <div class="bo-skill-item__field">
+        <label>Estado</label>
+        <select class="bo-skill-item__select bo-skill-item__state" data-index="${index}">
+          <option value="confirmado" ${itemState === 'confirmado' ? 'selected' : ''}>✓ Confirmado</option>
+          <option value="en-curso" ${itemState === 'en-curso' ? 'selected' : ''}>⟳ En curso</option>
+          <option value="en-proceso" ${itemState === 'en-proceso' ? 'selected' : ''}>⟳ En proceso</option>
+          <option value="en-formacion" ${itemState === 'en-formacion' ? 'selected' : ''}>⟳ En formación</option>
+        </select>
+      </div>
+    </div>
+  `;
+
+  // Event listeners
+  const nameInput = itemEl.querySelector('.bo-skill-item__name');
+  const levelSelect = itemEl.querySelector('.bo-skill-item__level');
+  const stateSelect = itemEl.querySelector('.bo-skill-item__state');
+  const removeBtn = itemEl.querySelector('.bo-skill-item__remove');
+
+  nameInput.addEventListener('input', () => {
+    saveActiveSkillValues();
+    updateSkillLivePreview();
+  });
+
+  levelSelect.addEventListener('change', () => {
+    saveActiveSkillValues();
+    updateSkillLivePreview();
+  });
+
+  stateSelect.addEventListener('change', () => {
+    saveActiveSkillValues();
+  });
+
+  removeBtn.addEventListener('click', () => {
+    if (confirm(`¿Eliminar la capacidad "${itemName}"?`)) {
+      itemEl.remove();
+      saveActiveSkillValues();
+      updateSkillLivePreview();
+      showToast('Capacidad eliminada', 'success');
+    }
+  });
+
+  itemsList.appendChild(itemEl);
+}
+
+function addNewSkillItem() {
+  const itemsList = document.getElementById('skill-items-list');
+  if (!itemsList) return;
+
+  const newItem = {
+    name: '',
+    level: 'intermedio',
+    state: 'confirmado'
+  };
+
+  const currentCount = itemsList.querySelectorAll('.bo-skill-item').length;
+  renderSkillItem(newItem, currentCount);
+
+  // Focus en el input del nuevo item
+  const newItemEl = itemsList.lastElementChild;
+  const nameInput = newItemEl?.querySelector('.bo-skill-item__name');
+  if (nameInput) {
+    nameInput.focus();
+  }
 }
 
 function deleteActiveSkill() {

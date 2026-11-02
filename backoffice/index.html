@@ -548,9 +548,17 @@
               </div>
 
               <div class="bo-field">
-                <label for="skill-field-pills">Lista de Capacidades / Pills (separadas por coma)</label>
-                <input type="text" id="skill-field-pills" class="bo-input" placeholder="User Interviews, Wireframing, Figma, Heuristic Evaluation">
-                <div id="skill-chips-preview" class="bo-chips-container" style="margin-top:8px;"></div>
+                <div class="bo-field-header">
+                  <label>Lista de Capacidades / Pills</label>
+                  <button type="button" id="btn-add-skill-item" class="bo-btn bo-btn--sm bo-btn--primary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>Añadir Capacidad</span>
+                  </button>
+                </div>
+                <div id="skill-items-list" class="bo-skill-items-list">
+                  <!-- Items dinámicos renderizados aquí -->
+                </div>
+                <p class="bo-help">Cada capacidad puede tener un nivel (básico → avanzado) y un estado de confirmación.</p>
               </div>
             </div>
           </div>

@@ -27,7 +27,7 @@
       "workTab": "ux",
       "items": [
         {
-          "name": "UX research y síntesis",
+          "name": "UX research",
           "level": "intermedio",
           "state": "confirmado"
         },
@@ -37,7 +37,17 @@
           "state": "confirmado"
         },
         {
-          "name": "Figma, UI y design systems",
+          "name": "Figma",
+          "level": "intermedio",
+          "state": "confirmado"
+        },
+        {
+          "name": "UI",
+          "level": "intermedio",
+          "state": "confirmado"
+        },
+        {
+          "name": "design systems",
           "level": "intermedio",
           "state": "confirmado"
         },
@@ -46,6 +56,17 @@
           "level": "avanzado",
           "state": "confirmado"
         }
+      ],
+      "category": "UX/UI y diseño de producto",
+      "filterTag": "ux",
+      "accentColor": "#d4205a",
+      "skills": [
+        "UX research",
+        "Arquitectura de información",
+        "Figma",
+        "UI",
+        "design systems",
+        "Docencia UX/UI"
       ]
     },
     {
