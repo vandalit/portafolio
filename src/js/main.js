@@ -6,6 +6,7 @@ console.log('%c[Portafolio:Main] 🚀 main.js loaded', 'background: #080810; col
 
 import { HeroScene } from './three-scene.js';
 import { Carousel } from './carousel.js';
+import { CasesFeaturedCarousel } from './cases-featured-carousel.js';
 import { GridFilter } from './grid-filter.js';
 import { ProjectModal } from './project-modal.js';
 import { LabModal } from './lab-modal.js';
@@ -27,6 +28,11 @@ async function loadData() {
 }
 
 // ── RENDER ────────────────────────────────────────────────
+// NOTA: renderFeatured y renderCaseCards están deprecadas.
+// Ahora se usa CasesFeaturedCarousel que maneja ambas en sincronía.
+// Se mantienen comentadas por si se necesitan en el futuro.
+
+/*
 function renderCaseCards(cases) {
   const track = document.querySelector('#cases-carousel .carousel-track');
   if (!track) return;
@@ -94,6 +100,7 @@ function renderFeatured(cases) {
   el.dataset.projectId = featured.id;
   el.dataset.type = 'case';
 }
+*/
 
 // Mapa de niveles a porcentaje de relleno para el ojo en modal
 const LEVEL_PCT = { 'basico': 40, 'intermedio': 70, 'avanzado': 95, 'en-formacion': 20, 'en-desarrollo': 20, 'en-proceso': 20 };
@@ -958,8 +965,16 @@ async function init() {
       hydrateSiteSettings(siteSettings);
     }
     if (projectsData) {
-      renderFeatured(projectsData.cases);
-      renderCaseCards(projectsData.cases);
+      // Casos de Estudio: usar componente sincronizado Featured + Carousel
+      if (projectsData.cases && projectsData.cases.length) {
+        window.__casesFeaturedCarousel = new CasesFeaturedCarousel(projectsData.cases, {
+          autoplaySpeed: 6000,
+          pauseOnHover: true,
+          loop: true,
+          timerVisible: true
+        });
+      }
+      
       renderSkillCards(projectsData.skills.categories || []);
       renderClientGrid(projectsData.clients);
       renderLabGrid(projectsData.lab);
@@ -1020,8 +1035,7 @@ async function init() {
   initScrollTop();
 
   // 5. Carousels & Grid Filter
-  const casesCarousel = document.getElementById('cases-carousel');
-  if (casesCarousel) new Carousel(casesCarousel);
+  // (Cases carousel ya está inicializado por CasesFeaturedCarousel)
 
   const skillsCarousel = document.getElementById('skills-carousel');
   const skillsCarouselInstance = skillsCarousel ? new Carousel(skillsCarousel, { activeClass: '' }) : null;
