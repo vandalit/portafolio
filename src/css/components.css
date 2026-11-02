@@ -1977,6 +1977,41 @@
   background-color: var(--bg-2);
 }
 
+/* Spinner de carga: visible mientras la imagen no ha cargado */
+.project-thumb::after,
+.case-card::after,
+.lab-card__thumb::after,
+.featured-case::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  margin: -16px 0 0 -16px;
+  border: 2px solid var(--border-1);
+  border-top-color: var(--lime);
+  border-radius: 50%;
+  animation: imageLoadingSpin 0.8s linear infinite;
+  opacity: 1;
+  transition: opacity 200ms ease-out;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Ocultar spinner cuando la imagen está cargada */
+.project-thumb.image-loaded::after,
+.case-card.image-loaded::after,
+.lab-card__thumb.image-loaded::after,
+.featured-case.image-loaded::after {
+  opacity: 0;
+}
+
+/* Keyframe para rotación del spinner */
+@keyframes imageLoadingSpin {
+  to { transform: rotate(360deg); }
+}
+
 .project-thumb__img,
 .case-card__img,
 .lab-card__img,

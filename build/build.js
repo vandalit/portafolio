@@ -208,7 +208,7 @@ function renderFeatured(cases) {
   const coverSrc = featured.coverPlaceholder || featured.cover || '';
 
   return `
-    <img class="featured-case__img" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(featured.title)}" loading="eager" decoding="async" onload="this.classList.add('is-loaded')">
+    <img class="featured-case__img" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(featured.title)}" loading="eager" decoding="async" onload="this.classList.add('is-loaded');this.closest('.featured-case').classList.add('image-loaded')">
     <div class="featured-case__overlay"></div>
     <div class="featured-case__body">
       <p class="featured-case__eyebrow">${escapeHtml(featured.category.toUpperCase())} · ${escapeHtml(featured.role)}</p>
@@ -241,7 +241,7 @@ function renderCaseCards(cases) {
                tabindex="0"
                style="--card-accent: ${accentColor};">
         <div class="case-card__thumb">
-          <img class="case-card__img" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(c.title)}" loading="${i < 2 ? 'eager' : 'lazy'}" decoding="async" onload="this.classList.add('is-loaded')">
+          <img class="case-card__img" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(c.title)}" loading="${i < 2 ? 'eager' : 'lazy'}" decoding="async" onload="this.classList.add('is-loaded');this.closest('.case-card').classList.add('image-loaded')">
           <div class="case-card__thumb-overlay"></div>
           <span class="case-card__year">${escapeHtml(String(c.year))}</span>
         </div>
@@ -281,7 +281,7 @@ function renderClientGrid(clients) {
                data-type="${escapeHtml(c._type)}"
                ${isEmpty ? '' : 'role="button" tabindex="0"'}
                aria-label="${isEmpty ? 'Proyecto próximamente' : 'Ver proyecto: ' + escapeHtml(c.title)}">
-        <img class="project-thumb__img" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(c.title || 'Próximamente')}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
+        <img class="project-thumb__img" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(c.title || 'Próximamente')}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded');this.closest('.project-thumb').classList.add('image-loaded')">
         ${isEmpty ? '<div class="project-thumb__wip-badge">Próximamente</div>' : `
         <div class="project-thumb__overlay"></div>
         <div class="project-thumb__info">
@@ -333,7 +333,7 @@ function renderLabGrid(lab) {
       return `
         <article class="lab-card--expanded" data-lab-id="${escapeHtml(l.id || l._id)}" tabindex="0" role="button" aria-label="Ver experimento: ${escapeHtml(l.title)}">
           <div class="lab-card__thumb lab-scanline">
-            <img class="lab-card__img" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(l.title)}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
+            <img class="lab-card__img" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(l.title)}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded');this.closest('.lab-card__thumb').classList.add('image-loaded')">
             <span class="lab-card__badge">${escapeHtml(badge)}</span>
           </div>
           <div class="lab-card__body">

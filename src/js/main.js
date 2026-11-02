@@ -49,7 +49,7 @@ function renderCaseCards(cases) {
              alt="${c.title}"
              loading="${i < 2 ? 'eager' : 'lazy'}"
              decoding="async"
-             onload="this.classList.add('is-loaded')">
+             onload="this.classList.add('is-loaded');this.closest('.case-card').classList.add('image-loaded')">
         <div class="case-card__overlay"></div>
         <div class="case-card__accent" style="background:${accentColor}"></div>
         <div class="case-card__content">
@@ -73,7 +73,7 @@ function renderFeatured(cases) {
   const accentColor = isMultimedia ? 'var(--magenta)' : 'var(--lime)';
 
   el.innerHTML = `
-    <img class="featured-case__img" src="${featured.coverPlaceholder}" alt="${featured.title}" loading="eager" decoding="async" onload="this.classList.add('is-loaded')">
+    <img class="featured-case__img" src="${featured.coverPlaceholder}" alt="${featured.title}" loading="eager" decoding="async" onload="this.classList.add('is-loaded');this.closest('.featured-case').classList.add('image-loaded')">
     <div class="featured-case__overlay"></div>
     <div class="featured-case__strip" style="background:${accentColor}"></div>
     <div class="featured-case__content">
@@ -178,7 +178,7 @@ function renderClientGrid(clients) {
                data-type="${c._type}"
                ${isEmpty ? '' : 'role="button" tabindex="0"'}
                aria-label="${isEmpty ? 'Proyecto próximamente' : 'Ver proyecto: ' + c.title}">
-        <img class="project-thumb__img" src="${coverSrc}" alt="${c.title || 'Próximamente'}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
+        <img class="project-thumb__img" src="${coverSrc}" alt="${c.title || 'Próximamente'}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded');this.closest('.project-thumb').classList.add('image-loaded')">
         ${isEmpty ? '<div class="project-thumb__wip-badge">Próximamente</div>' : `
         <div class="project-thumb__overlay"></div>
         <div class="project-thumb__info">
@@ -232,7 +232,7 @@ function renderLabGrid(lab) {
       return `
         <article class="lab-card--expanded" data-lab-id="${l.id}" tabindex="0" role="button" aria-label="Ver experimento: ${l.title}">
           <div class="lab-card__thumb lab-scanline">
-            <img class="lab-card__img" src="${l.coverPlaceholder || l.cover}" alt="${l.title}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
+            <img class="lab-card__img" src="${l.coverPlaceholder || l.cover}" alt="${l.title}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded');this.closest('.lab-card__thumb').classList.add('image-loaded')">
             <span class="lab-card__badge">${badge}</span>
           </div>
           <div class="lab-card__body">
