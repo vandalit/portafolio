@@ -38,16 +38,14 @@ export class CasesFeaturedCarousel {
   }
 
   _init() {
-    // 1. Renderizar featured inicial (index 0)
+    // 1. Crear controles superiores (nav + timer)
+    this._createTopControls();
+
+    // 2. Renderizar featured inicial (index 0)
     this._renderFeatured(0);
 
-    // 2. Renderizar cards del carrusel (sin filtrar ninguno, todos van al carousel)
+    // 3. Renderizar cards del carrusel (sin filtrar ninguno, todos van al carousel)
     this._renderCarouselCards();
-
-    // 3. Crear timer bar si está habilitado
-    if (this.options.timerVisible) {
-      this._createTimerBar();
-    }
 
     // 4. Instanciar Carousel genérico
     this.carouselInstance = new Carousel(this.carouselEl);
@@ -174,37 +172,45 @@ export class CasesFeaturedCarousel {
     });
   }
 
-  _createTimerBar() {
-    // Crear barra de timer minimalista en la parte inferior del featured
-    this.timerEl = document.createElement('div');
-    this.timerEl.className = 'featured-case__timer';
-    this.timerEl.innerHTML = '<div class="featured-case__timer-fill"></div>';
-    this.featuredEl.appendChild(this.timerEl);
-
-    // Agregar estilos inline para el timer (podemos moverlos a CSS después)
-    const style = document.createElement('style');
-    style.textContent = `
-      .featured-case__timer {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: var(--border-1);
-        z-index: 20;
-        overflow: hidden;
-      }
-      .featured-case__timer-fill {
-        height: 100%;
-        width: 0%;
-        background: linear-gradient(90deg, var(--magenta), var(--lime));
-        transition: width 100ms linear;
-      }
+  _createTopControls() {
+    // Crear controles superiores: nav buttons + timer
+    const controlsWrapper = document.createElement('div');
+    controlsWrapper.className = 'cases-system__controls';
+    
+    controlsWrapper.innerHTML = `
+      <div class="cases-system__timer">
+        <div class="cases-system__timer-fill"></div>
+      </div>
+      <div class="cases-system__nav">
+        <button class="carousel-btn carousel-btn--prev" aria-label="Caso anterior">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+        <button class="carousel-btn carousel-btn--next" aria-label="Siguiente caso">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </button>
+      </div>
     `;
-    document.head.appendChild(style);
+
+    // Insertar antes del featured
+    this.featuredEl.parentNode.insertBefore(controlsWrapper, this.featuredEl);
+    
+    // Guardar referencia al timer
+    this.timerEl = controlsWrapper.querySelector('.cases-system__timer');
+    
+    // Conectar botones
+    const prevBtn = controlsWrapper.querySelector('.carousel-btn--prev');
+    const nextBtn = controlsWrapper.querySelector('.carousel-btn--next');
+    
+    prevBtn?.addEventListener('click', () => this.prev());
+    nextBtn?.addEventListener('click', () => this.next());
   }
 
   _setupHoverPause() {
+    // Pausar en hover sobre featured o carousel
     this.featuredEl.addEventListener('mouseenter', () => {
       this._pauseAutoplay();
     });
@@ -218,6 +224,17 @@ export class CasesFeaturedCarousel {
     this.carouselEl.addEventListener('mouseleave', () => {
       this._resumeAutoplay();
     });
+    
+    // También pausar al interactuar con controles
+    const controls = document.querySelector('.cases-system__controls');
+    if (controls) {
+      controls.addEventListener('mouseenter', () => {
+        this._pauseAutoplay();
+      });
+      controls.addEventListener('mouseleave', () => {
+        this._resumeAutoplay();
+      });
+    }
   }
 
   _startAutoplay() {
@@ -260,7 +277,7 @@ export class CasesFeaturedCarousel {
   _animateTimer() {
     if (!this.timerEl) return;
 
-    const fill = this.timerEl.querySelector('.featured-case__timer-fill');
+    const fill = this.timerEl.querySelector('.cases-system__timer-fill');
     if (!fill) return;
 
     const animate = () => {

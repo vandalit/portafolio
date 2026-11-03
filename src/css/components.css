@@ -134,13 +134,50 @@
   transform: scale(1.1);
 }
 
+/* ── CASES INTEGRATED SYSTEM ─────────────────────────────── */
+/* Contenedor unificado para featured + carousel */
+.cases-system {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+/* Controles superiores: nav buttons + timer */
+.cases-system__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  justify-content: flex-end;
+  padding: 0 var(--sp-2);
+}
+
+.cases-system__nav {
+  display: flex;
+  gap: var(--sp-3);
+}
+
+.cases-system__timer {
+  flex: 1;
+  height: 2px;
+  background: var(--border-1);
+  border-radius: 99px;
+  overflow: hidden;
+  max-width: 200px;
+}
+
+.cases-system__timer-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--magenta), var(--lime));
+  transition: width 100ms linear;
+}
+
 /* ── FEATURED CASE (Destacado) ───────────────────────────── */
 .featured-case {
   position: relative;
-  height: clamp(360px, 50vw, 520px);
+  height: clamp(420px, 55vw, 580px);
   overflow: hidden;
   border-radius: var(--radius-md);
-  margin-bottom: clamp(3rem, 5vw, 4.5rem);
   cursor: pointer;
   background-color: #121520;
   contain: content;
@@ -226,28 +263,30 @@
   flex-wrap: wrap;
 }
 
-/* ── CASE STUDY CARD (Carousel) ──────────────────────────── */
+/* ── CASE STUDY CARD (Carousel compacto) ─────────────────── */
 .case-card {
   position: relative;
-  flex: 0 0 clamp(280px, 36vw, 440px);
-  height: clamp(220px, 26vw, 320px);
-  border-radius: var(--radius-md);
+  flex: 0 0 clamp(200px, 28vw, 320px);
+  height: clamp(140px, 18vw, 200px);
+  border-radius: var(--radius-sm);
   overflow: hidden;
   cursor: pointer;
   contain: content;
   transition: transform var(--dur-slow) var(--ease-out),
-              box-shadow var(--dur-slow) var(--ease-out);
+              box-shadow var(--dur-slow) var(--ease-out),
+              opacity var(--transition);
 }
 
 .case-card:not(.is-active) {
-  opacity: 0.6;
-  transform: scale(0.96);
+  opacity: 0.5;
+  transform: scale(0.94);
 }
 
 .case-card.is-active {
   opacity: 1;
   transform: scale(1);
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  border: 1px solid var(--border-2);
 }
 
 .case-card__img {
@@ -309,7 +348,7 @@
   flex-wrap: wrap;
 }
 
-/* ── CAROUSEL WRAPPER ────────────────────────────────────── */
+/* ── CAROUSEL WRAPPER (Compacto para cases) ──────────────── */
 .carousel-wrapper {
   position: relative;
 }
@@ -320,7 +359,7 @@
 
 .carousel-track {
   display: flex;
-  gap: var(--grid-gap);
+  gap: var(--sp-4);
   cursor: grab;
   user-select: none;
   transform: translateZ(0);
@@ -330,17 +369,10 @@
 
 .carousel-track:active { cursor: grabbing; }
 
-.carousel-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-4);
-  margin-top: var(--sp-8);
-  justify-content: flex-end;
-}
-
+/* Botones de navegación reutilizables */
 .carousel-btn {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 1px solid var(--border-2);
   display: flex;
@@ -348,12 +380,22 @@
   justify-content: center;
   color: var(--text-1);
   transition: var(--transition);
+  background: var(--bg-2);
 }
 
 .carousel-btn:hover {
-  border-color: var(--magenta);
-  color: var(--magenta);
-  background: var(--magenta-fade);
+  border-color: var(--lime);
+  color: var(--lime);
+  background: rgba(184, 224, 48, 0.1);
+}
+
+/* Controles legacy (para otros carouseles si existen) */
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-8);
+  justify-content: flex-end;
 }
 
 .carousel-progress {
@@ -814,6 +856,38 @@
   transition: width 400ms var(--ease-out), opacity var(--transition);
 }
 .skill-pill--level:hover::before { opacity: 0.28; }
+
+/* Pill accumulative (0% level) — stroke instead of fill */
+.skill-pill--accumulative {
+  position: relative;
+  border: 2px solid var(--lime);
+  background: transparent;
+}
+
+/* Accent color variants for accumulative pills */
+.skill-modal[data-accent="magenta"] .skill-pill--accumulative {
+  border-color: var(--magenta);
+}
+
+.skill-modal[data-accent="lime"] .skill-pill--accumulative {
+  border-color: var(--lime);
+}
+
+.skill-modal[data-accent="mango"] .skill-pill--accumulative {
+  border-color: var(--mango);
+}
+
+.skill-pill--accumulative:hover {
+  background: var(--lime-fade);
+}
+
+.skill-modal[data-accent="magenta"] .skill-pill--accumulative:hover {
+  background: var(--magenta-fade);
+}
+
+.skill-modal[data-accent="mango"] .skill-pill--accumulative:hover {
+  background: var(--mango-fade);
+}
 
 /* Eye toggle button — inline as last pill in modal */
 .skill-modal__eye {

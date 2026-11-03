@@ -1477,6 +1477,7 @@ function renderSkillItem(item, index) {
       <div class="bo-skill-item__field">
         <label>Nivel de dominio</label>
         <select class="bo-skill-item__select bo-skill-item__level" data-index="${index}">
+          <option value="0" ${itemLevel === '0' || itemLevel === 0 ? 'selected' : ''}>Sin nivel (Acumulativa 0%)</option>
           <option value="avanzado" ${itemLevel === 'avanzado' ? 'selected' : ''}>Avanzado (95%)</option>
           <option value="intermedio" ${itemLevel === 'intermedio' ? 'selected' : ''}>Intermedio (70%)</option>
           <option value="basico" ${itemLevel === 'basico' ? 'selected' : ''}>Básico (40%)</option>

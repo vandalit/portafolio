@@ -103,7 +103,15 @@ function renderFeatured(cases) {
 */
 
 // Mapa de niveles a porcentaje de relleno para el ojo en modal
-const LEVEL_PCT = { 'basico': 40, 'intermedio': 70, 'avanzado': 95, 'en-formacion': 20, 'en-desarrollo': 20, 'en-proceso': 20 };
+const LEVEL_PCT = { 
+  '0': 0,
+  'avanzado': 95, 
+  'intermedio': 70, 
+  'basico': 40, 
+  'en-formacion': 20, 
+  'en-desarrollo': 20, 
+  'en-proceso': 20 
+};
 
 // Pills de card: máximo 6, nombres cortos del items[].name
 const MAX_CARD_PILLS = 6;
@@ -437,12 +445,18 @@ function initSkillModal() {
 
   function renderPills(items, withEye) {
     const LABEL_MAP = { basico: 'Básico', intermedio: 'Intermedio', avanzado: 'Avanzado', 'en-formacion': 'En formación', 'en-desarrollo': 'En desarrollo', 'en-proceso': 'En proceso' };
-    const pct = (lvl) => LEVEL_PCT[lvl] || 40;
+    const pct = (lvl) => LEVEL_PCT[lvl] ?? 40;
 
     const pillsHtml = items.map(item => {
-      const levelClass = withEye ? ` skill-pill--level` : '';
-      const style = withEye ? ` style="--level-pct:${pct(item.level)}%"` : '';
-      return `<span class="skill-pill skill-pill--lg${levelClass}"${style}>${item.name}</span>`;
+      const levelPct = pct(item.level);
+      const isAccumulative = levelPct === 0; // Sin nivel = acumulativa
+      
+      // Si es acumulativa y el ojo está activo, usar stroke en lugar de fill
+      const levelClass = withEye && !isAccumulative ? ` skill-pill--level` : '';
+      const accumulativeClass = withEye && isAccumulative ? ` skill-pill--accumulative` : '';
+      const style = withEye && !isAccumulative ? ` style="--level-pct:${levelPct}%"` : '';
+      
+      return `<span class="skill-pill skill-pill--lg${levelClass}${accumulativeClass}"${style}>${item.name}</span>`;
     }).join('');
 
     // El ojo va inline como última "pill"
@@ -467,6 +481,10 @@ function initSkillModal() {
   function openSkillModal(skillData) {
     eyeActive = false;
     const accent = skillData.dots && skillData.dots[0] ? ({ autoral: 'magenta', desarrollo: 'lime', comercial: 'mango' }[skillData.dots[0]] || 'magenta') : 'magenta';
+    
+    // Set accent attribute on modal for accumulative pills styling
+    modal.dataset.accent = accent;
+    
     if (catEl) {
       catEl.textContent = skillData.technicalName?.toUpperCase() || skillData.title?.toUpperCase() || '';
       catEl.style.color = accent === 'magenta' ? 'var(--magenta)' : accent === 'lime' ? 'var(--lime)' : 'var(--mango)';
