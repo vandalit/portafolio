@@ -22,6 +22,12 @@ export class CasesV3 {
     this._programmaticTimers = new WeakMap();
     this._pointer = null;
     this._featuredTransition = 0;
+    this._exitPulseDistance = Number.parseFloat(
+      getComputedStyle(root).getPropertyValue('--cv3-exit-pulse-distance')
+    ) || 100;
+    this._exitPulseScale = Number.parseFloat(
+      getComputedStyle(root).getPropertyValue('--cv3-exit-pulse-scale')
+    ) || 0.88;
     this._renderTracks();
     this._bind();
     this._updateFeatured(false);
@@ -144,6 +150,33 @@ export class CasesV3 {
       this._scrollTo(viewport, Math.max(0, target), smooth);
       this._setWindowSlot(viewport, slot);
     });
+    this.viewports.forEach(viewport => this._updateLeftExitPulse(viewport));
+  }
+
+  _updateLeftExitPulse(viewport) {
+    if (!viewport.closest('.cv3-carousel--wide')) return;
+
+    const clipLeft = viewport.getBoundingClientRect().left + viewport.clientLeft;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const items = [...viewport.querySelectorAll('.cv3-item')].map(item => {
+      const rect = item.getBoundingClientRect();
+      const unscaledLeft = rect.left - (item.offsetWidth - rect.width) / 2;
+      const progress = reducedMotion
+        ? 1
+        : Math.round(Math.max(0, Math.min(1,
+          (unscaledLeft - clipLeft + this._exitPulseDistance) / this._exitPulseDistance
+        )) * 100) / 100;
+      return {
+        item,
+        opacity: progress,
+        scale: this._exitPulseScale + (1 - this._exitPulseScale) * progress
+      };
+    });
+
+    items.forEach(({ item, opacity, scale }) => {
+      item.style.setProperty('--cv3-left-edge-opacity', opacity.toFixed(3));
+      item.style.setProperty('--cv3-left-edge-scale', scale.toFixed(3));
+    });
   }
 
   _stride(viewport) {
@@ -176,6 +209,7 @@ export class CasesV3 {
   }
 
   _onScroll(source) {
+    this._updateLeftExitPulse(source);
     if (this._pointer || this._programmaticTimers.has(source)) return;
     window.clearTimeout(this._scrollTimers.get(source));
     this._scrollTimers.set(source, window.setTimeout(() => {
@@ -243,6 +277,7 @@ export class CasesV3 {
       const progress = -deltaX / gesture.strides[this.viewports.indexOf(gesture.source)];
       this.viewports.forEach((viewport, index) => {
         viewport.scrollLeft = gesture.startScrolls[index] + progress * gesture.strides[index];
+        this._updateLeftExitPulse(viewport);
       });
       event.preventDefault();
     });

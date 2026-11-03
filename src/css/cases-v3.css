@@ -1,6 +1,8 @@
 /* ── Cases V3: initial bento layout and linked mock carousels ── */
 .cases-v3 {
   --cv3-gap: clamp(14px, 2vw, 24px);
+  --cv3-exit-pulse-distance: 100px;
+  --cv3-exit-pulse-scale: 0.88;
 }
 
 .cv3-header__version {
@@ -237,6 +239,19 @@
 
 .cv3-carousel--wide .cv3-item {
   flex-basis: clamp(190px, 24vw, 280px);
+}
+
+.cv3-carousel--wide .cv3-item {
+  opacity: var(--cv3-left-edge-opacity, 1);
+  transform: scale(var(--cv3-left-edge-scale, 1));
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cv3-carousel--wide .cv3-item {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @media (max-width: 640px) {
