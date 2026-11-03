@@ -184,21 +184,36 @@ export class CasesV3 {
     eyebrow.textContent = `${item.category} · Caso ${String(this.currentIndex + 1).padStart(2, '0')}`;
     title.textContent = item.title;
     description.textContent = `Contenido de muestra para ${item.title}.`;
+    const itemNumber = this.root.querySelector('[data-cv3-item-number]');
+    if (itemNumber) itemNumber.textContent = String(this.currentIndex + 1).padStart(2, '0');
   }
 
   _updateFeaturedBackground(progress, fromIndex = this.currentIndex, toIndex = mod(fromIndex + 1, this.items.length)) {
-    const art = this.root.querySelector('.cv3-featured__art');
-    if (!art) return;
-
-    const activeImage = art.querySelector('[data-featured-layer="active"]');
-    const incomingImage = art.querySelector('[data-featured-layer="incoming"]');
-    if (!activeImage || !incomingImage) return;
-
     const activeSrc = this.items[fromIndex].image;
     const incomingSrc = this.items[toIndex].image;
-    if (activeImage.getAttribute('src') !== activeSrc) activeImage.src = activeSrc;
-    if (incomingImage.getAttribute('src') !== incomingSrc) incomingImage.src = incomingSrc;
-    incomingImage.style.opacity = String(progress);
+    const imageLayers = [
+      {
+        active: this.root.querySelector('[data-featured-layer="active"]'),
+        incoming: this.root.querySelector('[data-featured-layer="incoming"]')
+      },
+      {
+        active: this.root.querySelector('[data-cv3-backdrop-layer="active"]'),
+        incoming: this.root.querySelector('[data-cv3-backdrop-layer="incoming"]')
+      }
+    ];
+
+    imageLayers.forEach(({ active, incoming }) => {
+      if (!active || !incoming) return;
+      if (active.getAttribute('src') !== activeSrc) active.src = activeSrc;
+      if (incoming.getAttribute('src') !== incomingSrc) incoming.src = incomingSrc;
+      incoming.style.opacity = String(progress);
+    });
+
+    const itemNumber = this.root.querySelector('[data-cv3-item-number]');
+    if (itemNumber) {
+      const activeIndex = progress > 0 ? toIndex : fromIndex;
+      itemNumber.textContent = String(activeIndex + 1).padStart(2, '0');
+    }
   }
 
   _positionWindows(smooth = false) {
@@ -412,16 +427,10 @@ export class CasesV3 {
           return;
         }
         gesture.dragging = true;
-        this._setImpulse(0);
         this.viewports.forEach(viewport => viewport.classList.add('is-dragging'));
       }
 
       const progress = -deltaX / gesture.strides[this.viewports.indexOf(gesture.source)];
-      const velocity = this._estimatePointerVelocity(gesture, event.timeStamp);
-      this._setImpulse(this._impulseSteps(
-        -velocity,
-        gesture.strides[this.viewports.indexOf(gesture.source)]
-      ));
       this.viewports.forEach((viewport, index) => {
         viewport.scrollLeft = gesture.startScrolls[index] + progress * gesture.strides[index];
         this._updateCarouselEdgePulse(viewport);
@@ -448,7 +457,6 @@ export class CasesV3 {
     const releaseTime = event.timeStamp;
     const velocity = cancelled ? 0 : -this._estimatePointerVelocity(gesture, releaseTime);
     const distance = this._momentumDistance(velocity, sourceStride);
-    this._setImpulse(distance / sourceStride);
     if (distance && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       this._startMomentum(gesture.source, sourceStride, distance);
       return;
@@ -491,11 +499,6 @@ export class CasesV3 {
   _momentumDistance(velocity, stride) {
     const steps = this._impulseSteps(velocity, stride);
     return steps * stride;
-  }
-
-  _setImpulse(steps) {
-    const output = this.root.querySelector('[data-cv3-impulse]');
-    if (output) output.value = `${steps >= 0 ? '+' : ''}${steps.toFixed(1)}`;
   }
 
   _startMomentum(source, sourceStride, distance) {

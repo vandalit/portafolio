@@ -448,12 +448,13 @@
   overflow: hidden;
   background: var(--bg-2, #0d0f18);
   cursor: grab;
+  touch-action: pan-y;
   outline: none;
   box-shadow: 0 0 0 1px var(--border-1), var(--shadow-xl);
   margin-bottom: clamp(3rem, 5vw, 4.5rem);
 }
 
-.cv2-stage:active { cursor: grabbing; }
+.cv2-stage--dragging { cursor: grabbing; }
 .cv2-stage:focus-visible { box-shadow: 0 0 0 2px var(--lime), var(--shadow-xl); }
 
 /* ── Background layer (covers 100% of the stage) ────────── */
@@ -618,6 +619,12 @@
   min-width: 0;
 }
 
+.cv2-strip__track--dragging .cv2-thumb {
+  transform: translateX(var(--cv2-drag-offset));
+  transition: none;
+  will-change: transform;
+}
+
 .cv2-strip__nav {
   display: flex;
   gap: var(--sp-2);
@@ -691,9 +698,16 @@
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity 300ms ease-out;
+  filter: grayscale(1);
+  transition: opacity 300ms ease-out, filter 380ms ease;
 }
 .cv2-thumb__img.is-loaded { opacity: 1; }
+
+/* Color only on active (hover / focus) — thumbnails are B&W by default */
+.cv2-thumb:hover .cv2-thumb__img,
+.cv2-thumb:focus-visible .cv2-thumb__img {
+  filter: grayscale(0);
+}
 
 .cv2-thumb__overlay {
   position: absolute;

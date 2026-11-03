@@ -37,6 +37,8 @@ export class CasesV2 {
 
     if (!this._stage) return; // guard: section not in DOM
 
+    this._firstRender = true;
+    this._stripAnimations = [];
     this._render();
     this._bind();
   }
@@ -105,9 +107,29 @@ export class CasesV2 {
 
   // ─── Strip thumbnails ─────────────────────────────────────────────────────
 
-  _renderStrip() {
+  _renderStrip(direction = 'next', previousIdx = null, isAdjacent = false) {
     const n   = this.n;
     const idx = this.idx;
+    let previousLayout = null;
+
+    if (previousIdx !== null) {
+      previousLayout = {
+        stageRect: this._stage.getBoundingClientRect(),
+        needleRect: this._track.querySelector('.cv2-needle')?.getBoundingClientRect(),
+        cards: new Map(
+          [...this._track.querySelectorAll('.cv2-thumb')].map(thumb => [
+            thumb.dataset.role,
+            {
+              element: thumb,
+              rect: thumb.getBoundingClientRect(),
+              opacity: getComputedStyle(thumb).opacity
+            }
+          ])
+        )
+      };
+      this._clearDragOffset();
+      this._cancelStripAnimations();
+    }
 
     // Exactamente 3 tarjetas visibles según requerimiento de diseño:
     // 1 a la izquierda del marcador (histórico/loop previo)
@@ -120,18 +142,19 @@ export class CasesV2 {
     const html =
       this._thumbHtml(prevIdx, 'prev') +
       this._needleHtml() +
-      this._thumbHtml(next1Idx, 'next') +
-      this._thumbHtml(next2Idx, 'next');
+      this._thumbHtml(next1Idx, 'next1') +
+      this._thumbHtml(next2Idx, 'next2');
 
     this._track.innerHTML = html;
 
-    // Bind thumb clicks
-    this._track.querySelectorAll('.cv2-thumb').forEach(el => {
-      el.addEventListener('click', () => {
-        const i = parseInt(el.dataset.idx, 10);
-        if (!isNaN(i)) this.goTo(i);
-      });
-    });
+    if (previousLayout && !this._firstRender) {
+      if (isAdjacent && previousLayout.needleRect) {
+        this._animateAdjacentStrip(direction, previousLayout);
+      } else {
+        this._animateDirectStrip(direction);
+      }
+    }
+    this._firstRender = false;
 
     // Lazy-load thumb images
     this._track.querySelectorAll('.cv2-thumb__img').forEach(img => {
@@ -141,6 +164,156 @@ export class CasesV2 {
         img.addEventListener('load', () => img.classList.add('is-loaded'), { once: true });
       }
     });
+  }
+
+  _animateAdjacentStrip(direction, previousLayout) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const nextCards = new Map(
+      [...this._track.querySelectorAll('.cv2-thumb')].map(thumb => [
+        thumb.dataset.role,
+        thumb
+      ])
+    );
+    const needle = previousLayout.needleRect;
+    const markerCenterX = needle.left + needle.width / 2;
+    const markerCenterY = needle.top + needle.height / 2 - 24;
+    const toFeaturedRole = direction === 'next' ? 'prev' : 'next1';
+    const fromFeaturedRole = direction === 'next' ? 'next1' : 'prev';
+    const departingRole = direction === 'next' ? 'prev' : 'next2';
+    const duration = 420;
+
+    const outgoingFeature = previousLayout.cards.get(fromFeaturedRole);
+    if (outgoingFeature) {
+      const start = outgoingFeature.rect;
+      const targetX = markerCenterX - (start.left + start.width / 2);
+      const targetY = markerCenterY - (start.top + start.height / 2);
+      this._animateGhost(outgoingFeature, previousLayout.stageRect, [
+        { transform: 'translate(0, 0) scale(1)', opacity: outgoingFeature.opacity },
+        { transform: `translate(${targetX}px, ${targetY}px) scale(0.52)`, opacity: 0 }
+      ], duration);
+    }
+
+    const departingCard = previousLayout.cards.get(departingRole);
+    if (departingCard) {
+      const start = departingCard.rect;
+      this._animateGhost(departingCard, previousLayout.stageRect, [
+        { transform: 'translate(0, 0) scale(1)', opacity: departingCard.opacity },
+        {
+          transform: `translate(${direction === 'next' ? -90 : 90}px, 0) scale(0.92)`,
+          opacity: 0
+        }
+      ], duration);
+    }
+
+    const moves = direction === 'next'
+      ? [['next2', 'next1']]
+      : [['next1', 'next2']];
+    moves.forEach(([fromRole, toRole]) => {
+      const from = previousLayout.cards.get(fromRole);
+      const to = nextCards.get(toRole);
+      if (from && to) this._animateFromRect(to, from.rect, duration);
+    });
+
+    const featuredCard = nextCards.get(toFeaturedRole);
+    if (featuredCard) {
+      const rect = featuredCard.getBoundingClientRect();
+      const targetOpacity = getComputedStyle(featuredCard).opacity;
+      this._playStripAnimation(featuredCard, [
+        {
+          transform: `translate(${markerCenterX - (rect.left + rect.width / 2)}px, ${markerCenterY - (rect.top + rect.height / 2)}px) scale(0.52)`,
+          transformOrigin: 'center center',
+          opacity: 0
+        },
+        { transform: 'translate(0, 0) scale(1)', transformOrigin: 'center center', opacity: targetOpacity }
+      ], duration);
+    }
+
+    const enteringRole = direction === 'next' ? 'next2' : 'prev';
+    const enteringCard = nextCards.get(enteringRole);
+    if (enteringCard) {
+      const offset = (enteringCard.getBoundingClientRect().width + 28) * (direction === 'next' ? 1 : -1);
+      this._playStripAnimation(enteringCard, [
+        { transform: `translateX(${offset}px) scale(0.94)`, opacity: 0 },
+        { transform: 'translateX(0) scale(1)', opacity: getComputedStyle(enteringCard).opacity }
+      ], duration);
+    }
+  }
+
+  _animateDirectStrip(direction) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const offset = direction === 'next' ? 36 : -36;
+    this._track.querySelectorAll('.cv2-thumb').forEach((thumb, index) => {
+      const opacity = getComputedStyle(thumb).opacity;
+      this._playStripAnimation(thumb, [
+        { transform: `translateX(${offset}px)`, opacity: 0 },
+        { transform: 'translateX(0)', opacity }
+      ], 360, index * 35);
+    });
+  }
+
+  _animateFromRect(element, fromRect, duration) {
+    const toRect = element.getBoundingClientRect();
+    const opacity = getComputedStyle(element).opacity;
+    this._playStripAnimation(element, [
+      {
+        transform: `translate(${fromRect.left - toRect.left}px, ${fromRect.top - toRect.top}px) scale(${fromRect.width / toRect.width}, ${fromRect.height / toRect.height})`,
+        transformOrigin: 'top left',
+        opacity
+      },
+      { transform: 'translate(0, 0) scale(1)', transformOrigin: 'top left', opacity }
+    ], duration);
+  }
+
+  _animateGhost(snapshot, stageRect, keyframes, duration) {
+    const ghost = snapshot.element.cloneNode(true);
+    const rect = snapshot.rect;
+    ghost.classList.add('cv2-thumb--ghost');
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.setAttribute('tabindex', '-1');
+    ghost.style.position = 'absolute';
+    ghost.style.left = `${rect.left - stageRect.left}px`;
+    ghost.style.top = `${rect.top - stageRect.top}px`;
+    ghost.style.width = `${rect.width}px`;
+    ghost.style.height = `${rect.height}px`;
+    ghost.style.margin = '0';
+    ghost.style.flex = 'none';
+    ghost.style.pointerEvents = 'none';
+    ghost.style.zIndex = '5';
+    this._stage.appendChild(ghost);
+    this._playStripAnimation(ghost, keyframes, duration, 0, () => ghost.remove());
+  }
+
+  _playStripAnimation(element, keyframes, duration, delay = 0, onFinish = null) {
+    element.style.willChange = 'transform, opacity';
+    const animation = element.animate(keyframes, {
+      duration,
+      delay,
+      easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)'
+    });
+    this._stripAnimations.push(animation);
+    animation.onfinish = () => {
+      animation.cancel();
+      element.style.willChange = '';
+      this._stripAnimations = this._stripAnimations.filter(item => item !== animation);
+      if (onFinish) onFinish();
+    };
+  }
+
+  _cancelStripAnimations() {
+    this._stripAnimations.forEach(animation => animation.cancel());
+    this._stripAnimations = [];
+    this._track.querySelectorAll('.cv2-thumb').forEach(thumb => {
+      thumb.style.willChange = '';
+    });
+    this._stage.querySelectorAll('.cv2-thumb--ghost').forEach(ghost => ghost.remove());
+  }
+
+  _clearDragOffset() {
+    this._track.classList.remove('cv2-strip__track--dragging');
+    this._track.style.removeProperty('--cv2-drag-offset');
+    this._stage.classList.remove('cv2-stage--dragging');
   }
 
   _thumbHtml(caseIdx, role) {
@@ -156,6 +329,7 @@ export class CasesV2 {
     return `
       <article
         class="cv2-thumb${roleClass}"
+        data-role="${role}"
         data-idx="${caseIdx}"
         role="listitem"
         aria-label="${name}"
@@ -212,16 +386,24 @@ export class CasesV2 {
 
   // ─── Orchestrate both panels ──────────────────────────────────────────────
 
-  _render() {
+  _render(direction, previousIdx = null, isAdjacent = false) {
     this._renderFeature();
-    this._renderStrip();
+    this._renderStrip(direction, previousIdx, isAdjacent);
   }
 
   // ─── Navigation ───────────────────────────────────────────────────────────
 
   goTo(i) {
-    this.idx = ((i % this.n) + this.n) % this.n;
-    this._render();
+    const targetIdx   = ((i % this.n) + this.n) % this.n;
+    if (targetIdx === this.idx) return;
+
+    const previousIdx = this.idx;
+    const forwardSteps = (targetIdx - this.idx + this.n) % this.n;
+    const direction   = forwardSteps <= this.n / 2 ? 'next' : 'prev';
+    const isAdjacent = targetIdx === (previousIdx + 1) % this.n
+      || targetIdx === (previousIdx - 1 + this.n) % this.n;
+    this.idx = targetIdx;
+    this._render(direction, previousIdx, isAdjacent);
   }
 
   next() { this.goTo(this.idx + 1); }
@@ -252,37 +434,91 @@ export class CasesV2 {
       }
     });
 
-    // Drag / swipe on stage
-    let dragStartX = null;
-    const DRAG_THRESHOLD = 50;
-
-    const onDragStart = e => {
-      dragStartX = e.type.startsWith('touch')
-        ? e.touches[0].clientX
-        : e.clientX;
-    };
-
-    const onDragEnd = e => {
-      if (dragStartX === null) return;
-      const endX = e.type.startsWith('touch')
-        ? (e.changedTouches[0]?.clientX ?? dragStartX)
-        : e.clientX;
-      const diff = endX - dragStartX;
-      dragStartX = null;
-      if (Math.abs(diff) < DRAG_THRESHOLD) return;
-      diff < 0 ? this.next() : this.prev();
-    };
-
-    this._stage.addEventListener('mousedown',  onDragStart);
-    this._stage.addEventListener('mouseup',    onDragEnd);
-    this._stage.addEventListener('touchstart', onDragStart, { passive: true });
-    this._stage.addEventListener('touchend',   onDragEnd,   { passive: true });
-
-    // Prevent drag from accidentally opening modals
-    this._stage.addEventListener('click', e => {
-      // allow clicks on .cv2-meta__cta (modal triggers) and thumbs
-      // suppress only if a drag occurred (dragStartX was nulled after a real swipe)
+    this._track.addEventListener('click', e => {
+      const thumb = e.target.closest('.cv2-thumb');
+      if (!thumb) return;
+      const index = Number.parseInt(thumb.dataset.idx, 10);
+      if (!Number.isNaN(index)) this.goTo(index);
     });
+
+    this._bindDrag();
+  }
+
+  _bindDrag() {
+    let pointer = null;
+    let suppressClick = false;
+    const DRAG_THRESHOLD = 50;
+    const INTENT_THRESHOLD = 6;
+    const suppressNextClick = () => {
+      suppressClick = true;
+    };
+
+    this._stage.addEventListener('pointerdown', e => {
+      suppressClick = false;
+      if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      if (e.target.closest('button, a, input, textarea, select, [contenteditable="true"]')) return;
+
+      pointer = {
+        id: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        isDragging: false
+      };
+    });
+
+    window.addEventListener('pointermove', e => {
+      if (!pointer || e.pointerId !== pointer.id) return;
+
+      const deltaX = e.clientX - pointer.startX;
+      const deltaY = e.clientY - pointer.startY;
+      if (!pointer.isDragging) {
+        if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < INTENT_THRESHOLD) return;
+        if (Math.abs(deltaY) >= Math.abs(deltaX)) {
+          pointer = null;
+          suppressNextClick();
+          return;
+        }
+        pointer.isDragging = true;
+      }
+
+      const offset = Math.max(-180, Math.min(180, deltaX));
+      this._track.style.setProperty('--cv2-drag-offset', `${offset}px`);
+      this._track.classList.add('cv2-strip__track--dragging');
+      this._stage.classList.add('cv2-stage--dragging');
+      e.preventDefault();
+    });
+
+    window.addEventListener('pointerup', e => {
+      if (!pointer || e.pointerId !== pointer.id) return;
+
+      const deltaX = e.clientX - pointer.startX;
+      const dragged = pointer.isDragging;
+      pointer = null;
+      if (!dragged) return;
+
+      suppressNextClick();
+
+      if (Math.abs(deltaX) >= DRAG_THRESHOLD) {
+        deltaX < 0 ? this.next() : this.prev();
+      } else {
+        this._clearDragOffset();
+      }
+    });
+
+    window.addEventListener('pointercancel', e => {
+      if (!pointer || e.pointerId !== pointer.id) return;
+      pointer = null;
+      this._clearDragOffset();
+    });
+
+    this._stage.addEventListener('click', e => {
+      if (!suppressClick) return;
+      suppressClick = false;
+      if (e.detail === 0) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }, true);
+
+    this._stage.addEventListener('dragstart', e => e.preventDefault());
   }
 }
-

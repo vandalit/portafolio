@@ -7,6 +7,7 @@ console.log('%c[Portafolio:Main] 🚀 main.js loaded', 'background: #080810; col
 import { HeroScene } from './three-scene.js';
 import { Carousel } from './carousel.js';
 import { CasesFeaturedCarousel } from './cases-featured-carousel.js';
+import { CasesV2 } from './cases-v2.js';
 import { CasesV3 } from './cases-v3.js';
 import { GridFilter } from './grid-filter.js';
 import { ProjectModal } from './project-modal.js';
@@ -1008,6 +1009,10 @@ async function init() {
           loop: true,
           timerVisible: true
         });
+      }
+
+      if (document.getElementById('cv2-stage')) {
+        window.__casesV2 = new CasesV2(projectsData.cases);
       }
 
       if (document.getElementById('cases-v3')) {
