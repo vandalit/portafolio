@@ -1,5 +1,9 @@
 const TONES = ['lime', 'magenta', 'blue', 'orange', 'violet', 'cyan'];
 const TRACK_COPIES = 5;
+const IMPULSE_FRICTION_MS = 360;
+const MAX_IMPULSE_STEPS = 6;
+const MIN_FLICK_SPEED = 0.22;
+const POINTER_SAMPLE_WINDOW_MS = 100;
 
 const mod = (value, length) => ((value % length) + length) % length;
 
@@ -23,6 +27,9 @@ export class CasesV3 {
     this._programmaticTimers = new WeakMap();
     this._scrollOrigins = new WeakMap();
     this._pointer = null;
+    this._momentumFrame = 0;
+    this._momentum = false;
+    this._momentumSource = null;
     this._featuredTransition = 0;
     this._featuredMorph = null;
     this._exitPulseDistance = Number.parseFloat(
@@ -120,6 +127,7 @@ export class CasesV3 {
 
   _goTo(step) {
     if (!Number.isInteger(step) || step === 0) return;
+    if (this._momentumFrame) this._cancelMomentum(true);
     const previousIndex = this.currentIndex;
     const previousAnchorSlot = this.anchorSlot;
     this.currentIndex = mod(this.currentIndex + step, this.items.length);
@@ -151,11 +159,13 @@ export class CasesV3 {
     const transitionId = ++this._featuredTransition;
     content.getAnimations().forEach(animation => animation.cancel());
     if (animate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      content.animate(
+      const fadeOut = content.animate(
         [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(8px)' }],
         { duration: 130, easing: 'ease-in', fill: 'forwards' }
-      ).onfinish = () => {
+      );
+      fadeOut.onfinish = () => {
         if (transitionId !== this._featuredTransition) return;
+        fadeOut.cancel();
         this._setFeaturedContent(item, featured, eyebrow, title, description);
         content.animate(
           [{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'translateY(0)' }],
@@ -193,12 +203,6 @@ export class CasesV3 {
 
   _positionWindows(smooth = false) {
     this.viewports.forEach((viewport, index) => {
-      if (viewport.closest('.cv3-carousel--compact')) {
-        viewport.querySelector('.cv3-carousel__track').style.setProperty(
-          '--cv3-compact-item-width',
-          `${Math.max(120, viewport.clientWidth - 20)}px`
-        );
-      }
       const slot = this.anchorSlot + (index === 0 ? -1 : 1);
       const item = viewport.querySelector(`.cv3-item[data-slot="${mod(slot, this.items.length * TRACK_COPIES)}"]`);
       if (!item) return;
@@ -212,10 +216,26 @@ export class CasesV3 {
       this._setWindowSlot(viewport, slot);
       this._scrollOrigins.set(viewport, target);
     });
-    this.viewports.forEach(viewport => this._updateLeftExitPulse(viewport));
+    this.viewports.forEach(viewport => this._updateCarouselEdgePulse(viewport));
   }
 
-  _updateLeftExitPulse(viewport) {
+  _updateCarouselEdgePulse(viewport) {
+    if (viewport.closest('.cv3-carousel--compact')) {
+      const clipRight = viewport.getBoundingClientRect().left
+        + viewport.clientLeft + viewport.clientWidth;
+      [...viewport.querySelectorAll('.cv3-item')].forEach(item => {
+        const rect = item.getBoundingClientRect();
+        const unscaledRight = rect.right + (item.offsetWidth - rect.width) / 2;
+        const visibility = Math.max(0, Math.min(1,
+          (clipRight - unscaledRight + this._exitPulseDistance) / this._exitPulseDistance
+        ));
+        const scale = this._exitPulseScale + (1 - this._exitPulseScale) * visibility;
+        item.style.setProperty('--cv3-right-edge-opacity', visibility.toFixed(3));
+        item.style.setProperty('--cv3-right-edge-scale', scale.toFixed(3));
+      });
+      return;
+    }
+
     if (!viewport.closest('.cv3-carousel--wide')) return;
 
     const clipLeft = viewport.getBoundingClientRect().left + viewport.clientLeft;
@@ -322,8 +342,8 @@ export class CasesV3 {
   }
 
   _onScroll(source) {
-    this._updateLeftExitPulse(source);
-    if (this._pointer || this._programmaticTimers.has(source)) return;
+    this._updateCarouselEdgePulse(source);
+    if (this._pointer || this._momentum || this._programmaticTimers.has(source)) return;
     window.clearTimeout(this._scrollTimers.get(source));
     this._scrollTimers.set(source, window.setTimeout(() => {
       const slot = this._nearestSlot(source);
@@ -359,8 +379,10 @@ export class CasesV3 {
   _bindPointerDrag() {
     this.viewports.forEach(viewport => {
       viewport.addEventListener('pointerdown', event => {
+        if (!event.target.closest('.cv3-item')) return;
         if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
         if (this._pointer) return;
+        this._cancelMomentum(false);
         this.viewports.forEach(item => this._cancelProgrammaticScroll(item));
 
         this._pointer = {
@@ -370,7 +392,8 @@ export class CasesV3 {
           startY: event.clientY,
           startScrolls: this.viewports.map(item => item.scrollLeft),
           strides: this.viewports.map(item => this._stride(item)),
-          dragging: false
+          dragging: false,
+          samples: [{ x: event.clientX, time: event.timeStamp }]
         };
       });
     });
@@ -381,6 +404,7 @@ export class CasesV3 {
 
       const deltaX = event.clientX - gesture.startX;
       const deltaY = event.clientY - gesture.startY;
+      this._recordPointerSample(gesture, event);
       if (!gesture.dragging) {
         if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < 5) return;
         if (Math.abs(deltaY) >= Math.abs(deltaX)) {
@@ -388,13 +412,19 @@ export class CasesV3 {
           return;
         }
         gesture.dragging = true;
+        this._setImpulse(0);
         this.viewports.forEach(viewport => viewport.classList.add('is-dragging'));
       }
 
       const progress = -deltaX / gesture.strides[this.viewports.indexOf(gesture.source)];
+      const velocity = this._estimatePointerVelocity(gesture, event.timeStamp);
+      this._setImpulse(this._impulseSteps(
+        -velocity,
+        gesture.strides[this.viewports.indexOf(gesture.source)]
+      ));
       this.viewports.forEach((viewport, index) => {
         viewport.scrollLeft = gesture.startScrolls[index] + progress * gesture.strides[index];
-        this._updateLeftExitPulse(viewport);
+        this._updateCarouselEdgePulse(viewport);
       });
       event.preventDefault();
     });
@@ -413,14 +443,111 @@ export class CasesV3 {
       return;
     }
 
-    const deltaX = event.clientX - gesture.startX;
     const sourceStride = gesture.strides[this.viewports.indexOf(gesture.source)];
-    const steps = cancelled ? 0 : Math.round(-deltaX / sourceStride);
+    if (!cancelled) this._recordPointerSample(gesture, event);
+    const releaseTime = event.timeStamp;
+    const velocity = cancelled ? 0 : -this._estimatePointerVelocity(gesture, releaseTime);
+    const distance = this._momentumDistance(velocity, sourceStride);
+    this._setImpulse(distance / sourceStride);
+    if (distance && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this._startMomentum(gesture.source, sourceStride, distance);
+      return;
+    }
+
+    this._settleDrag(gesture.source, cancelled);
+  }
+
+  _recordPointerSample(gesture, event) {
+    const samples = gesture.samples;
+    const time = event.timeStamp || performance.now();
+    const previous = samples[samples.length - 1];
+    if (Math.abs(event.clientX - previous.x) > 0.5) {
+      samples.push({ x: event.clientX, time });
+    }
+    while (samples.length > 2 && time - samples[1].time > POINTER_SAMPLE_WINDOW_MS) {
+      samples.shift();
+    }
+  }
+
+  _estimatePointerVelocity(gesture, releaseTime) {
+    const samples = gesture.samples;
+    const last = samples[samples.length - 1];
+    if (!last || releaseTime - last.time > POINTER_SAMPLE_WINDOW_MS) return 0;
+    const first = samples.find(sample => releaseTime - sample.time <= POINTER_SAMPLE_WINDOW_MS);
+    const elapsed = releaseTime - first.time;
+    if (!first || elapsed <= 0) return 0;
+    return (last.x - first.x) / elapsed;
+  }
+
+  _impulseSteps(velocity, stride) {
+    if (Math.abs(velocity) < MIN_FLICK_SPEED) return 0;
+    const distance = Math.max(
+      -stride * MAX_IMPULSE_STEPS,
+      Math.min(stride * MAX_IMPULSE_STEPS, velocity * IMPULSE_FRICTION_MS)
+    );
+    return distance / stride;
+  }
+
+  _momentumDistance(velocity, stride) {
+    const steps = this._impulseSteps(velocity, stride);
+    return steps * stride;
+  }
+
+  _setImpulse(steps) {
+    const output = this.root.querySelector('[data-cv3-impulse]');
+    if (output) output.value = `${steps >= 0 ? '+' : ''}${steps.toFixed(1)}`;
+  }
+
+  _startMomentum(source, sourceStride, distance) {
+    const startPositions = this.viewports.map(viewport => viewport.scrollLeft);
+    const strideRatios = this.viewports.map(viewport => this._stride(viewport) / sourceStride);
+    const startedAt = performance.now();
+    const maxDuration = IMPULSE_FRICTION_MS * 4;
+    this._momentum = true;
+    this._momentumSource = source;
+
+    const animate = now => {
+      const elapsed = Math.min(now - startedAt, maxDuration);
+      const traveled = distance * (1 - Math.exp(-elapsed / IMPULSE_FRICTION_MS));
+      this.viewports.forEach((viewport, index) => {
+        viewport.scrollLeft = startPositions[index] + traveled * strideRatios[index];
+        this._updateCarouselEdgePulse(viewport);
+      });
+
+      if (elapsed < maxDuration && Math.abs(distance - traveled) > 0.5) {
+        this._momentumFrame = window.requestAnimationFrame(animate);
+        return;
+      }
+
+      this._momentumFrame = 0;
+      this._momentum = false;
+      this._momentumSource = null;
+      this._settleDrag(source, false);
+    };
+
+    this._momentumFrame = window.requestAnimationFrame(animate);
+  }
+
+  _cancelMomentum(settle) {
+    if (!this._momentumFrame) return;
+    const source = this._momentumSource;
+    window.cancelAnimationFrame(this._momentumFrame);
+    this._momentumFrame = 0;
+    this._momentum = false;
+    this._momentumSource = null;
+    if (settle && source) this._settleDrag(source, false, false);
+  }
+
+  _settleDrag(source, cancelled, smooth = true) {
+    const previousSlot = Number(source.dataset.windowSlot);
+    const slot = cancelled ? previousSlot : this._nearestSlot(source);
+    const steps = slot - previousSlot;
+    this._setWindowSlot(source, slot);
     this.currentIndex = mod(this.currentIndex + steps, this.items.length);
     this.anchorSlot += steps;
     this._clearFeaturedMorph();
     this._updateFeatured(true);
-    this._positionWindows(true);
+    this._positionWindows(smooth);
     this._scheduleRecenter();
   }
 

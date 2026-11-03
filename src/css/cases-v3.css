@@ -1,6 +1,7 @@
 /* ── Cases V3: initial bento layout and linked mock carousels ── */
 .cases-v3 {
   --cv3-gap: clamp(14px, 2vw, 24px);
+  --cv3-card-width: clamp(190px, 24vw, 280px);
   --cv3-exit-pulse-distance: 100px;
   --cv3-exit-pulse-scale: 0.88;
 }
@@ -114,7 +115,7 @@
 
 .cv3-carousel-row {
   display: grid;
-  grid-template-columns: minmax(150px, 0.28fr) minmax(0, 1fr);
+  grid-template-columns: minmax(calc(var(--cv3-card-width) + 2px), 0.32fr) minmax(0, 1fr);
   gap: var(--cv3-gap);
   min-width: 0;
 }
@@ -125,9 +126,30 @@
 
 .cv3-carousel__controls {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
   padding-top: 10px;
+}
+
+.cv3-impulse {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-right: auto;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}
+
+.cv3-impulse output {
+  min-width: 3ch;
+  color: var(--lime);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 .cv3-carousel__button {
@@ -258,21 +280,24 @@
   cursor: grab;
 }
 
-.cv3-carousel--compact .cv3-item {
-  flex-basis: var(--cv3-compact-item-width, 180px);
-}
-
 .cv3-carousel--wide .cv3-carousel__viewport {
   cursor: grab;
 }
 
+.cv3-carousel--compact .cv3-item,
 .cv3-carousel--wide .cv3-item {
-  flex-basis: clamp(190px, 24vw, 280px);
+  flex-basis: var(--cv3-card-width);
 }
 
 .cv3-carousel--wide .cv3-item {
   opacity: var(--cv3-left-edge-opacity, 1);
   transform: scale(var(--cv3-left-edge-scale, 1));
+  transform-origin: center;
+}
+
+.cv3-carousel--compact .cv3-item {
+  opacity: var(--cv3-right-edge-opacity, 1);
+  transform: scale(var(--cv3-right-edge-scale, 1));
   transform-origin: center;
 }
 
