@@ -418,6 +418,416 @@
   transition: width var(--dur-slow) var(--ease-smooth);
 }
 
+/* ════════════════════════════════════════════════════════════
+   CASES V2 — Feature Stage + Strip Carousel
+   ════════════════════════════════════════════════════════════ */
+
+/* Section wrapper */
+.cases-v2 {
+  padding-block: var(--sp-16) var(--sp-12);
+}
+
+.cv2-header {
+  margin-bottom: var(--sp-8);
+}
+
+/* ── Full-width wrapper with configurable side padding (20px) ── */
+.cv2-wrapper {
+  width: 100%;
+  max-width: 100%;
+  padding-inline: 20px;
+  box-sizing: border-box;
+}
+
+/* ── Stage card (+200px height for generous breathing room) ── */
+.cv2-stage {
+  position: relative;
+  width: 100%;
+  height: clamp(720px, 80vh, 860px);
+  border-radius: clamp(22px, 2.8vw, 34px);
+  overflow: hidden;
+  background: var(--bg-2, #0d0f18);
+  cursor: grab;
+  outline: none;
+  box-shadow: 0 0 0 1px var(--border-1), var(--shadow-xl);
+  margin-bottom: clamp(3rem, 5vw, 4.5rem);
+}
+
+.cv2-stage:active { cursor: grabbing; }
+.cv2-stage:focus-visible { box-shadow: 0 0 0 2px var(--lime), var(--shadow-xl); }
+
+/* ── Background layer (covers 100% of the stage) ────────── */
+.cv2-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.cv2-bg__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 600ms var(--ease-out);
+}
+
+.cv2-bg__img.is-loaded { opacity: 1; }
+
+/* Cinematic vignette / readability gradient: transparent to bottom, dark to left */
+.cv2-bg__overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(8, 8, 16, 0.88) 0%,
+      rgba(8, 8, 16, 0.52) 48%,
+      rgba(8, 8, 16, 0.20) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(8, 8, 16, 0.20) 0%,
+      rgba(8, 8, 16, 0.20) 50%,
+      rgba(8, 8, 16, 0.82) 100%
+    );
+}
+
+/* Left accent strip */
+.cv2-bg__strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  transition: background 400ms ease;
+}
+
+/* ── Content layer ──────────────────────────────────────── */
+.cv2-content {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  grid-template-columns: 1fr auto;
+  padding: clamp(2.5rem, 4.5vw, 4.5rem);
+  padding-bottom: calc(210px + clamp(2rem, 3.5vw, 3.5rem));
+  pointer-events: none;
+}
+
+.cv2-content__tags {
+  grid-row: 1;
+  grid-column: 2;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-2);
+}
+
+.cv2-tag {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-1);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  padding: 3px var(--sp-3);
+  background: rgba(8, 8, 16, 0.6);
+  backdrop-filter: blur(6px);
+  transition: border-color 300ms ease;
+}
+
+.cv2-content__text {
+  grid-row: 2;
+  grid-column: 1;
+  pointer-events: auto;
+  align-self: end;
+  max-width: 58ch;
+}
+
+/* ── Feature text ───────────────────────────────────────── */
+.cv2-feat__eyebrow {
+  margin-bottom: var(--sp-3);
+  min-height: 1.4em;
+}
+
+.cv2-feat__title {
+  font-family: var(--font-display);
+  font-size: clamp(var(--text-3xl), 4.5vw, var(--text-5xl));
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--text-0);
+  margin-bottom: var(--sp-4);
+}
+
+.cv2-feat__desc {
+  font-size: var(--text-base);
+  font-weight: 300;
+  color: var(--text-1);
+  max-width: 50ch;
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--sp-5);
+}
+
+.cv2-feat__meta {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.cv2-meta__role {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-1);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  padding: 4px var(--sp-3);
+  letter-spacing: var(--tracking-wide);
+  background: rgba(8, 8, 16, 0.5);
+  transition: border-color 300ms ease;
+}
+
+/* ── Bottom carousel strip (floating inside stage, touches bottom) ── */
+.cv2-strip {
+  --cv2-card-h: clamp(165px, 20vh, 200px);
+  --cv2-card-mb: clamp(20px, 2.6vw, 36px);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: 0 clamp(24px, 3.5vw, 48px);
+  background: transparent;
+  border-top: none;
+}
+
+.cv2-strip__track {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(16px, 2vw, 28px);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.cv2-strip__nav {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  flex-shrink: 0;
+  /* Al nivel top de su carrusel para no montarse con el botón scrollup flotante */
+  margin-bottom: calc(var(--cv2-card-mb) + var(--cv2-card-h) - 46px);
+}
+
+.cv2-strip__btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--border-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-1);
+  background: rgba(8, 8, 16, 0.75);
+  backdrop-filter: blur(10px);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.cv2-strip__btn:hover {
+  border-color: var(--lime);
+  color: var(--lime);
+  background: var(--lime-fade, color-mix(in srgb, var(--lime) 15%, transparent));
+}
+
+/* ── Thumbnail cards (larger bentos / cards with enriched info) ── */
+.cv2-thumb {
+  flex: 0 1 clamp(270px, 26vw, 380px);
+  height: var(--cv2-card-h);
+  position: relative;
+  border-radius: clamp(18px, 2vw, 24px);
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(14, 16, 26, 0.78);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+  margin-bottom: var(--cv2-card-mb);
+  transition:
+    border-color 220ms ease,
+    transform 220ms ease,
+    opacity 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.cv2-thumb:hover {
+  border-color: rgba(255, 255, 255, 0.38);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65);
+}
+
+.cv2-thumb--prev {
+  opacity: 0.5;
+}
+.cv2-thumb--prev:hover {
+  opacity: 0.9;
+}
+
+.cv2-thumb__img-wrap {
+  position: absolute;
+  inset: 0;
+}
+
+.cv2-thumb__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}
+.cv2-thumb__img.is-loaded { opacity: 1; }
+
+.cv2-thumb__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(8, 8, 16, 0.94) 0%,
+    rgba(8, 8, 16, 0.48) 55%,
+    rgba(8, 8, 16, 0.20) 100%
+  );
+}
+
+.cv2-thumb__body {
+  position: absolute;
+  inset: 0;
+  padding: clamp(16px, 1.8vw, 22px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.cv2-thumb__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.cv2-thumb__cat {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wider);
+  font-weight: 600;
+}
+
+.cv2-thumb__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cv2-thumb__name {
+  font-family: var(--font-display);
+  font-size: clamp(var(--text-base), 1.35vw, var(--text-lg));
+  font-weight: 800;
+  color: var(--text-0);
+  line-height: 1.15;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cv2-thumb__sub {
+  font-size: var(--text-xs);
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+/* ── Needle marker (toca exactamente el bottom del frame) ── */
+.cv2-needle {
+  flex-shrink: 0;
+  width: clamp(28px, 2.5vw, 38px);
+  height: calc(var(--cv2-card-h) + var(--cv2-card-mb));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-bottom: 0; /* Toca el bottom del frame */
+  z-index: 4;
+}
+
+.cv2-needle__shape {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ── Responsive tweaks ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .cv2-wrapper {
+    padding-inline: 12px;
+  }
+
+  .cv2-stage {
+    height: clamp(620px, 90vh, 740px);
+    border-radius: var(--radius-lg);
+  }
+
+  .cv2-content {
+    grid-template-columns: 1fr;
+    padding: clamp(1.5rem, 3.5vw, 2rem);
+    padding-bottom: calc(150px + clamp(1.5rem, 3vw, 2rem));
+  }
+
+  .cv2-content__tags {
+    grid-column: 1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+
+  .cv2-feat__title {
+    font-size: clamp(var(--text-2xl), 6.5vw, var(--text-3xl));
+  }
+
+  .cv2-strip {
+    --cv2-card-h: 120px;
+    --cv2-card-mb: 14px;
+    padding: 0 clamp(12px, 2.5vw, 20px);
+    gap: var(--sp-2);
+  }
+
+  .cv2-thumb {
+    flex-basis: clamp(170px, 42vw, 230px);
+    border-radius: var(--radius-md);
+  }
+
+  .cv2-strip__nav {
+    margin-bottom: calc(var(--cv2-card-mb) + var(--cv2-card-h) - 40px);
+  }
+
+  .cv2-strip__btn {
+    width: 38px;
+    height: 38px;
+  }
+}
+
 /* ── SKILL CARD (apaisada) ───────────────────────────────── */
 .skill-card {
   flex: 0 0 clamp(280px, 38vw, 420px);

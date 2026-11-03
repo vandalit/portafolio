@@ -1,20 +1,53 @@
   <!-- ═══════════════════════════════════════════════════════
-       CASOS DE ESTUDIO (v2 — Refinada / Próximo Diseño)
+       CASOS DE ESTUDIO (v2 — Feature Stage + Strip Carousel)
   ══════════════════════════════════════════════════════════ -->
   <section id="cases-v2" class="cases-v2" aria-label="Casos de estudio v2">
     <div class="container">
-      <header class="section-header reveal">
-        <p id="cases-v2-eyebrow" class="eyebrow section-header__eyebrow">Proyectos seleccionados · <span style="color: var(--lime, #ccf020); font-weight: 600;">[v2 REFINED]</span></p>
-        <h2 id="cases-v2-title" class="section-header__title display">Casos de Estudio <small style="font-size: 0.4em; opacity: 0.6; vertical-align: middle;">(v2)</small></h2>
-        <p id="cases-v2-desc" class="section-header__desc">
-          Proyectos donde el brief fue el punto de partida, no el límite.
-        </p>
+      <header class="cv2-header section-header reveal">
+        <p class="eyebrow section-header__eyebrow">Proyectos seleccionados · <span style="color:var(--lime);font-weight:600">[v2 REFINED]</span></p>
+        <h2 class="section-header__title display">Casos de Estudio</h2>
+        <p class="section-header__desc">Proyectos donde el brief fue el punto de partida, no el límite.</p>
       </header>
-
-      <!-- Slot para el nuevo componente visual v2 (a ser definido) -->
-      <div id="cases-v2-stage" class="cases-v2__stage">
-        <!-- Espacio reservado para el nuevo componente visual v2 -->
-      </div>
     </div>
-  </section>
 
+    <!-- Wrapper dedicado: ancho completo con padding configurable por costado (20px) -->
+    <div class="cv2-wrapper">
+      <!-- Stage card (lienzo continuo con +200px de altura para aire y jerarquía) -->
+      <div class="cv2-stage" id="cv2-stage" tabindex="0" role="region" aria-label="Caso destacado">
+
+        <!-- Background layer (covers entire card area) -->
+        <div class="cv2-bg" aria-hidden="true">
+          <img class="cv2-bg__img" id="cv2-bg-img" src="" alt="" loading="eager" decoding="async">
+          <div class="cv2-bg__overlay"></div>
+          <div class="cv2-bg__strip" id="cv2-bg-strip"></div>
+        </div>
+
+        <!-- Content layer: tags top-right, text bottom-left -->
+        <div class="cv2-content" aria-live="polite" aria-atomic="true">
+          <div class="cv2-content__tags" id="cv2-tags" aria-label="Tags del proyecto"></div>
+          <div class="cv2-content__text">
+            <p class="cv2-feat__eyebrow" id="cv2-eyebrow"></p>
+            <h3 class="cv2-feat__title" id="cv2-title"></h3>
+            <p class="cv2-feat__desc" id="cv2-desc"></p>
+            <div class="cv2-feat__meta" id="cv2-meta"></div>
+          </div>
+        </div>
+
+        <!-- Floating bottom carousel strip: thumbnails (3 items) + needle marker + nav -->
+        <div class="cv2-strip" id="cv2-strip">
+          <div class="cv2-strip__track" id="cv2-strip-track" role="list" aria-label="Miniaturas de casos">
+            <!-- Populated by CasesV2 JS: [prev_thumb] [needle] [next_1] [next_2] -->
+          </div>
+          <div class="cv2-strip__nav" aria-label="Navegación de casos">
+            <button class="cv2-strip__btn" id="cv2-prev" aria-label="Caso anterior">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <button class="cv2-strip__btn" id="cv2-next" aria-label="Siguiente caso">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /cv2-stage -->
+    </div><!-- /cv2-wrapper -->
+  </section>

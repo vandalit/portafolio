@@ -7,6 +7,7 @@ console.log('%c[Portafolio:Main] 🚀 main.js loaded', 'background: #080810; col
 import { HeroScene } from './three-scene.js';
 import { Carousel } from './carousel.js';
 import { CasesFeaturedCarousel } from './cases-featured-carousel.js';
+import { CasesV2 } from './cases-v2.js';
 import { GridFilter } from './grid-filter.js';
 import { ProjectModal } from './project-modal.js';
 import { LabModal } from './lab-modal.js';
@@ -103,14 +104,14 @@ function renderFeatured(cases) {
 */
 
 // Mapa de niveles a porcentaje de relleno para el ojo en modal
-const LEVEL_PCT = { 
+const LEVEL_PCT = {
   '0': 0,
-  'avanzado': 95, 
-  'intermedio': 70, 
-  'basico': 40, 
-  'en-formacion': 20, 
-  'en-desarrollo': 20, 
-  'en-proceso': 20 
+  'avanzado': 95,
+  'intermedio': 70,
+  'basico': 40,
+  'en-formacion': 20,
+  'en-desarrollo': 20,
+  'en-proceso': 20
 };
 
 // Pills de card: máximo 6, nombres cortos del items[].name
@@ -436,10 +437,10 @@ function initSkillModal() {
 
   const backdrop = modal.querySelector('.skill-modal__backdrop');
   const closeBtn = modal.querySelector('.skill-modal__close');
-  const catEl    = modal.querySelector('.skill-modal__category');
-  const titleEl  = modal.querySelector('.skill-modal__title');
-  const descEl   = modal.querySelector('.skill-modal__desc');
-  const pillsEl  = modal.querySelector('.skill-modal__pills');
+  const catEl = modal.querySelector('.skill-modal__category');
+  const titleEl = modal.querySelector('.skill-modal__title');
+  const descEl = modal.querySelector('.skill-modal__desc');
+  const pillsEl = modal.querySelector('.skill-modal__pills');
 
   let eyeActive = false;
 
@@ -450,12 +451,12 @@ function initSkillModal() {
     const pillsHtml = items.map(item => {
       const levelPct = pct(item.level);
       const isAccumulative = levelPct === 0; // Sin nivel = acumulativa
-      
+
       // Si es acumulativa y el ojo está activo, usar stroke en lugar de fill
       const levelClass = withEye && !isAccumulative ? ` skill-pill--level` : '';
       const accumulativeClass = withEye && isAccumulative ? ` skill-pill--accumulative` : '';
       const style = withEye && !isAccumulative ? ` style="--level-pct:${levelPct}%"` : '';
-      
+
       return `<span class="skill-pill skill-pill--lg${levelClass}${accumulativeClass}"${style}>${item.name}</span>`;
     }).join('');
 
@@ -481,16 +482,16 @@ function initSkillModal() {
   function openSkillModal(skillData) {
     eyeActive = false;
     const accent = skillData.dots && skillData.dots[0] ? ({ autoral: 'magenta', desarrollo: 'lime', comercial: 'mango' }[skillData.dots[0]] || 'magenta') : 'magenta';
-    
+
     // Set accent attribute on modal for accumulative pills styling
     modal.dataset.accent = accent;
-    
+
     if (catEl) {
       catEl.textContent = skillData.technicalName?.toUpperCase() || skillData.title?.toUpperCase() || '';
       catEl.style.color = accent === 'magenta' ? 'var(--magenta)' : accent === 'lime' ? 'var(--lime)' : 'var(--mango)';
     }
     if (titleEl) titleEl.textContent = skillData.title || '';
-    if (descEl)  descEl.textContent  = skillData.description || '';
+    if (descEl) descEl.textContent = skillData.description || '';
     if (pillsEl) renderPills(skillData.items || [], false);
     modal.setAttribute('aria-hidden', 'false');
     modal.classList.add('is-open');
@@ -520,7 +521,7 @@ function initSkillModal() {
     } catch {
       // fallback: leer del DOM si el JSON falla
       const title = card.querySelector('.skill-card__title')?.textContent || '';
-      const desc  = card.querySelector('.skill-card__desc')?.textContent || '';
+      const desc = card.querySelector('.skill-card__desc')?.textContent || '';
       openSkillModal({ title, description: desc, items: [] });
     }
   });
@@ -529,7 +530,7 @@ function initSkillModal() {
 // ── SKILL LEGEND FILTER ───────────────────────────────────
 function initSkillLegendFilter(skillsCarouselInstance) {
   const legendItems = document.querySelectorAll('.skills-legend__item[data-dot]');
-  const clearBtn    = document.querySelector('.skills-legend__clear');
+  const clearBtn = document.querySelector('.skills-legend__clear');
   if (!legendItems.length) return;
 
   const cards = () => document.querySelectorAll('#skills-carousel .skill-card');
@@ -773,7 +774,7 @@ function initModal() {
       }
     } else {
       project = projectsData.cases?.find(c => c.id === id) ||
-                projectsData.clients?.find(c => c.id === id);
+        projectsData.clients?.find(c => c.id === id);
     }
 
     if (project) modalInstance.open(project);
@@ -983,7 +984,7 @@ async function init() {
       hydrateSiteSettings(siteSettings);
     }
     if (projectsData) {
-      // Casos de Estudio: usar componente sincronizado Featured + Carousel
+      // Casos de Estudio: usar componente sincronizado Featured + Carousel (v1 Legacy)
       if (projectsData.cases && projectsData.cases.length) {
         window.__casesFeaturedCarousel = new CasesFeaturedCarousel(projectsData.cases, {
           autoplaySpeed: 6000,
@@ -991,8 +992,13 @@ async function init() {
           loop: true,
           timerVisible: true
         });
+
+        // Casos de Estudio (v2 Feature Stage + Strip Carousel)
+        if (document.getElementById('cv2-stage')) {
+          window.__casesV2 = new CasesV2(projectsData.cases);
+        }
       }
-      
+
       renderSkillCards(projectsData.skills.categories || []);
       renderClientGrid(projectsData.clients);
       renderLabGrid(projectsData.lab);
@@ -1005,7 +1011,7 @@ async function init() {
           const img = new Image();
           img.decoding = 'async';
           img.src = src;
-          if (img.decode) img.decode().catch(() => {});
+          if (img.decode) img.decode().catch(() => { });
         });
       }
     }
