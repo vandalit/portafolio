@@ -7,7 +7,7 @@ console.log('%c[Portafolio:Main] 🚀 main.js loaded', 'background: #080810; col
 import { HeroScene } from './three-scene.js';
 import { Carousel } from './carousel.js';
 import { CasesFeaturedCarousel } from './cases-featured-carousel.js';
-import { CasesV2 } from './cases-v2.js';
+import { CasesV3 } from './cases-v3.js';
 import { GridFilter } from './grid-filter.js';
 import { ProjectModal } from './project-modal.js';
 import { LabModal } from './lab-modal.js';
@@ -598,7 +598,7 @@ function initNav() {
   const sectionLabels = {
     hero: 'OVERVIEW · INTRO',
     cases: 'CASOS DE ESTUDIO',
-    'cases-v2': 'CASOS DE ESTUDIO · V2',
+    'cases-v3': 'CASOS DE ESTUDIO · V3',
     skills: 'PERFIL TÉCNICO',
     work: 'TRABAJOS SELECCIONADOS',
     lab: 'LABORATORIO & LAB',
@@ -998,19 +998,20 @@ async function init() {
       hydrateSiteSettings(siteSettings);
     }
     if (projectsData) {
-      // Casos de Estudio: usar componente sincronizado Featured + Carousel (v1 Legacy)
-      if (projectsData.cases && projectsData.cases.length) {
+      // Mantener el carrusel legado disponible solo si su markup está presente.
+      if (projectsData.cases?.length
+        && document.getElementById('featured-case')
+        && document.getElementById('cases-carousel')) {
         window.__casesFeaturedCarousel = new CasesFeaturedCarousel(projectsData.cases, {
           autoplaySpeed: 6000,
           pauseOnHover: true,
           loop: true,
           timerVisible: true
         });
+      }
 
-        // Casos de Estudio (v2 Feature Stage + Strip Carousel)
-        if (document.getElementById('cv2-stage')) {
-          window.__casesV2 = new CasesV2(projectsData.cases);
-        }
+      if (document.getElementById('cases-v3')) {
+        window.__casesV3 = new CasesV3();
       }
 
       renderSkillCards(projectsData.skills.categories || []);
