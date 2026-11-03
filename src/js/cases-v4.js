@@ -4,6 +4,10 @@ const IMPULSE_FRICTION_MS = 360;
 const MAX_IMPULSE_STEPS = 6;
 const MIN_FLICK_SPEED = 0.22;
 const POINTER_SAMPLE_WINDOW_MS = 100;
+const DIVIDER_BOUNCE_DURATION_MS = 140;
+const DIVIDER_BOUNCE_COMPRESS = 0.9;
+const DIVIDER_BOUNCE_OVERSHOOT = 1.05;
+const DIVIDER_MAIN_BOUNCE_GROWTH = 1.05;
 
 const mod = (value, length) => ((value % length) + length) % length;
 
@@ -36,7 +40,16 @@ export class CasesV4 {
     this._featuredMorph = null;
     this._featuredBackgroundRequest = null;
     this._decodedFeaturedImages = new Map();
-    this._dividerReleaseTimer = 0;
+    this._dividerPendingScrolls = new Set();
+    this._dividerBoundaryPositions = {
+      compactRight: new WeakMap(),
+      wideLeft: new WeakMap(),
+      wideMidpoint: new WeakMap()
+    };
+    this._dividerBounceAnimations = new Map();
+    this._dividerBounceRunning = new Set();
+    this._dividerBounceRunIds = { main: 0, left: 0, right: 0 };
+    this._dividerReleasePending = false;
     this._exitPulseDistance = Number.parseFloat(
       getComputedStyle(root).getPropertyValue('--cv4-exit-pulse-distance')
     ) || 100;
@@ -85,6 +98,7 @@ export class CasesV4 {
   _bind() {
     this.viewports.forEach(viewport => {
       viewport.addEventListener('scroll', () => this._onScroll(viewport), { passive: true });
+      viewport.addEventListener('scrollend', () => this._onScrollEnd(viewport));
       viewport.addEventListener('pointerdown', () => {
         this._cancelProgrammaticScroll(viewport);
         this._clearFeaturedMorph();
@@ -189,7 +203,6 @@ export class CasesV4 {
     }
     this._updateFeatured(true);
     this._positionWindows(true);
-    this._releaseDividerAfter();
     this._scheduleRecenter();
   }
 
@@ -198,22 +211,90 @@ export class CasesV4 {
     const divider = this.root.querySelector('.cv4-divider');
     if (!divider) return;
 
-    window.clearTimeout(this._dividerReleaseTimer);
-    divider.dataset.direction = direction > 0 ? 'forward' : 'backward';
+    this._dividerPendingScrolls.clear();
+    this._dividerReleasePending = false;
+    const nextDirection = direction > 0 ? 'forward' : 'backward';
+    const directionChanged = divider.dataset.direction
+      && divider.dataset.direction !== nextDirection;
+    divider.dataset.direction = nextDirection;
     divider.classList.add('is-tracking');
+
+    if (directionChanged) {
+      ['left', 'right'].forEach(target => {
+        const animation = this._dividerBounceAnimations.get(target);
+        if (!animation) return;
+        animation.cancel();
+        this._dividerBounceAnimations.delete(target);
+        this._dividerBounceRunning.delete(target);
+        this._dividerBounceRunIds[target] += 1;
+      });
+    }
   }
 
   _releaseDividerMotion() {
-    window.clearTimeout(this._dividerReleaseTimer);
-    this._dividerReleaseTimer = 0;
+    this._dividerPendingScrolls.clear();
+    if (this._dividerBounceRunning.size) {
+      this._dividerReleasePending = true;
+      return;
+    }
+
+    this._finishDividerMotion();
+  }
+
+  _finishDividerMotion() {
+    this._dividerReleasePending = false;
     const divider = this.root.querySelector('.cv4-divider');
     divider?.classList.remove('is-tracking');
     divider?.removeAttribute('data-direction');
   }
 
-  _releaseDividerAfter(delay = 10) {
-    window.clearTimeout(this._dividerReleaseTimer);
-    this._dividerReleaseTimer = window.setTimeout(() => this._releaseDividerMotion(), delay);
+  _queueDividerBounce(target, count) {
+    if (!count || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const divider = this.root.querySelector('.cv4-divider');
+    if (!divider?.classList.contains('is-tracking')) return;
+
+    this._dividerReleasePending = false;
+    this._playDividerBounce(target);
+  }
+
+  _playDividerBounce(target) {
+    const divider = this.root.querySelector('.cv4-divider');
+    if (!divider?.classList.contains('is-tracking')) return;
+
+    this._dividerBounceAnimations.get(target)?.cancel();
+    this._dividerBounceRunning.add(target);
+    const runId = ++this._dividerBounceRunIds[target];
+    const element = target === 'main'
+      ? divider.querySelector('.cv4-divider__bar--main')
+      : divider.querySelector(`.cv4-divider__bar--${target}`);
+    const direction = divider.dataset.direction;
+    const sideScale = direction === 'forward'
+      ? { left: 1.1, right: 0.9 }
+      : { left: 0.9, right: 1.1 };
+    const multipliers = target === 'main'
+      ? [1, 0.98, DIVIDER_MAIN_BOUNCE_GROWTH, 1]
+      : [1, DIVIDER_BOUNCE_COMPRESS, DIVIDER_BOUNCE_OVERSHOOT, 1];
+    const offsets = [0, 0.35, 0.68, 1];
+    const baselineScale = target === 'main' ? 1 : sideScale[target];
+    const animation = element.animate(
+      multipliers.map((factor, index) => ({
+        transform: target === 'main'
+          ? `translate(-50%, -50%) scaleY(${factor})`
+          : `translateY(-50%) scaleY(${baselineScale * factor})`,
+        offset: offsets[index]
+      })),
+      { duration: DIVIDER_BOUNCE_DURATION_MS, easing: 'ease-out' }
+    );
+    this._dividerBounceAnimations.set(target, animation);
+
+    animation.finished.catch(() => {}).then(() => {
+      if (runId !== this._dividerBounceRunIds[target]) return;
+      this._dividerBounceAnimations.delete(target);
+      this._dividerBounceRunning.delete(target);
+      if (this._dividerReleasePending && !this._dividerBounceRunning.size) {
+        this._finishDividerMotion();
+      }
+    });
   }
 
   _updateFeatured(animate) {
@@ -346,6 +427,7 @@ export class CasesV4 {
   }
 
   _positionWindows(smooth = false) {
+    this._dividerPendingScrolls.clear();
     this.viewports.forEach((viewport, index) => {
       const slot = this.anchorSlot + (index === 0 ? -1 : 1);
       const item = viewport.querySelector(`.cv4-item[data-slot="${mod(slot, this.items.length * TRACK_COPIES)}"]`);
@@ -356,20 +438,30 @@ export class CasesV4 {
       const trackPadding = parseFloat(getComputedStyle(item.parentElement).paddingLeft) || 0;
       const inset = viewport.clientLeft + trackPadding;
       const target = Math.max(0, viewport.scrollLeft + itemRect.left - viewportRect.left - inset);
-      this._scrollTo(viewport, target, smooth);
+      if (this._scrollTo(viewport, target, smooth)) this._dividerPendingScrolls.add(viewport);
       this._setWindowSlot(viewport, slot);
       this._scrollOrigins.set(viewport, target);
     });
     this.viewports.forEach(viewport => this._updateCarouselEdgePulse(viewport));
+    if (!this._dividerPendingScrolls.size && !this._pointer && !this._momentum && !this._wheelSource) {
+      this._releaseDividerMotion();
+    }
   }
 
   _updateCarouselEdgePulse(viewport) {
     if (viewport.closest('.cv4-carousel--compact')) {
       const clipRight = viewport.getBoundingClientRect().left
         + viewport.clientLeft + viewport.clientWidth;
+      let boundaryCrossings = 0;
       [...viewport.querySelectorAll('.cv4-item')].forEach(item => {
         const rect = item.getBoundingClientRect();
         const unscaledRight = rect.right + (item.offsetWidth - rect.width) / 2;
+        const previousRight = this._dividerBoundaryPositions.compactRight.get(item);
+        if (previousRight !== undefined
+          && (previousRight < clipRight) !== (unscaledRight < clipRight)) {
+          boundaryCrossings += 1;
+        }
+        this._dividerBoundaryPositions.compactRight.set(item, unscaledRight);
         const visibility = Math.max(0, Math.min(1,
           (clipRight - unscaledRight + this._exitPulseDistance) / this._exitPulseDistance
         ));
@@ -377,6 +469,7 @@ export class CasesV4 {
         item.style.setProperty('--cv4-right-edge-opacity', visibility.toFixed(3));
         item.style.setProperty('--cv4-right-edge-scale', scale.toFixed(3));
       });
+      // this._queueDividerBounce('left', boundaryCrossings);
       return;
     }
 
@@ -384,9 +477,26 @@ export class CasesV4 {
 
     const clipLeft = viewport.getBoundingClientRect().left + viewport.clientLeft;
     const controlMorph = this._featuredMorph?.kind === 'control' ? this._featuredMorph : null;
+    let rightBoundaryCrossings = 0;
+    let centerBoundaryCrossings = 0;
     const items = [...viewport.querySelectorAll('.cv4-item')].map(item => {
       const rect = item.getBoundingClientRect();
       const unscaledLeft = rect.left - (item.offsetWidth - rect.width) / 2;
+      const previousLeft = this._dividerBoundaryPositions.wideLeft.get(item);
+      const previousMidpointPosition = this._dividerBoundaryPositions.wideMidpoint.get(item);
+      if (previousLeft !== undefined) {
+        if ((previousLeft < clipLeft) !== (unscaledLeft < clipLeft)) {
+          rightBoundaryCrossings += 1;
+        }
+      }
+      const midpointBoundary = clipLeft - this._exitPulseDistance / 2;
+      const currentMidpointPosition = unscaledLeft < midpointBoundary;
+      if (previousMidpointPosition !== undefined
+        && previousMidpointPosition !== currentMidpointPosition) {
+        centerBoundaryCrossings += 1;
+      }
+      this._dividerBoundaryPositions.wideLeft.set(item, unscaledLeft);
+      this._dividerBoundaryPositions.wideMidpoint.set(item, currentMidpointPosition);
       const visibility = Math.max(0, Math.min(1,
         (unscaledLeft - clipLeft + this._exitPulseDistance) / this._exitPulseDistance
       ));
@@ -400,6 +510,8 @@ export class CasesV4 {
       };
     });
 
+    // this._queueDividerBounce('right', rightBoundaryCrossings);
+    // this._queueDividerBounce('main', centerBoundaryCrossings);
     items.forEach(({ item, opacity, scale }) => {
       item.style.setProperty('--cv4-left-edge-opacity', opacity.toFixed(3));
       item.style.setProperty('--cv4-left-edge-scale', scale.toFixed(3));
@@ -467,6 +579,12 @@ export class CasesV4 {
   }
 
   _scrollTo(viewport, left, smooth = true) {
+    const shouldScroll = Math.abs(viewport.scrollLeft - left) > 0.5;
+    if (!shouldScroll) {
+      this._cancelProgrammaticScroll(viewport);
+      return false;
+    }
+
     const behavior = smooth && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
       ? 'smooth'
       : 'auto';
@@ -478,6 +596,7 @@ export class CasesV4 {
       () => this._programmaticTimers.delete(viewport),
       behavior === 'smooth' ? 500 : 120
     ));
+    return true;
   }
 
   _cancelProgrammaticScroll(viewport) {
@@ -506,7 +625,6 @@ export class CasesV4 {
       this._clearFeaturedMorph();
       this._updateFeatured(true);
       this._positionWindows(true);
-      this._releaseDividerAfter();
       this._scheduleRecenter();
     }, 140));
   }
@@ -532,8 +650,14 @@ export class CasesV4 {
     this._clearFeaturedMorph();
     this._updateFeatured(true);
     this._positionWindows(true);
-    this._releaseDividerAfter();
     this._scheduleRecenter();
+  }
+
+  _onScrollEnd(source) {
+    this._cancelProgrammaticScroll(source);
+    if (!this._dividerPendingScrolls.delete(source)) return;
+    if (this._dividerPendingScrolls.size || this._pointer || this._momentum || this._wheelSource) return;
+    this._releaseDividerMotion();
   }
 
   _nearestSlot(viewport) {
@@ -713,7 +837,6 @@ export class CasesV4 {
     this._clearFeaturedMorph();
     this._updateFeatured(true);
     this._positionWindows(smooth);
-    this._releaseDividerAfter(smooth ? 10 : 0);
     this._scheduleRecenter();
   }
 
