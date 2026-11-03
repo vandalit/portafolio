@@ -149,6 +149,7 @@
   gap: var(--sp-4);
   justify-content: flex-end;
   padding: 0 var(--sp-2);
+  margin-bottom: var(--sp-4);
 }
 
 .cases-system__nav {
@@ -175,9 +176,10 @@
 /* ── FEATURED CASE (Destacado) ───────────────────────────── */
 .featured-case {
   position: relative;
-  height: clamp(420px, 55vw, 580px);
+  height: clamp(360px, 50vw, 520px);
   overflow: hidden;
   border-radius: var(--radius-md);
+  margin-bottom: clamp(3rem, 5vw, 4.5rem);
   cursor: pointer;
   background-color: #121520;
   contain: content;
@@ -263,12 +265,12 @@
   flex-wrap: wrap;
 }
 
-/* ── CASE STUDY CARD (Carousel compacto) ─────────────────── */
+/* ── CASE STUDY CARD (Carousel) ──────────────────────────── */
 .case-card {
   position: relative;
-  flex: 0 0 clamp(200px, 28vw, 320px);
-  height: clamp(140px, 18vw, 200px);
-  border-radius: var(--radius-sm);
+  flex: 0 0 clamp(280px, 36vw, 440px);
+  height: clamp(220px, 26vw, 320px);
+  border-radius: var(--radius-md);
   overflow: hidden;
   cursor: pointer;
   contain: content;
@@ -278,15 +280,14 @@
 }
 
 .case-card:not(.is-active) {
-  opacity: 0.5;
-  transform: scale(0.94);
+  opacity: 0.6;
+  transform: scale(0.96);
 }
 
 .case-card.is-active {
   opacity: 1;
   transform: scale(1);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-  border: 1px solid var(--border-2);
+  box-shadow: var(--shadow-xl);
 }
 
 .case-card__img {
@@ -348,7 +349,7 @@
   flex-wrap: wrap;
 }
 
-/* ── CAROUSEL WRAPPER (Compacto para cases) ──────────────── */
+/* ── CAROUSEL WRAPPER ────────────────────────────────────── */
 .carousel-wrapper {
   position: relative;
 }
@@ -359,7 +360,7 @@
 
 .carousel-track {
   display: flex;
-  gap: var(--sp-4);
+  gap: var(--grid-gap);
   cursor: grab;
   user-select: none;
   transform: translateZ(0);
@@ -371,8 +372,8 @@
 
 /* Botones de navegación reutilizables */
 .carousel-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid var(--border-2);
   display: flex;
@@ -384,15 +385,19 @@
 }
 
 .carousel-btn:hover {
-  border-color: var(--lime);
-  color: var(--lime);
-  background: rgba(184, 224, 48, 0.1);
+  border-color: var(--magenta);
+  color: var(--magenta);
+  background: var(--magenta-fade);
 }
 
 /* Controles legacy (para otros carouseles si existen) */
 .carousel-controls {
   display: flex;
   align-items: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-8);
+  justify-content: flex-end;
+}
   gap: var(--sp-4);
   margin-top: var(--sp-8);
   justify-content: flex-end;
