@@ -1,27 +1,30 @@
-const MOCK_ITEMS = [
-  { id: 'case-01', title: 'Identidad en movimiento', category: 'Branding', tone: 'lime' },
-  { id: 'case-02', title: 'Una nueva perspectiva', category: 'Digital', tone: 'magenta' },
-  { id: 'case-03', title: 'Formas de conectar', category: 'Experiencia', tone: 'blue' },
-  { id: 'case-04', title: 'Materia y memoria', category: 'Editorial', tone: 'orange' },
-  { id: 'case-05', title: 'Sistema abierto', category: 'Design system', tone: 'violet' },
-  { id: 'case-06', title: 'Señales del futuro', category: 'Interacción', tone: 'cyan' }
-];
+const TONES = ['lime', 'magenta', 'blue', 'orange', 'violet', 'cyan'];
 const TRACK_COPIES = 5;
 
 const mod = (value, length) => ((value % length) + length) % length;
 
 export class CasesV3 {
-  constructor(root = document.getElementById('cases-v3')) {
-    if (!root) return;
+  constructor(cases, root = document.getElementById('cases-v3')) {
+    if (!root || !cases?.length) {
+      console.warn('[CasesV3] Missing root element or case study data');
+      return;
+    }
 
     this.root = root;
+    this.items = cases.map((item, index) => ({
+      ...item,
+      image: item.cover || item.coverPlaceholder || '',
+      tone: TONES[index % TONES.length]
+    }));
     this.viewports = [...root.querySelectorAll('.cv3-carousel__viewport')];
     this.currentIndex = 0;
-    this.anchorSlot = MOCK_ITEMS.length * 2 + this.currentIndex;
+    this.anchorSlot = this.items.length * 2 + this.currentIndex;
     this._scrollTimers = new WeakMap();
     this._programmaticTimers = new WeakMap();
+    this._scrollOrigins = new WeakMap();
     this._pointer = null;
     this._featuredTransition = 0;
+    this._featuredMorph = null;
     this._exitPulseDistance = Number.parseFloat(
       getComputedStyle(root).getPropertyValue('--cv3-exit-pulse-distance')
     ) || 100;
@@ -40,17 +43,18 @@ export class CasesV3 {
       if (!track) return;
 
       track.innerHTML = Array.from({ length: TRACK_COPIES }, (_, copy) =>
-        MOCK_ITEMS.map((item, index) => `
+        this.items.map((item, index) => `
           <article
             class="cv3-item"
             data-item-id="${item.id}"
             data-index="${index}"
-            data-slot="${copy * MOCK_ITEMS.length + index}"
+            data-slot="${copy * this.items.length + index}"
             data-tone="${item.tone}"
             role="listitem"
             aria-hidden="${copy !== 2}"
             aria-label="${item.title}, ${item.category}"
           >
+            <img class="cv3-item__image" alt="" aria-hidden="true" loading="lazy" decoding="async">
             <span class="cv3-item__index">${String(index + 1).padStart(2, '0')}</span>
             <div class="cv3-item__copy">
               <span class="cv3-item__category">${item.category}</span>
@@ -59,14 +63,24 @@ export class CasesV3 {
           </article>
         `).join('')
       ).join('');
+
+      track.querySelectorAll('.cv3-item__image').forEach(image => {
+        image.src = this.items[Number(image.closest('.cv3-item').dataset.index)].image;
+      });
     });
   }
 
   _bind() {
     this.viewports.forEach(viewport => {
       viewport.addEventListener('scroll', () => this._onScroll(viewport), { passive: true });
-      viewport.addEventListener('pointerdown', () => this._cancelProgrammaticScroll(viewport));
-      viewport.addEventListener('wheel', () => this._cancelProgrammaticScroll(viewport), { passive: true });
+      viewport.addEventListener('pointerdown', () => {
+        this._cancelProgrammaticScroll(viewport);
+        this._clearFeaturedMorph();
+      });
+      viewport.addEventListener('wheel', () => {
+        this._cancelProgrammaticScroll(viewport);
+        this._clearFeaturedMorph();
+      }, { passive: true });
       viewport.addEventListener('keydown', event => {
         if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
         event.preventDefault();
@@ -84,17 +98,49 @@ export class CasesV3 {
     window.addEventListener('resize', () => this._positionWindows(false));
   }
 
+  _clearFeaturedMorph() {
+    window.clearTimeout(this._featuredMorphTimer);
+    this._featuredMorph = null;
+    this._updateFeaturedBackground(0);
+  }
+
+  _beginFeaturedMorph(direction, fromIndex = this.currentIndex, anchorSlot = this.anchorSlot) {
+    const step = Math.sign(direction);
+    if (!step) return;
+
+    window.clearTimeout(this._featuredMorphTimer);
+    this._featuredMorph = {
+      kind: 'control',
+      direction: step,
+      fromIndex,
+      toIndex: mod(fromIndex + step, this.items.length),
+      slot: mod(anchorSlot + (step > 0 ? 1 : 0), this.items.length * TRACK_COPIES)
+    };
+  }
+
   _goTo(step) {
     if (!Number.isInteger(step) || step === 0) return;
-    this.currentIndex = mod(this.currentIndex + step, MOCK_ITEMS.length);
+    const previousIndex = this.currentIndex;
+    const previousAnchorSlot = this.anchorSlot;
+    this.currentIndex = mod(this.currentIndex + step, this.items.length);
     this.anchorSlot += step;
+    window.clearTimeout(this._featuredMorphTimer);
+    this._featuredMorph = null;
+    if (Math.abs(step) === 1) {
+      this._beginFeaturedMorph(step, previousIndex, previousAnchorSlot);
+      const morph = this._featuredMorph;
+      this._featuredMorphTimer = window.setTimeout(() => {
+        if (this._featuredMorph !== morph) return;
+        this._clearFeaturedMorph();
+      }, 550);
+    }
     this._updateFeatured(true);
     this._positionWindows(true);
     this._scheduleRecenter();
   }
 
   _updateFeatured(animate) {
-    const item = MOCK_ITEMS[this.currentIndex];
+    const item = this.items[this.currentIndex];
     const content = this.root.querySelector('.cv3-featured__content');
     const featured = this.root.querySelector('.cv3-featured');
     const eyebrow = this.root.querySelector('.cv3-featured__eyebrow');
@@ -130,6 +176,21 @@ export class CasesV3 {
     description.textContent = `Contenido de muestra para ${item.title}.`;
   }
 
+  _updateFeaturedBackground(progress, fromIndex = this.currentIndex, toIndex = mod(fromIndex + 1, this.items.length)) {
+    const art = this.root.querySelector('.cv3-featured__art');
+    if (!art) return;
+
+    const activeImage = art.querySelector('[data-featured-layer="active"]');
+    const incomingImage = art.querySelector('[data-featured-layer="incoming"]');
+    if (!activeImage || !incomingImage) return;
+
+    const activeSrc = this.items[fromIndex].image;
+    const incomingSrc = this.items[toIndex].image;
+    if (activeImage.getAttribute('src') !== activeSrc) activeImage.src = activeSrc;
+    if (incomingImage.getAttribute('src') !== incomingSrc) incomingImage.src = incomingSrc;
+    incomingImage.style.opacity = String(progress);
+  }
+
   _positionWindows(smooth = false) {
     this.viewports.forEach((viewport, index) => {
       if (viewport.closest('.cv3-carousel--compact')) {
@@ -139,16 +200,17 @@ export class CasesV3 {
         );
       }
       const slot = this.anchorSlot + (index === 0 ? -1 : 1);
-      const item = viewport.querySelector(`.cv3-item[data-slot="${mod(slot, MOCK_ITEMS.length * TRACK_COPIES)}"]`);
+      const item = viewport.querySelector(`.cv3-item[data-slot="${mod(slot, this.items.length * TRACK_COPIES)}"]`);
       if (!item) return;
 
       const viewportRect = viewport.getBoundingClientRect();
       const itemRect = item.getBoundingClientRect();
       const trackPadding = parseFloat(getComputedStyle(item.parentElement).paddingLeft) || 0;
       const inset = viewport.clientLeft + trackPadding;
-      const target = viewport.scrollLeft + itemRect.left - viewportRect.left - inset;
-      this._scrollTo(viewport, Math.max(0, target), smooth);
+      const target = Math.max(0, viewport.scrollLeft + itemRect.left - viewportRect.left - inset);
+      this._scrollTo(viewport, target, smooth);
       this._setWindowSlot(viewport, slot);
+      this._scrollOrigins.set(viewport, target);
     });
     this.viewports.forEach(viewport => this._updateLeftExitPulse(viewport));
   }
@@ -157,19 +219,20 @@ export class CasesV3 {
     if (!viewport.closest('.cv3-carousel--wide')) return;
 
     const clipLeft = viewport.getBoundingClientRect().left + viewport.clientLeft;
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const controlMorph = this._featuredMorph?.kind === 'control' ? this._featuredMorph : null;
     const items = [...viewport.querySelectorAll('.cv3-item')].map(item => {
       const rect = item.getBoundingClientRect();
       const unscaledLeft = rect.left - (item.offsetWidth - rect.width) / 2;
-      const progress = reducedMotion
-        ? 1
-        : Math.round(Math.max(0, Math.min(1,
-          (unscaledLeft - clipLeft + this._exitPulseDistance) / this._exitPulseDistance
-        )) * 100) / 100;
+      const visibility = Math.max(0, Math.min(1,
+        (unscaledLeft - clipLeft + this._exitPulseDistance) / this._exitPulseDistance
+      ));
+      if (controlMorph && Number(item.dataset.slot) === controlMorph.slot) {
+        controlMorph.progress = controlMorph.direction > 0 ? 1 - visibility : visibility;
+      }
       return {
         item,
-        opacity: progress,
-        scale: this._exitPulseScale + (1 - this._exitPulseScale) * progress
+        opacity: visibility,
+        scale: this._exitPulseScale + (1 - this._exitPulseScale) * visibility
       };
     });
 
@@ -177,12 +240,62 @@ export class CasesV3 {
       item.style.setProperty('--cv3-left-edge-opacity', opacity.toFixed(3));
       item.style.setProperty('--cv3-left-edge-scale', scale.toFixed(3));
     });
+    if (controlMorph) {
+      this._updateFeaturedBackground(
+        controlMorph.progress,
+        controlMorph.fromIndex,
+        controlMorph.toIndex
+      );
+      return;
+    }
+
+    // Measure against the settled position so each crossed pulse stays reversible.
+    const origin = this._scrollOrigins.get(viewport) ?? viewport.scrollLeft;
+    const displacement = viewport.scrollLeft - origin;
+    const stride = this._stride(viewport);
+    const totalSlots = this.items.length * TRACK_COPIES;
+    const clampProgress = value => Math.max(0, Math.min(1, value));
+
+    if (displacement >= 0) {
+      const firstSlot = mod(this.anchorSlot + 1, totalSlots);
+      const firstItem = viewport.querySelector(`.cv3-item[data-slot="${firstSlot}"]`);
+      if (!firstItem) return;
+      const rect = firstItem.getBoundingClientRect();
+      const initialLeft = rect.left - (firstItem.offsetWidth - rect.width) / 2
+        - clipLeft + displacement;
+      const completed = Math.max(0, Math.floor(
+        (displacement - initialLeft - this._exitPulseDistance) / stride
+      ) + 1);
+      const slot = mod(this.anchorSlot + 1 + completed, totalSlots);
+      const toIndex = mod(slot, this.items.length);
+      const progress = clampProgress(
+        (displacement - initialLeft - completed * stride) / this._exitPulseDistance
+      );
+      this._updateFeaturedBackground(progress, mod(toIndex - 1, this.items.length), toIndex);
+      return;
+    }
+
+    const firstSlot = mod(this.anchorSlot, totalSlots);
+    const firstItem = viewport.querySelector(`.cv3-item[data-slot="${firstSlot}"]`);
+    if (!firstItem) return;
+    const rect = firstItem.getBoundingClientRect();
+    const initialLeft = rect.left - (firstItem.offsetWidth - rect.width) / 2
+      - clipLeft + displacement;
+    const distance = -displacement;
+    const completed = Math.max(0, Math.floor((distance + initialLeft) / stride) + 1);
+    const slot = mod(this.anchorSlot - completed, totalSlots);
+    const toIndex = mod(slot - 1, this.items.length);
+    const progress = clampProgress(
+      (distance + initialLeft - completed * stride + this._exitPulseDistance)
+        / this._exitPulseDistance
+    );
+    this._updateFeaturedBackground(progress, mod(toIndex + 1, this.items.length), toIndex);
   }
 
   _stride(viewport) {
     const items = viewport.querySelectorAll('.cv3-item');
-    if (items.length < 2) return items[0]?.getBoundingClientRect().width || 1;
-    return items[1].getBoundingClientRect().left - items[0].getBoundingClientRect().left;
+    if (items.length < 2) return items[0]?.offsetWidth || 1;
+    return items[1].offsetLeft - items[0].offsetLeft;
   }
 
   _setWindowSlot(viewport, slot) {
@@ -216,11 +329,15 @@ export class CasesV3 {
       const slot = this._nearestSlot(source);
       const previousSlot = Number(source.dataset.windowSlot);
       const step = slot - previousSlot;
-      if (!step) return;
+      if (!step) {
+        this._clearFeaturedMorph();
+        return;
+      }
 
       this._setWindowSlot(source, slot);
       this.anchorSlot += step;
-      this.currentIndex = mod(this.currentIndex + step, MOCK_ITEMS.length);
+      this.currentIndex = mod(this.currentIndex + step, this.items.length);
+      this._clearFeaturedMorph();
       this._updateFeatured(true);
       this._positionWindows(true);
       this._scheduleRecenter();
@@ -291,13 +408,17 @@ export class CasesV3 {
     if (!gesture || event.pointerId !== gesture.id) return;
     this._pointer = null;
     this.viewports.forEach(viewport => viewport.classList.remove('is-dragging'));
-    if (!gesture.dragging) return;
+    if (!gesture.dragging) {
+      this._clearFeaturedMorph();
+      return;
+    }
 
     const deltaX = event.clientX - gesture.startX;
     const sourceStride = gesture.strides[this.viewports.indexOf(gesture.source)];
     const steps = cancelled ? 0 : Math.round(-deltaX / sourceStride);
-    this.currentIndex = mod(this.currentIndex + steps, MOCK_ITEMS.length);
+    this.currentIndex = mod(this.currentIndex + steps, this.items.length);
     this.anchorSlot += steps;
+    this._clearFeaturedMorph();
     this._updateFeatured(true);
     this._positionWindows(true);
     this._scheduleRecenter();
@@ -309,7 +430,7 @@ export class CasesV3 {
   }
 
   _recenter() {
-    const count = MOCK_ITEMS.length;
+    const count = this.items.length;
     if (this.anchorSlot >= count * 3) this._shiftCopies(-count);
     else if (this.anchorSlot < count * 2) this._shiftCopies(count);
   }
@@ -318,7 +439,10 @@ export class CasesV3 {
     this.anchorSlot += shift;
     this.viewports.forEach((viewport, index) => {
       const stride = this._stride(viewport);
-      viewport.scrollLeft += shift * stride;
+      const scrollShift = shift * stride;
+      viewport.scrollLeft += scrollShift;
+      const origin = this._scrollOrigins.get(viewport);
+      if (origin !== undefined) this._scrollOrigins.set(viewport, origin + scrollShift);
       this._setWindowSlot(viewport, this.anchorSlot + (index === 0 ? -1 : 1));
     });
   }

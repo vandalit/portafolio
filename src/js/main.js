@@ -1011,7 +1011,7 @@ async function init() {
       }
 
       if (document.getElementById('cases-v3')) {
-        window.__casesV3 = new CasesV3();
+        window.__casesV3 = new CasesV3(projectsData.cases);
       }
 
       renderSkillCards(projectsData.skills.categories || []);
