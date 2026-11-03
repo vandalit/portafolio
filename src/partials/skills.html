@@ -1,0 +1,61 @@
+  <!-- ═══════════════════════════════════════════════════════
+       SKILLS / PERFIL TÉCNICO
+  ══════════════════════════════════════════════════════════ -->
+  <section id="skills" aria-label="Perfil técnico y habilidades">
+    <div class="section-grid-bg" aria-hidden="true"></div>
+    <div class="container">
+      <div class="skills-header">
+        <header class="reveal">
+          <p id="skills-eyebrow" class="eyebrow">Habilidades</p>
+          <h2 id="skills-title" class="section-header__title display">Perfil Técnico</h2>
+          <p id="skills-desc" class="section-header__desc">
+            No una lista de íconos. Un mapa de capacidades reales, con sus conexiones.
+          </p>
+        </header>
+        <!-- Legend -->
+        <aside class="reveal" aria-label="Leyenda de categorías">
+          <div class="skills-legend">
+            <div class="skills-legend__item" data-dot="autoral" role="button" tabindex="0" aria-pressed="false">
+              <span class="skills-legend__dot skills-legend__dot--magenta" aria-hidden="true"></span>
+              <span class="eyebrow skills-legend__label">Diseño</span>
+            </div>
+            <div class="skills-legend__item" data-dot="desarrollo" role="button" tabindex="0" aria-pressed="false">
+              <span class="skills-legend__dot skills-legend__dot--lime" aria-hidden="true"></span>
+              <span class="eyebrow skills-legend__label">Desarrollo</span>
+            </div>
+            <div class="skills-legend__item" data-dot="comercial" role="button" tabindex="0" aria-pressed="false">
+              <span class="skills-legend__dot skills-legend__dot--mango" aria-hidden="true"></span>
+              <span class="eyebrow skills-legend__label">Comercial</span>
+            </div>
+            <!-- Clear filter — X brutalista, aparece solo cuando hay filtro activo -->
+            <button class="skills-legend__clear" aria-label="Limpiar filtro de eje" title="Limpiar filtro">×</button>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Skills Carousel -->
+      <div id="skills-carousel" class="carousel-wrapper reveal" aria-label="Carrusel de habilidades">
+        <div class="carousel-track-container">
+          <div class="carousel-track" role="list">
+            <!-- Skill cards populated by JS -->
+          </div>
+        </div>
+        <div class="carousel-controls">
+          <div class="carousel-progress">
+            <div class="carousel-progress__fill" style="width:0%"></div>
+          </div>
+          <button class="carousel-btn" data-carousel-prev aria-label="Anterior habilidad">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </button>
+          <button class="carousel-btn" data-carousel-next aria-label="Siguiente habilidad">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+

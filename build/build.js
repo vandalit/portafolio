@@ -19,12 +19,13 @@ import { readFileSync, writeFileSync, mkdirSync, cpSync, existsSync, readdirSync
 import { join, dirname, basename, extname } from 'path';
 import { fileURLToPath } from 'url';
 
-// Importar parciales
+// Importar parciales y ensamblador
 import { renderSkillCards } from './partials/skills.js';
 import { renderFeatured, renderCaseCards } from './partials/cases.js';
 import { renderClientGrid } from './partials/work.js';
 import { renderLabGrid } from './partials/lab.js';
 import { escapeHtml } from './utils.js';
+import { assembleHtml } from './assembler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
@@ -132,11 +133,11 @@ function loadSkills() {
 // Los renders ahora vienen de build/partials/*.js
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ENSAMBLADOR — Toma index.html y reemplaza los placeholders
+// ENSAMBLADOR DE PARCIALES & GENERADOR HTML
 // ─────────────────────────────────────────────────────────────────────────────
 
 function buildHtml({ site, cases, clients, lab, skills }) {
-  let html = readFileSync(join(ROOT, 'index.html'), 'utf8');
+  let html = assembleHtml(join(ROOT, 'index.html'));
 
   // ── 1. HEAD: ajustar rutas de assets de relativas a dist-relativas ──────────
   // En dist/ los archivos están al mismo nivel, las rutas ./src/ → ./src/ se mantienen.
@@ -350,11 +351,11 @@ async function main() {
   // 3. Validar
   validateContent({ site, cases, clients, lab, skills });
 
-  // 4. Generar dist/index.html
-  console.log('\n[build] 🔨 Generando dist/index.html...');
+  // 4. Generar dist/index.html a partir del layout orquestador y parciales
+  console.log('\n[build] 🔨 Ensamblando y prerenderizando dist/index.html...');
   const html = buildHtml({ site, cases, clients, lab, skills });
   writeFileSync(join(DIST, 'index.html'), html, 'utf8');
-  console.log('[build]    ✓ dist/index.html escrito');
+  console.log('[build]    ✓ dist/index.html escrito con contenido prerenderizado para SEO');
 
   // 5. Generar robots.txt, sitemap.xml y llms.txt
   console.log('\n[build] 🌐 Generando artefactos SEO & LLMs...');

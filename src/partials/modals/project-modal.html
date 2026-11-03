@@ -1,0 +1,52 @@
+  <!-- ═══════════════════════════════════════════════════════
+       MODAL — SPLIT CANVAS
+  ══════════════════════════════════════════════════════════ -->
+  <div id="project-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true"
+    aria-label="Detalle de proyecto">
+
+    <div class="modal__backdrop"></div>
+
+    <div class="modal__inner">
+      <!-- Close -->
+      <button class="modal__close" aria-label="Cerrar detalle">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+      </button>
+
+      <!-- Sidebar -->
+      <aside class="modal__sidebar" role="complementary" aria-label="Información del proyecto">
+        <p class="modal__project-eyebrow"></p>
+        <h2 class="modal__project-title display"></h2>
+        <p class="modal__project-desc"></p>
+
+        <div class="modal__meta-sections">
+          <!-- Meta sections populated by JS -->
+        </div>
+
+        <div class="modal__tags" aria-label="Tags del proyecto">
+          <!-- Tags populated by JS -->
+        </div>
+
+        <div class="modal__actions">
+          <!-- Actions populated by JS -->
+        </div>
+      </aside>
+
+      <!-- Gallery -->
+      <main class="modal__gallery" aria-label="Galería del proyecto">
+        <div class="modal__masonry" role="list">
+          <!-- Images populated by JS -->
+        </div>
+      </main>
+    </div>
+
+    <!-- Scroll unlock hint -->
+    <div class="modal__scroll-hint" aria-live="polite">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M6 1L6 11M2 7L6 11L10 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+      </svg>
+      Continuar
+    </div>
+  </div>
+

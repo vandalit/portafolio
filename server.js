@@ -4,6 +4,7 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { assembleHtml } from './build/assembler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -293,8 +294,20 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
   });
 });
 
-// ── SERVIR ARCHIVOS ESTÁTICOS ───────────────────────────────
-// Servir la raíz del proyecto para acceder al portafolio e index.html
+// ── SERVIR ARCHIVOS ESTÁTICOS & ENRUTAMIENTO DINÁMICO ────────
+// Servir index.html ensamblado al vuelo desde src/partials/
+app.get(['/', '/index.html'], (req, res) => {
+  try {
+    const html = assembleHtml(path.join(__dirname, 'index.html'));
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(html);
+  } catch (err) {
+    console.error('[Server] Error ensamblando index.html:', err.message);
+    res.status(500).send(`Error ensamblando plantilla: ${err.message}`);
+  }
+});
+
+// Servir la raíz del proyecto para acceder a assets, src, content y backoffice
 app.use(express.static(__dirname));
 
 // Start server

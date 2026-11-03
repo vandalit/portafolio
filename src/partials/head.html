@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Portafolio de vandalit — diseñador UX/UI y desarrollador front-end. Proyectos de clientes, casos de estudio y experimentos de diseño.">
+  <meta name="keywords" content="UX design, UI design, front-end developer, portafolio, diseño web, freelance, Chile">
+  <meta property="og:title" content="vandalit — UX/UI Designer & Front-end Developer">
+  <meta property="og:description" content="Diseño que comunica. Código que respira.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:creator" content="@vandalittt">
+  <title>vandalit — UX/UI Designer & Front-end Developer</title>
+
+  <!-- Console Diagnostics & Error Trap -->
+  <script>
+    console.log('%c[PORTAFOLIO BOOTSTRAP] HTML parsing started', 'background: #080810; color: #e8306e; font-weight: bold; font-size: 13px; border: 1px solid #e8306e; padding: 2px 6px; border-radius: 3px;');
+    window.addEventListener('error', function (e) {
+      console.error('%c[GLOBAL ERROR CAPTURED]', 'background: #e8306e; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;', e.message, 'in', e.filename, 'line:', e.lineno, e.error);
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      console.error('%c[PROMISE REJECTION CAPTURED]', 'background: #e8306e; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;', e.reason);
+    });
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@500;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@300;400&display=swap">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="./src/css/base.css">
+  <link rel="stylesheet" href="./src/css/layout.css">
+  <link rel="stylesheet" href="./src/css/components.css">
+  <link rel="stylesheet" href="./src/css/animations.css">
+  <link rel="stylesheet" href="./src/components/bentos/bentos.css?v=bento_hover_pop">
+
+  <!-- Progressive Enhancement: Si JS está deshabilitado, ocultar preloader de inmediato -->
+  <noscript>
+    <style>
+      .preloader {
+        display: none !important;
+      }
+
+      .reveal,
+      .stagger>* {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    </style>
+  </noscript>
+
+  <style>
+    /* ── PRELOADER CRITICAL CSS (Cero FOUC / Cero layout shift) ── */
+    .preloader {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: var(--bg-0, #080810);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 500ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+        transform 600ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+        filter 500ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+    }
+
+    .preloader.is-loaded {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.02);
+      filter: blur(6px);
+    }
+
+    .preloader__inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      width: min(88vw, 340px);
+      text-align: center;
+      user-select: none;
+    }
+
+    .preloader__logo {
+      font-family: 'Syne', var(--font-display, sans-serif);
+      font-size: 1.85rem;
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      color: var(--text-0, #f2eff8);
+    }
+
+    .preloader__dot {
+      color: var(--lime, #ccf020);
+      display: inline-block;
+      animation: preloaderDotPulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes preloaderDotPulse {
+
+      0%,
+      100% {
+        color: var(--lime, #ccf020);
+        transform: scale(1);
+        filter: drop-shadow(0 0 8px var(--lime-glow, rgba(204, 240, 32, 0.4)));
+      }
+
+      50% {
+        color: var(--magenta, #d4205a);
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 8px var(--magenta-glow, rgba(212, 32, 90, 0.4)));
+      }
+    }
+
+    .preloader__track {
+      width: 100%;
+      height: 2px;
+      background: var(--border-1, rgba(255, 255, 255, 0.08));
+      border-radius: var(--radius-pill, 999px);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .preloader__bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--magenta, #d4205a), var(--lime, #ccf020));
+      box-shadow: 0 0 10px var(--lime-glow, rgba(204, 240, 32, 0.5));
+      transition: width 220ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+    }
+
+    .preloader__meta {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      letter-spacing: var(--tracking-wider, 0.08em);
+      color: var(--text-2, #8c8c9e);
+      text-transform: uppercase;
+    }
+
+    .preloader__percent {
+      color: var(--lime, #ccf020);
+      font-weight: 500;
+    }
+  </style>
+</head>
+
+<body>
+
