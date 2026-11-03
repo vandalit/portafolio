@@ -115,6 +115,12 @@ Cada subdirectorio de proyecto tendrá su propio archivo `project.json` estandar
 }
 ```
 
+### Identidad editorial compartida
+
+`category`, `year`, `role`, `tags` y `accentColor` forman parte de la identidad común de un proyecto, independientemente de que pertenezca a `case-studies`, `clients` o `lab`. El Backoffice ofrece estos campos para las secciones de proyectos; cada presentación consume los que necesita sin inferir la categoría ni el color a partir del orden o del tipo de sección.
+
+`accentColor` puede omitirse en contenido legado; los componentes deben conservar un color de acento neutral como fallback. Los tags y otros metadatos también pueden estar vacíos, y la vista debe omitirlos sin inventar valores.
+
 ### Flexibilidad de Rutas (Mock vs Local)
 Si en etapa mock una imagen aún no existe físicamente en el subdirectorio, el campo en `project.json` simplemente conserva la URL remota:
 ```json

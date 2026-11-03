@@ -1,4 +1,3 @@
-const TONES = ['lime', 'magenta', 'blue', 'orange', 'violet', 'cyan'];
 const TRACK_COPIES = 5;
 const IMPULSE_FRICTION_MS = 360;
 const MAX_IMPULSE_STEPS = 6;
@@ -10,6 +9,13 @@ const DIVIDER_BOUNCE_OVERSHOOT = 1.05;
 const DIVIDER_MAIN_BOUNCE_GROWTH = 1.05;
 
 const mod = (value, length) => ((value % length) + length) % length;
+const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, character => ({
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;'
+})[character]);
 
 export class CasesV4 {
   constructor(cases, root = document.getElementById('cases-v4')) {
@@ -19,10 +25,9 @@ export class CasesV4 {
     }
 
     this.root = root;
-    this.items = cases.map((item, index) => ({
+    this.items = cases.map(item => ({
       ...item,
-      image: item.cover || item.coverPlaceholder || '',
-      tone: TONES[index % TONES.length]
+      image: item.cover || item.coverPlaceholder || ''
     }));
     this.viewports = [...root.querySelectorAll('.cv4-carousel__viewport')];
     this.currentIndex = 0;
@@ -36,7 +41,8 @@ export class CasesV4 {
     this._momentumFrame = 0;
     this._momentum = false;
     this._momentumSource = null;
-    this._featuredTransition = 0;
+    this._featuredContentHidden = false;
+    this._featuredDirection = 1;
     this._featuredMorph = null;
     this._featuredBackgroundRequest = null;
     this._decodedFeaturedImages = new Map();
@@ -58,7 +64,7 @@ export class CasesV4 {
     ) || 0.88;
     this._renderTracks();
     this._bind();
-    this._updateFeatured(false);
+    this._updateFeatured();
     this._positionWindows();
   }
 
@@ -71,24 +77,32 @@ export class CasesV4 {
         this.items.map((item, index) => `
           <article
             class="cv4-item"
-            data-item-id="${item.id}"
+            data-item-id="${escapeHTML(item.id)}"
             data-index="${index}"
             data-slot="${copy * this.items.length + index}"
-            data-tone="${item.tone}"
             role="listitem"
             aria-hidden="${copy !== 2}"
-            aria-label="${item.title}, ${item.category}"
+            aria-label="${escapeHTML(item.title)}, ${escapeHTML(item.category)}"
           >
             <img class="cv4-item__image" alt="" aria-hidden="true" loading="lazy" decoding="async">
             <span class="cv4-item__index">${String(index + 1).padStart(2, '0')}</span>
             <div class="cv4-item__copy">
-              <span class="cv4-item__category">${item.category}</span>
-              <h3 class="cv4-item__title">${item.title}</h3>
+              <span class="cv4-item__role">${escapeHTML(item.role)}</span>
+              <h3 class="cv4-item__title">${escapeHTML(item.title)}</h3>
+              <div class="cv4-item__tags">
+                ${(Array.isArray(item.tags) ? item.tags : []).map(tag => `
+                  <span class="cv4-item__tag">${escapeHTML(tag)}</span>
+                `).join('')}
+              </div>
             </div>
           </article>
         `).join('')
       ).join('');
 
+      track.querySelectorAll('.cv4-item').forEach(card => {
+        const item = this.items[Number(card.dataset.index)];
+        card.style.setProperty('--cv4-accent-color', this._getAccentColor(item));
+      });
       track.querySelectorAll('.cv4-item__image').forEach(image => {
         image.src = this.items[Number(image.closest('.cv4-item').dataset.index)].image;
       });
@@ -201,13 +215,16 @@ export class CasesV4 {
         this._clearFeaturedMorph();
       }, 550);
     }
-    this._updateFeatured(true);
+    this._updateFeatured();
     this._positionWindows(true);
     this._scheduleRecenter();
   }
 
   _setDividerMotion(direction) {
     if (!direction) return;
+    this._featuredDirection = Math.sign(direction);
+    this._hideFeaturedContent();
+
     const divider = this.root.querySelector('.cv4-divider');
     if (!divider) return;
 
@@ -246,6 +263,40 @@ export class CasesV4 {
     const divider = this.root.querySelector('.cv4-divider');
     divider?.classList.remove('is-tracking');
     divider?.removeAttribute('data-direction');
+    this._showFeaturedContent(this._featuredDirection);
+  }
+
+  _hideFeaturedContent() {
+    const content = this.root.querySelector('.cv4-featured__content');
+    if (!content || this._featuredContentHidden) return;
+
+    content.getAnimations().forEach(animation => animation.cancel());
+    content.classList.add('is-transition-hidden');
+    content.inert = true;
+    content.setAttribute('aria-hidden', 'true');
+    this._featuredContentHidden = true;
+  }
+
+  _showFeaturedContent(direction) {
+    const content = this.root.querySelector('.cv4-featured__content');
+    if (!content || !this._featuredContentHidden) return;
+
+    content.classList.remove('is-transition-hidden');
+    content.inert = false;
+    content.removeAttribute('aria-hidden');
+    this._featuredContentHidden = false;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const offset = direction > 0 ? 8 : -8;
+    const animation = content.animate(
+      [
+        { opacity: 0, transform: `translateX(${offset}px)` },
+        { opacity: 1, transform: 'translateX(0)' }
+      ],
+      { duration: 220, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }
+    );
+    animation.onfinish = () => animation.cancel();
   }
 
   _queueDividerBounce(target, count) {
@@ -297,7 +348,7 @@ export class CasesV4 {
     });
   }
 
-  _updateFeatured(animate) {
+  _updateFeatured() {
     const item = this.items[this.currentIndex];
     const content = this.root.querySelector('.cv4-featured__content');
     const featured = this.root.querySelector('.cv4-featured');
@@ -306,36 +357,43 @@ export class CasesV4 {
     const description = this.root.querySelector('.cv4-featured__description');
     if (!content || !featured || !eyebrow || !title || !description) return;
 
-    const transitionId = ++this._featuredTransition;
     content.getAnimations().forEach(animation => animation.cancel());
-    if (animate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const fadeOut = content.animate(
-        [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(8px)' }],
-        { duration: 130, easing: 'ease-in', fill: 'forwards' }
-      );
-      fadeOut.onfinish = () => {
-        if (transitionId !== this._featuredTransition) return;
-        fadeOut.cancel();
-        this._setFeaturedContent(item, featured, eyebrow, title, description);
-        content.animate(
-          [{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'translateY(0)' }],
-          { duration: 220, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }
-        );
-      };
-      return;
-    }
-
     this._setFeaturedContent(item, featured, eyebrow, title, description);
   }
 
   _setFeaturedContent(item, featured, eyebrow, title, description) {
     featured.dataset.activeItem = item.id;
-    featured.dataset.tone = item.tone;
+    featured.style.setProperty('--cv4-accent-color', this._getAccentColor(item));
     eyebrow.textContent = `${item.category} · Caso ${String(this.currentIndex + 1).padStart(2, '0')}`;
     title.textContent = item.title;
-    description.textContent = `Contenido de muestra para ${item.title}.`;
+    description.textContent = item.description || '';
+
+    const cta = featured.querySelector('.cv4-featured__cta');
+    if (cta) {
+      cta.dataset.projectId = item.id;
+      cta.dataset.type = 'case';
+      cta.setAttribute('aria-label', `Ver caso: ${item.title}`);
+    }
+
+    const year = featured.querySelector('[data-cv4-featured-year]');
+    if (year) {
+      year.textContent = item.year ? String(item.year) : '';
+      year.hidden = !item.year;
+    }
+
+    const role = featured.querySelector('[data-cv4-featured-role]');
+    if (role) {
+      role.textContent = item.role || '';
+      role.hidden = !item.role;
+    }
+
     const itemNumber = this.root.querySelector('[data-cv4-item-number]');
     if (itemNumber) itemNumber.textContent = String(this.currentIndex + 1).padStart(2, '0');
+  }
+
+  _getAccentColor(item) {
+    const color = String(item?.accentColor || '').trim();
+    return color && CSS.supports('color', color) ? color : 'var(--lime)';
   }
 
   _decodeFeaturedImage(src) {
@@ -623,7 +681,7 @@ export class CasesV4 {
       this.currentIndex = mod(this.currentIndex + step, this.items.length);
       this._setDividerMotion(step);
       this._clearFeaturedMorph();
-      this._updateFeatured(true);
+      this._updateFeatured();
       this._positionWindows(true);
       this._scheduleRecenter();
     }, 140));
@@ -648,7 +706,7 @@ export class CasesV4 {
     this.anchorSlot += steps;
     this._setDividerMotion(steps);
     this._clearFeaturedMorph();
-    this._updateFeatured(true);
+    this._updateFeatured();
     this._positionWindows(true);
     this._scheduleRecenter();
   }
@@ -835,7 +893,7 @@ export class CasesV4 {
     this.anchorSlot += steps;
     if (steps) this._setDividerMotion(steps);
     this._clearFeaturedMorph();
-    this._updateFeatured(true);
+    this._updateFeatured();
     this._positionWindows(smooth);
     this._scheduleRecenter();
   }
