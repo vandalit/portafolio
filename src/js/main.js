@@ -443,8 +443,76 @@ function initSkillModal() {
   const titleEl = modal.querySelector('.skill-modal__title');
   const descEl = modal.querySelector('.skill-modal__desc');
   const pillsEl = modal.querySelector('.skill-modal__pills');
+  const panelEl = modal.querySelector('.skill-modal__panel');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   let eyeActive = false;
+  let motionFrame = 0;
+  let orientationPermissionRequested = false;
+  let orientationListening = false;
+
+  function applyParallax(x, y) {
+    cancelAnimationFrame(motionFrame);
+    motionFrame = requestAnimationFrame(() => {
+      panelEl?.style.setProperty('--skill-parallax-x', `${(x * 12).toFixed(2)}px`);
+      panelEl?.style.setProperty('--skill-parallax-y', `${(y * 12).toFixed(2)}px`);
+      panelEl?.style.setProperty('--skill-parallax-rotate-x', `${(y * -4).toFixed(2)}deg`);
+      panelEl?.style.setProperty('--skill-parallax-rotate-y', `${(x * 4).toFixed(2)}deg`);
+      modal.style.setProperty('--skill-parallax-bg-x', `${(x * 30).toFixed(2)}px`);
+      modal.style.setProperty('--skill-parallax-bg-y', `${(y * 24).toFixed(2)}px`);
+    });
+  }
+
+  function handlePointerMove(event) {
+    if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
+
+    applyParallax(
+      Math.max(-1, Math.min(1, (event.clientX / window.innerWidth - 0.5) * 2)),
+      Math.max(-1, Math.min(1, (event.clientY / window.innerHeight - 0.5) * 2))
+    );
+  }
+
+  function handleDeviceOrientation(event) {
+    if (!modal.classList.contains('is-open') || event.gamma === null || event.beta === null) return;
+    applyParallax(
+      Math.max(-1, Math.min(1, event.gamma / 30)),
+      Math.max(-1, Math.min(1, (event.beta - 45) / 30))
+    );
+  }
+
+  function enableDeviceOrientation() {
+    if (reducedMotion.matches || orientationListening) return;
+
+    const orientation = window.DeviceOrientationEvent;
+    if (!orientation) return;
+    if (typeof orientation.requestPermission !== 'function') {
+      window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
+      orientationListening = true;
+      return;
+    }
+    if (orientationPermissionRequested) return;
+
+    orientationPermissionRequested = true;
+    orientation.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+        window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
+        orientationListening = true;
+      } else {
+        orientationPermissionRequested = false;
+      }
+    }).catch((error) => {
+      orientationPermissionRequested = false;
+      console.warn('[SkillModal] No se pudo habilitar la orientación del dispositivo:', error);
+    });
+  }
+
+  if (!reducedMotion.matches) {
+    modal.addEventListener('pointermove', handlePointerMove, { passive: true });
+    modal.addEventListener('pointerleave', (event) => {
+      if (event.pointerType === 'mouse' || event.pointerType === 'pen') applyParallax(0, 0);
+    });
+    window.addEventListener('blur', () => applyParallax(0, 0));
+  }
 
   function renderPills(items, withEye) {
     const LABEL_MAP = { basico: 'Básico', intermedio: 'Intermedio', avanzado: 'Avanzado', 'en-formacion': 'En formación', 'en-desarrollo': 'En desarrollo', 'en-proceso': 'En proceso' };
@@ -483,6 +551,7 @@ function initSkillModal() {
 
   function openSkillModal(skillData) {
     eyeActive = false;
+    enableDeviceOrientation();
     const accent = skillData.dots && skillData.dots[0] ? ({ autoral: 'magenta', desarrollo: 'lime', comercial: 'mango' }[skillData.dots[0]] || 'magenta') : 'magenta';
 
     // Set accent attribute on modal for accumulative pills styling
@@ -490,7 +559,6 @@ function initSkillModal() {
 
     if (catEl) {
       catEl.textContent = skillData.technicalName?.toUpperCase() || skillData.title?.toUpperCase() || '';
-      catEl.style.color = accent === 'magenta' ? 'var(--magenta)' : accent === 'lime' ? 'var(--lime)' : 'var(--mango)';
     }
     if (titleEl) titleEl.textContent = skillData.title || '';
     if (descEl) descEl.textContent = skillData.description || '';
@@ -505,6 +573,7 @@ function initSkillModal() {
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
     eyeActive = false;
+    applyParallax(0, 0);
   }
 
   backdrop?.addEventListener('click', closeSkillModal);

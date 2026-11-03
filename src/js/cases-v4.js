@@ -34,6 +34,8 @@ export class CasesV4 {
     this._momentumSource = null;
     this._featuredTransition = 0;
     this._featuredMorph = null;
+    this._featuredBackgroundRequest = null;
+    this._decodedFeaturedImages = new Map();
     this._exitPulseDistance = Number.parseFloat(
       getComputedStyle(root).getPropertyValue('--cv4-exit-pulse-distance')
     ) || 100;
@@ -228,9 +230,69 @@ export class CasesV4 {
     if (itemNumber) itemNumber.textContent = String(this.currentIndex + 1).padStart(2, '0');
   }
 
+  _decodeFeaturedImage(src) {
+    if (!src) return Promise.resolve();
+    const cached = this._decodedFeaturedImages.get(src);
+    if (cached) return cached;
+
+    const image = new Image();
+    image.src = src;
+    const decoded = typeof image.decode === 'function'
+      ? image.decode()
+      : new Promise((resolve, reject) => {
+        if (image.complete) {
+          if (image.naturalWidth > 0) resolve();
+          else reject(new Error(`Unable to load featured image: ${src}`));
+          return;
+        }
+        image.addEventListener('load', resolve, { once: true });
+        image.addEventListener('error', () => reject(new Error(`Unable to load featured image: ${src}`)), { once: true });
+      });
+
+    const cachedDecode = decoded.catch(error => {
+      this._decodedFeaturedImages.delete(src);
+      throw error;
+    });
+    this._decodedFeaturedImages.set(src, cachedDecode);
+    return cachedDecode;
+  }
+
   _updateFeaturedBackground(progress, fromIndex = this.currentIndex, toIndex = mod(fromIndex + 1, this.items.length)) {
-    const activeSrc = this.items[fromIndex].image;
-    const incomingSrc = this.items[toIndex].image;
+    const requestKey = `${fromIndex}:${toIndex}`;
+    let request = this._featuredBackgroundRequest;
+    if (request?.key === requestKey) {
+      request.progress = progress;
+      if (request.ready) this._applyFeaturedBackground(request);
+      return;
+    }
+
+    request = {
+      key: requestKey,
+      fromIndex,
+      toIndex,
+      progress,
+      ready: false
+    };
+    this._featuredBackgroundRequest = request;
+
+    Promise.all([
+      this._decodeFeaturedImage(this.items[fromIndex].image),
+      this._decodeFeaturedImage(this.items[toIndex].image)
+    ]).then(() => {
+      if (this._featuredBackgroundRequest !== request) return;
+      request.ready = true;
+      this._applyFeaturedBackground(request);
+    }).catch(error => {
+      if (this._featuredBackgroundRequest !== request) return;
+      console.warn('[CasesV4] Could not decode featured images before transition:', error);
+      request.ready = true;
+      this._applyFeaturedBackground(request);
+    });
+  }
+
+  _applyFeaturedBackground(request) {
+    const activeSrc = this.items[request.fromIndex].image;
+    const incomingSrc = this.items[request.toIndex].image;
     const imageLayers = [
       {
         active: this.root.querySelector('[data-featured-layer="active"]'),
@@ -246,12 +308,12 @@ export class CasesV4 {
       if (!active || !incoming) return;
       if (active.getAttribute('src') !== activeSrc) active.src = activeSrc;
       if (incoming.getAttribute('src') !== incomingSrc) incoming.src = incomingSrc;
-      incoming.style.opacity = String(progress);
+      incoming.style.opacity = String(request.progress);
     });
 
     const itemNumber = this.root.querySelector('[data-cv4-item-number]');
     if (itemNumber) {
-      const activeIndex = progress > 0 ? toIndex : fromIndex;
+      const activeIndex = request.progress > 0 ? request.toIndex : request.fromIndex;
       itemNumber.textContent = String(activeIndex + 1).padStart(2, '0');
     }
   }

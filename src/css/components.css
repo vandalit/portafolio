@@ -1166,6 +1166,9 @@
 
 /* ── SKILL MODAL — Fullscreen Detail ─────────────────────── */
 .skill-modal {
+  --skill-accent: var(--magenta);
+  --skill-accent-fade: var(--magenta-fade);
+  --skill-accent-glow-sm: var(--magenta-glow-sm);
   position: fixed;
   inset: 0;
   z-index: 2100;
@@ -1177,6 +1180,18 @@
   transition: opacity 300ms var(--ease-out);
 }
 
+.skill-modal[data-accent="lime"] {
+  --skill-accent: var(--lime);
+  --skill-accent-fade: var(--lime-fade);
+  --skill-accent-glow-sm: var(--lime-glow-sm);
+}
+
+.skill-modal[data-accent="mango"] {
+  --skill-accent: var(--mango);
+  --skill-accent-fade: var(--mango-fade);
+  --skill-accent-glow-sm: var(--mango-glow-sm);
+}
+
 .skill-modal.is-open {
   opacity: 1;
   pointer-events: auto;
@@ -1185,7 +1200,13 @@
 .skill-modal__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(6, 8, 14, 0.96);
+  background:
+    radial-gradient(
+      ellipse at calc(50% + var(--skill-parallax-bg-x, 0px)) calc(45% + var(--skill-parallax-bg-y, 0px)),
+      rgba(35, 38, 48, 0.3),
+      transparent 56%
+    ),
+    rgba(6, 8, 14, 0.96);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -1200,6 +1221,14 @@
   flex-direction: column;
   align-items: center;
   gap: var(--sp-6);
+  transform:
+    perspective(1200px)
+    translate3d(var(--skill-parallax-x, 0px), var(--skill-parallax-y, 0px), 0)
+    rotateX(var(--skill-parallax-rotate-x, 0deg))
+    rotateY(var(--skill-parallax-rotate-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 180ms ease-out;
+  will-change: transform;
 }
 
 .skill-modal__close {
@@ -1220,9 +1249,9 @@
 }
 
 .skill-modal__close:hover {
-  background: var(--lime);
+  background: var(--skill-accent);
   color: var(--bg-0);
-  border-color: var(--lime);
+  border-color: var(--skill-accent);
   transform: rotate(90deg);
 }
 
@@ -1231,7 +1260,7 @@
   font-size: var(--text-xs);
   letter-spacing: var(--tracking-widest);
   text-transform: uppercase;
-  color: var(--magenta);
+  color: var(--skill-accent);
   margin: 0;
 }
 
@@ -1271,6 +1300,7 @@
 .skill-pill--level {
   position: relative;
   overflow: hidden;
+  color: var(--text-0);
 }
 .skill-pill--level::before {
   content: '';
@@ -1279,43 +1309,24 @@
   top: 0;
   bottom: 0;
   width: var(--level-pct, 40%);
-  background: var(--lime);
-  opacity: 0.18;
+  background: var(--skill-accent);
+  opacity: 0.34;
   border-radius: inherit;
   transition: width 400ms var(--ease-out), opacity var(--transition);
 }
-.skill-pill--level:hover::before { opacity: 0.28; }
+.skill-pill--level:hover::before { opacity: 0.42; }
 
 /* Pill accumulative (0% level) — stroke instead of fill */
 .skill-pill--accumulative {
   position: relative;
-  border: 2px solid var(--lime);
-  background: transparent;
-}
-
-/* Accent color variants for accumulative pills */
-.skill-modal[data-accent="magenta"] .skill-pill--accumulative {
-  border-color: var(--magenta);
-}
-
-.skill-modal[data-accent="lime"] .skill-pill--accumulative {
-  border-color: var(--lime);
-}
-
-.skill-modal[data-accent="mango"] .skill-pill--accumulative {
-  border-color: var(--mango);
+  border: 2px solid color-mix(in srgb, var(--skill-accent) 45%, transparent);
+  color: var(--text-0);
+  background: var(--skill-accent-fade);
 }
 
 .skill-pill--accumulative:hover {
-  background: var(--lime-fade);
-}
-
-.skill-modal[data-accent="magenta"] .skill-pill--accumulative:hover {
-  background: var(--magenta-fade);
-}
-
-.skill-modal[data-accent="mango"] .skill-pill--accumulative:hover {
-  background: var(--mango-fade);
+  border-color: color-mix(in srgb, var(--skill-accent) 58%, transparent);
+  background: var(--skill-accent-fade);
 }
 
 /* Eye toggle button — inline as last pill in modal */
@@ -1335,14 +1346,22 @@
   vertical-align: middle;
 }
 .skill-modal__eye:hover {
-  border-color: var(--lime);
-  color: var(--lime);
+  border-color: var(--skill-accent);
+  color: var(--skill-accent);
 }
 .skill-modal__eye.is-active {
-  background: var(--lime);
+  background: var(--skill-accent);
   color: var(--bg-0);
-  border-color: var(--lime);
-  box-shadow: 0 0 12px var(--lime-glow-sm);
+  border-color: var(--skill-accent);
+  box-shadow: 0 0 12px var(--skill-accent-glow-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skill-modal__panel {
+    transform: none;
+    transition: none;
+    will-change: auto;
+  }
 }
 
 /* ── PROJECT THUMB CARD ──────────────────────────────────── */
