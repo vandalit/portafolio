@@ -593,7 +593,18 @@ function initNav() {
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  // Active section tracking
+  // Active section tracking & dynamic context visualizer
+  const contextText = document.getElementById('nav-context-text');
+  const sectionLabels = {
+    hero: 'OVERVIEW · INTRO',
+    cases: 'CASOS DE ESTUDIO',
+    'cases-v2': 'CASOS DE ESTUDIO · V2',
+    skills: 'PERFIL TÉCNICO',
+    work: 'TRABAJOS SELECCIONADOS',
+    lab: 'LABORATORIO & LAB',
+    contact: 'CONTACTO'
+  };
+
   const sectionObs = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -601,6 +612,9 @@ function initNav() {
         navLinks.forEach(l => {
           l.classList.toggle('active', l.getAttribute('href') === `#${id}`);
         });
+        if (contextText && sectionLabels[id]) {
+          contextText.textContent = sectionLabels[id];
+        }
       }
     });
   }, { threshold: 0.35 });

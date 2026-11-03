@@ -1,8 +1,14 @@
   <!-- ── NAV ────────────────────────────────────────────── -->
   <nav id="nav" role="navigation" aria-label="Navegación principal">
-    <a href="#hero" class="nav__logo" aria-label="vandalit — inicio">
-      van<span>.</span>dalit
-    </a>
+    <div class="nav__brand">
+      <a href="#hero" class="nav__logo" aria-label="vandalit — inicio">
+        van<span>.</span>dalit
+      </a>
+      <div id="nav-context" class="nav__context" aria-live="polite" aria-label="Visualizador de contexto">
+        <span class="nav__context-sep" aria-hidden="true">//</span>
+        <span class="nav__context-text" id="nav-context-text">OVERVIEW · INTRO</span>
+      </div>
+    </div>
     <ul class="nav__links" role="list">
       <li><a href="#cases" class="nav__link" aria-label="Casos de estudio">Cases</a></li>
       <li><a href="#skills" class="nav__link" aria-label="Perfil técnico">Skills</a></li>

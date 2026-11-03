@@ -64,16 +64,58 @@ section {
   border-bottom: 1px solid var(--border-0);
 }
 
+.nav__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
 .nav__logo {
   font-family: var(--font-display);
   font-size: var(--text-xl);
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--text-0);
+  white-space: nowrap;
 }
 
 .nav__logo span {
   color: var(--magenta);
+}
+
+/* ── Context Visualizer (Placeholder dinámico grafito) ───── */
+.nav__context {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2, #6a677a); /* Grafito sutil */
+  user-select: none;
+  white-space: nowrap;
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.nav__context-sep {
+  color: var(--text-3, #3d3a4a);
+  font-weight: 700;
+}
+
+.nav__context-text {
+  color: var(--text-2, #6a677a);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  transition: opacity 250ms ease, transform 250ms ease;
+}
+
+@media (max-width: 640px) {
+  .nav__context { display: none; }
 }
 
 .nav__links {
