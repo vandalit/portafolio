@@ -1,8 +1,7 @@
 /* ==========================================================
    VIDEO-BG.JS — Dual-Stage YouTube Ambient Background
    Capa 0 (z-index: 0)
-   - Stage 1 (<500px):  Hse_HTX6KGs
-   - Stage 2 (>=500px): GKq9nKZpmu0
+   - Stage 1 (<500px) and Stage 2 (>=500px): configured in hero.json
    - Crossfade con transición suave CSS
    - Bandwidth aware (saveData / 2g checks)
    - Control de efectos FX (pause / resume)
@@ -13,10 +12,10 @@ let iframeV1 = null;
 let iframeV2 = null;
 let isVideo2Injected = false;
 let isPaused = false;
-let currentStage = 1; // 1: Hse_HTX6KGs, 2: GKq9nKZpmu0
+let currentStage = 1;
 
-let VIDEO_1_ID = 'Hse_HTX6KGs';
-let VIDEO_2_ID = 'GKq9nKZpmu0';
+let VIDEO_1_ID = '';
+let VIDEO_2_ID = '';
 export let VIDEO_TRANSITION_PX = 300;
 export const VIDEO_PRELOAD_PX = 80;
 
@@ -26,8 +25,8 @@ async function loadVideoConfig() {
     if (local) {
       const parsed = JSON.parse(local);
       if (parsed.videos) {
-        VIDEO_1_ID = parsed.videos.stage1Id || VIDEO_1_ID;
-        VIDEO_2_ID = parsed.videos.stage2Id || VIDEO_2_ID;
+        if (typeof parsed.videos.stage1Id === 'string') VIDEO_1_ID = parsed.videos.stage1Id.trim();
+        if (typeof parsed.videos.stage2Id === 'string') VIDEO_2_ID = parsed.videos.stage2Id.trim();
         VIDEO_TRANSITION_PX = parsed.videos.transitionPx || VIDEO_TRANSITION_PX;
         return;
       }
@@ -36,8 +35,8 @@ async function loadVideoConfig() {
     if (res.ok) {
       const data = await res.json();
       if (data.videos) {
-        VIDEO_1_ID = data.videos.stage1Id || VIDEO_1_ID;
-        VIDEO_2_ID = data.videos.stage2Id || VIDEO_2_ID;
+        if (typeof data.videos.stage1Id === 'string') VIDEO_1_ID = data.videos.stage1Id.trim();
+        if (typeof data.videos.stage2Id === 'string') VIDEO_2_ID = data.videos.stage2Id.trim();
         VIDEO_TRANSITION_PX = data.videos.transitionPx || VIDEO_TRANSITION_PX;
       }
     }
@@ -78,6 +77,11 @@ export async function initVideoBackground() {
 
   await loadVideoConfig();
 
+  if (!VIDEO_1_ID && !VIDEO_2_ID) {
+    console.info('[VideoBG] Background videos are disabled: no video IDs configured.');
+    return;
+  }
+
   // 1. Connection check: skip if slow or data-saver is active
   const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   if (conn) {
@@ -91,24 +95,24 @@ export async function initVideoBackground() {
     }
   }
 
-  // 2. Inyección de Video 1 (Hse_HTX6KGs)
+  // 2. Inyección de Video 1
   const injectVideo1 = () => {
-    if (iframeV1) return;
+    if (iframeV1 || !VIDEO_1_ID) return;
     iframeV1 = createIframe(VIDEO_1_ID, 'hero__video-iframe--v1');
     iframeV1.onload = () => {
       containerEl.classList.add('is-ready');
-      console.log('[VideoBG] Ambient Video 1 (Hse_HTX6KGs) loaded and playing');
+      console.log('[VideoBG] Ambient Video 1 loaded and playing');
     };
     containerEl.appendChild(iframeV1);
   };
 
-  // 3. Inyección perezosa de Video 2 (GKq9nKZpmu0)
+  // 3. Inyección perezosa de Video 2
   const injectVideo2 = () => {
-    if (isVideo2Injected || !containerEl) return;
+    if (isVideo2Injected || !containerEl || !VIDEO_2_ID) return;
     isVideo2Injected = true;
     iframeV2 = createIframe(VIDEO_2_ID, 'hero__video-iframe--v2');
     iframeV2.onload = () => {
-      console.log('[VideoBG] Ambient Video 2 (GKq9nKZpmu0) preloaded and ready for crossfade');
+      console.log('[VideoBG] Ambient Video 2 preloaded and ready for crossfade');
     };
     containerEl.appendChild(iframeV2);
   };
@@ -167,7 +171,7 @@ export async function initVideoBackground() {
           if (!isPaused && iframeV2) {
             sendIframeCommand(iframeV2, 'playVideo');
           }
-          console.log(`%c[VideoBG] 🎬 ${VIDEO_TRANSITION_PX}px reached: crossfade to Video 2 (GKq9nKZpmu0)`, 'color: #b8e030; font-weight: bold;');
+          console.log(`%c[VideoBG] 🎬 ${VIDEO_TRANSITION_PX}px reached: crossfade to Video 2`, 'color: #b8e030; font-weight: bold;');
         }
       } else {
         if (currentStage !== 1) {
@@ -176,7 +180,7 @@ export async function initVideoBackground() {
           if (!isPaused && iframeV1) {
             sendIframeCommand(iframeV1, 'playVideo');
           }
-          console.log(`%c[VideoBG] 🎬 <${VIDEO_TRANSITION_PX}px: crossfade back to Video 1 (Hse_HTX6KGs)`, 'color: #e8306e; font-weight: bold;');
+          console.log(`%c[VideoBG] 🎬 <${VIDEO_TRANSITION_PX}px: crossfade back to Video 1`, 'color: #e8306e; font-weight: bold;');
         }
       }
     });

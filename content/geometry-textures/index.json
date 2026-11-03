@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "assignmentMode": "random",
+  "seed": "hero-surfaces-v1",
+  "textureSize": 512,
+  "appearance": {
+    "grayscale": true,
+    "brightness": 0.72,
+    "contrast": 0.68,
+    "overlayColor": "#080a0e",
+    "overlayOpacity": 0.38
+  },
+  "images": [
+    {
+      "id": "screen-garden",
+      "file": "assets/surface-screen-garden.png"
+    },
+    {
+      "id": "organic-spectrum",
+      "file": "assets/surface-organic-spectrum.png"
+    },
+    {
+      "id": "digital-outline",
+      "file": "assets/surface-digital-outline.png"
+    },
+    {
+      "id": "editorial-lettering",
+      "file": "assets/surface-editorial-lettering.png"
+    }
+  ]
+}

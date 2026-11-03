@@ -25,12 +25,13 @@ const state = {
   skillsLegend: {},
   heroData: {
     videos: {
-      stage1Id: 'Hse_HTX6KGs',
-      stage2Id: 'GKq9nKZpmu0',
+      stage1Id: '',
+      stage2Id: '',
       transitionPx: 300
     },
     bentos: []
   },
+  geometryTextureData: null,
   siteData: null, // content/settings/site.json
   pendingMoves: [], // Proyectos movidos entre carpetas físicas
   fsHandle: null, // DirectoryHandle para File System API en Local
@@ -67,6 +68,19 @@ const el = {
   projectList: document.getElementById('project-list'),
   projectForm: document.getElementById('project-form'),
   heroEditor: document.getElementById('hero-editor'),
+  geometryTextureEditor: document.getElementById('geometry-textures-editor'),
+  geometryTextureFiles: document.getElementById('geometry-texture-files'),
+  geometryTextureUpload: document.getElementById('geometry-texture-upload'),
+  geometryTexturePreviews: document.getElementById('geometry-texture-previews'),
+  geometryTextureSize: document.getElementById('geometry-texture-size'),
+  geometryTextureGrayscale: document.getElementById('geometry-texture-grayscale'),
+  geometryTextureBrightness: document.getElementById('geometry-texture-brightness'),
+  geometryTextureBrightnessValue: document.getElementById('geometry-texture-brightness-value'),
+  geometryTextureContrast: document.getElementById('geometry-texture-contrast'),
+  geometryTextureContrastValue: document.getElementById('geometry-texture-contrast-value'),
+  geometryTextureOverlayColor: document.getElementById('geometry-texture-overlay-color'),
+  geometryTextureOverlayOpacity: document.getElementById('geometry-texture-overlay-opacity'),
+  geometryTextureOverlayValue: document.getElementById('geometry-texture-overlay-value'),
   siteEditor: document.getElementById('site-editor'),
   editorEmpty: document.getElementById('editor-empty'),
   
@@ -224,6 +238,7 @@ async function init() {
   setupNavigation();
   setupFormListeners();
   setupHeroEditorListeners();
+  setupGeometryTextureEditorListeners();
   setupSkillEditorListeners();
   setupSiteEditorListeners();
   setupMoveProject();
@@ -253,6 +268,7 @@ async function init() {
 
   // 2. Cargar configuración de Hero & Bentos
   await loadHeroSettings();
+  await loadGeometryTextureSettings();
 
   // 3. Cargar textos globales del sitio (site.json)
   try {
@@ -331,6 +347,9 @@ function setupEnvironmentUI() {
     if (el.btnUploadGalleryImg) {
       el.btnUploadGalleryImg.style.display = 'none';
     }
+    if (el.geometryTextureUpload) {
+      el.geometryTextureUpload.style.display = 'none';
+    }
     if (el.coverDropzone) {
       el.coverDropzone.title = 'Subida directa de archivos a disco deshabilitada en versión web';
     }
@@ -365,6 +384,9 @@ function setupEnvironmentUI() {
   if (el.btnUploadGalleryImg) {
     el.btnUploadGalleryImg.style.display = 'inline-flex';
   }
+  if (el.geometryTextureUpload) {
+    el.geometryTextureUpload.style.display = 'block';
+  }
   if (el.coverDropzone) {
     el.coverDropzone.title = 'Haz clic o arrastra una imagen para subir la portada';
   }
@@ -391,7 +413,8 @@ function setupNavigation() {
         'lab': 'Experimentos Lab',
         'skills': 'Perfil Técnico',
         'hero': '⚡ Hero (Bentos & Video)',
-        'site': '🌐 Textos del Sitio (Landing Copy)'
+        'site': '🌐 Textos del Sitio (Landing Copy)',
+        'geometry-textures': '◈ Texturas 3D'
       };
       el.currentSectionLabel.textContent = labels[state.currentSection] || state.currentSection;
 
@@ -400,14 +423,26 @@ function setupNavigation() {
         el.projectForm.style.display = 'none';
         el.skillEditor.style.display = 'none';
         el.siteEditor.style.display = 'none';
+        el.geometryTextureEditor.style.display = 'none';
         el.editorEmpty.style.display = 'none';
         el.heroEditor.style.display = 'block';
         renderHeroEditor();
+      } else if (state.currentSection === 'geometry-textures') {
+        el.btnAddProject.style.display = 'none';
+        el.projectForm.style.display = 'none';
+        el.heroEditor.style.display = 'none';
+        el.skillEditor.style.display = 'none';
+        el.siteEditor.style.display = 'none';
+        el.geometryTextureEditor.style.display = 'block';
+        el.editorEmpty.style.display = 'none';
+        renderGeometryTextureEditor();
+        renderGeometryTextureList();
       } else if (state.currentSection === 'skills') {
         el.btnAddProject.style.display = 'inline-flex';
         el.projectForm.style.display = 'none';
         el.heroEditor.style.display = 'none';
         el.siteEditor.style.display = 'none';
+        el.geometryTextureEditor.style.display = 'none';
         el.skillEditor.style.display = 'block';
         el.editorEmpty.style.display = 'none';
         renderProjectList();
@@ -417,6 +452,7 @@ function setupNavigation() {
         el.projectForm.style.display = 'none';
         el.heroEditor.style.display = 'none';
         el.skillEditor.style.display = 'none';
+        el.geometryTextureEditor.style.display = 'none';
         el.editorEmpty.style.display = 'none';
         el.siteEditor.style.display = 'block';
         renderSiteProjectList();
@@ -426,6 +462,7 @@ function setupNavigation() {
         el.heroEditor.style.display = 'none';
         el.skillEditor.style.display = 'none';
         el.siteEditor.style.display = 'none';
+        el.geometryTextureEditor.style.display = 'none';
         renderProjectList();
         loadActiveProject();
       }
@@ -437,6 +474,7 @@ function setupNavigation() {
     if (confirm('¿Descartar el borrador local y recargar los contenidos originales de los archivos?')) {
       localStorage.removeItem('vandalit_content_override');
       localStorage.removeItem('vandalit_hero_override');
+      localStorage.removeItem('vandalit_geometry_textures_override');
       showToast('Borrador restablecido. Recargando archivos...', 'success');
       setTimeout(() => window.location.reload(), 600);
     }
@@ -1568,6 +1606,218 @@ function deleteActiveSkill() {
 }
 
 // ── HERO & BENTOS STUDIO ENGINE ───────────────────────────
+async function loadGeometryTextureSettings() {
+  try {
+    const local = localStorage.getItem('vandalit_geometry_textures_override');
+    if (local) {
+      state.geometryTextureData = JSON.parse(local);
+    } else {
+      const response = await fetch(`${CONTENT_BASE_URL}/geometry-textures/index.json`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      state.geometryTextureData = await response.json();
+    }
+
+    if (!Array.isArray(state.geometryTextureData.images)) {
+      throw new Error('El manifiesto debe incluir un array de imágenes.');
+    }
+    renderGeometryTextureEditor();
+  } catch (error) {
+    console.error('[Backoffice] Could not load geometry texture library:', error);
+    showToast(`No se pudo cargar la biblioteca de texturas: ${error.message}`, 'danger');
+  }
+}
+
+function renderGeometryTextureEditor() {
+  const manifest = state.geometryTextureData;
+  if (!manifest) return;
+
+  el.geometryTextureFiles.value = manifest.images.map((image) => image.file).join('\n');
+  el.geometryTextureSize.value = String(manifest.textureSize || 512);
+  el.geometryTextureGrayscale.value = String(manifest.appearance?.grayscale !== false);
+  el.geometryTextureBrightness.value = String(manifest.appearance?.brightness ?? 0.72);
+  el.geometryTextureContrast.value = String(manifest.appearance?.contrast ?? 0.68);
+  el.geometryTextureOverlayColor.value = manifest.appearance?.overlayColor || '#080a0e';
+  el.geometryTextureOverlayOpacity.value = String(manifest.appearance?.overlayOpacity ?? 0.38);
+  updateGeometryTextureRangeLabels();
+  renderGeometryTexturePreviews();
+  renderGeometryTextureList();
+}
+
+function renderGeometryTexturePreviews() {
+  const images = state.geometryTextureData?.images || [];
+  updateGeometryTexturePreviewAppearance();
+  el.geometryTexturePreviews.replaceChildren();
+  images.forEach((image) => {
+    const card = document.createElement('div');
+    card.className = 'bo-texture-library__item';
+    const preview = document.createElement('div');
+    preview.className = 'bo-texture-library__preview';
+    const img = document.createElement('img');
+    img.src = resolveAssetPath(`${CONTENT_BASE_URL}/geometry-textures`, image.file);
+    img.alt = image.id;
+    preview.append(img);
+    const name = document.createElement('span');
+    name.textContent = image.id;
+    card.append(preview, name);
+    el.geometryTexturePreviews.append(card);
+  });
+}
+
+function updateGeometryTexturePreviewAppearance() {
+  const appearance = state.geometryTextureData?.appearance || {};
+  el.geometryTexturePreviews.style.setProperty('--texture-preview-brightness', appearance.brightness ?? 0.72);
+  el.geometryTexturePreviews.style.setProperty('--texture-preview-contrast', appearance.contrast ?? 0.68);
+  el.geometryTexturePreviews.style.setProperty('--texture-preview-overlay', appearance.overlayOpacity ?? 0.38);
+  el.geometryTexturePreviews.style.setProperty('--texture-preview-overlay-color', appearance.overlayColor || '#080a0e');
+  el.geometryTexturePreviews.style.setProperty('--texture-preview-grayscale', appearance.grayscale === false ? 'grayscale(0)' : 'grayscale(1)');
+}
+
+function renderGeometryTextureList() {
+  const images = state.geometryTextureData?.images || [];
+  el.projectList.replaceChildren();
+  images.forEach((image) => {
+    const item = document.createElement('div');
+    item.className = 'bo-project-item';
+    const info = document.createElement('div');
+    info.className = 'bo-project-item__info';
+    const title = document.createElement('span');
+    title.className = 'bo-project-item__title';
+    title.textContent = image.id;
+    const file = document.createElement('span');
+    file.className = 'bo-project-item__slug';
+    file.textContent = image.file;
+    info.append(title, file);
+    item.append(info);
+    el.projectList.append(item);
+  });
+  const count = document.getElementById('count-geometry-textures');
+  if (count) count.textContent = String(images.length);
+  if (el.currentSectionLabel && state.currentSection === 'geometry-textures') {
+    el.currentSectionLabel.textContent = `Biblioteca · ${images.length} imágenes`;
+  }
+}
+
+function updateGeometryTextureRangeLabels() {
+  el.geometryTextureBrightnessValue.textContent = Number(el.geometryTextureBrightness.value).toFixed(2);
+  el.geometryTextureContrastValue.textContent = Number(el.geometryTextureContrast.value).toFixed(2);
+  el.geometryTextureOverlayValue.textContent = `${Math.round(Number(el.geometryTextureOverlayOpacity.value) * 100)}%`;
+}
+
+function setupGeometryTextureEditorListeners() {
+  [el.geometryTextureFiles, el.geometryTextureSize, el.geometryTextureGrayscale,
+    el.geometryTextureBrightness, el.geometryTextureContrast, el.geometryTextureOverlayColor,
+    el.geometryTextureOverlayOpacity].forEach((input) => {
+    input.addEventListener('input', () => {
+      saveGeometryTextureValues();
+      updateGeometryTextureRangeLabels();
+    });
+  });
+  el.geometryTextureFiles.addEventListener('change', renderGeometryTexturePreviews);
+
+  el.geometryTextureUpload.addEventListener('change', async (event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = '';
+    if (!files.length) return;
+
+    try {
+      for (const file of files) {
+        const fileName = sanitizeGeometryTextureFilename(file.name);
+        const relativeFile = `assets/${fileName}`;
+        if (state.hasBackend) {
+          const formData = new FormData();
+          formData.append('section', 'geometry-textures');
+          formData.append('slug', 'library');
+          formData.append('target', 'geometry-texture');
+          formData.append('file', file, fileName);
+          const response = await fetch('/api/upload', { method: 'POST', body: formData });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+        } else if (state.fsHandle) {
+          const contentDir = await state.fsHandle.getDirectoryHandle('content');
+          const libraryDir = await contentDir.getDirectoryHandle('geometry-textures', { create: true });
+          const assetsDir = await libraryDir.getDirectoryHandle('assets', { create: true });
+          const destination = await assetsDir.getFileHandle(fileName, { create: true });
+          const writable = await destination.createWritable();
+          await writable.write(file);
+          await writable.close();
+        } else {
+          throw new Error('Conecta el backend local o la carpeta del proyecto para copiar archivos.');
+        }
+
+        if (!state.geometryTextureData.images.some((image) => image.file === relativeFile)) {
+          state.geometryTextureData.images.push({
+            id: fileName.replace(/\.[^.]+$/, '').replace(/[^a-z0-9-]+/g, '-'),
+            file: relativeFile
+          });
+        }
+      }
+
+      renderGeometryTextureEditor();
+      persistGeometryTextureDraft();
+      showToast(`${files.length} imagen(es) añadida(s) a la biblioteca.`);
+    } catch (error) {
+      console.error('[Backoffice] Could not upload geometry texture:', error);
+      showToast(`No se pudieron añadir las imágenes: ${error.message}`, 'danger');
+    }
+  });
+}
+
+function sanitizeGeometryTextureFilename(filename) {
+  const extension = filename.split('.').pop().toLowerCase();
+  const base = filename.slice(0, -(extension.length + 1))
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '');
+  if (!base || !/^(png|jpe?g|webp|gif|avif)$/.test(extension)) {
+    throw new Error(`Formato de imagen no admitido: ${filename}`);
+  }
+  return `${base}.${extension}`;
+}
+
+function saveGeometryTextureValues() {
+  if (!state.geometryTextureData) return;
+
+  const manifest = state.geometryTextureData;
+  const files = el.geometryTextureFiles.value.split('\n').map((file) => file.trim()).filter(Boolean);
+  if (files.length === 0) {
+    showToast('La biblioteca necesita al menos una imagen para asignar las caras.', 'danger');
+    return;
+  }
+  if (files.some((file) => !/^assets\/[a-z0-9._-]+$/i.test(file) || file.includes('..'))) {
+    showToast('Usa nombres de archivo simples dentro de assets/ (letras, números, punto, guion o guion bajo).', 'danger');
+    return;
+  }
+
+  manifest.images = files.map((file) => {
+    const existing = manifest.images.find((image) => image.file === file);
+    return existing || {
+      id: file.split('/').pop().replace(/\.[^.]+$/, '').replace(/[^a-z0-9-]+/g, '-'),
+      file
+    };
+  });
+  manifest.textureSize = Number(el.geometryTextureSize.value);
+  manifest.appearance = {
+    ...manifest.appearance,
+    grayscale: el.geometryTextureGrayscale.value === 'true',
+    brightness: Number(el.geometryTextureBrightness.value),
+    contrast: Number(el.geometryTextureContrast.value),
+    overlayColor: el.geometryTextureOverlayColor.value,
+    overlayOpacity: Number(el.geometryTextureOverlayOpacity.value)
+  };
+  updateGeometryTexturePreviewAppearance();
+  renderGeometryTextureList();
+  persistGeometryTextureDraft();
+}
+
+function persistGeometryTextureDraft() {
+  try {
+    localStorage.setItem('vandalit_geometry_textures_override', JSON.stringify(state.geometryTextureData));
+  } catch (error) {
+    console.error('[Backoffice] Error persistiendo el borrador de texturas:', error);
+    showToast(`No se pudo guardar el borrador de texturas: ${error.message}`, 'danger');
+  }
+}
+
+// ── HERO & BENTOS STUDIO ENGINE ───────────────────────────
 async function loadHeroSettings() {
   try {
     const local = localStorage.getItem('vandalit_hero_override');
@@ -1588,7 +1838,7 @@ async function loadHeroSettings() {
   // Garantizar que existan los 12 bentos si no se pudieron cargar
   if (!state.heroData || !Array.isArray(state.heroData.bentos) || state.heroData.bentos.length === 0) {
     state.heroData = {
-      videos: { stage1Id: 'Hse_HTX6KGs', stage2Id: 'GKq9nKZpmu0', transitionPx: 300 },
+      videos: { stage1Id: '', stage2Id: '', transitionPx: 300 },
       bentos: [
         { id: 'bento-card-1', num: '01', ratio: '9:16', workTitle: 'Valle de la Luna — Atacama', workMeta: '2023 · CLIENT WORK', targetAnchor: '#work', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'video', mediaSrc: 'https://turismolickancoy.cl/wp-content/uploads/2025/07/Duna-mayor-dentro-del-valle-de-la-luna.mp4', poster: './assets/images/midjourney/vandalit_Blob_graphic_dopamine_design_abstract_modern_design__7ce2ff82-6ce2-4c99-ba8d-15649dcbe2c2_1.png' },
         { id: 'bento-card-2', num: '02', ratio: '16:9', workTitle: 'Screens Mockup Web UI', workMeta: '2024 · MULTIMEDIA', targetAnchor: '#cases', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_screens_mockup_web_design_--sref_httpss.mj.runcgBuE3_bdfc81af-66c5-42b8-9a78-09b2648c35f5_3.png' },
@@ -1649,8 +1899,8 @@ function renderHeroEditor() {
   if (!state.heroData || !state.heroData.bentos) return;
 
   // Videos
-  el.fieldVideo1.value = state.heroData.videos?.stage1Id || 'Hse_HTX6KGs';
-  el.fieldVideo2.value = state.heroData.videos?.stage2Id || 'GKq9nKZpmu0';
+  el.fieldVideo1.value = state.heroData.videos?.stage1Id ?? '';
+  el.fieldVideo2.value = state.heroData.videos?.stage2Id ?? '';
   el.fieldVideoTrans.value = state.heroData.videos?.transitionPx || 300;
 
   // Grid de 12 bentos
@@ -1860,9 +2110,20 @@ function setupFileSystemAPI() {
           });
         }
 
+        if (state.geometryTextureData) {
+          const textureResponse = await fetch('/api/geometry-textures', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(state.geometryTextureData)
+          });
+          const textureResult = await textureResponse.json();
+          if (!textureResponse.ok) throw new Error(textureResult.error || `HTTP ${textureResponse.status}`);
+        }
+
         // Limpiar borradores
         localStorage.removeItem('vandalit_content_override');
         localStorage.removeItem('vandalit_hero_override');
+        localStorage.removeItem('vandalit_geometry_textures_override');
         localStorage.removeItem('vandalit_site_override');
 
         showToast('✅ ¡Todos los JSONs y archivos se guardaron físicamente en disco mediante el backend local!');
@@ -1923,9 +2184,18 @@ function setupFileSystemAPI() {
         await heroWritable.close();
       }
 
+      if (state.geometryTextureData) {
+        const textureDir = await contentDir.getDirectoryHandle('geometry-textures', { create: true });
+        const textureFile = await textureDir.getFileHandle('index.json', { create: true });
+        const textureWritable = await textureFile.createWritable();
+        await textureWritable.write(JSON.stringify(state.geometryTextureData, null, 2) + '\n');
+        await textureWritable.close();
+      }
+
       // Limpiar borradores
       localStorage.removeItem('vandalit_content_override');
       localStorage.removeItem('vandalit_hero_override');
+      localStorage.removeItem('vandalit_geometry_textures_override');
 
       showToast('✅ ¡Todos los archivos project.json, index.json y hero.json se guardaron físicamente en disco!');
     } catch (err) {
@@ -1968,7 +2238,7 @@ async function saveSectionToDisk(contentDir, sectionName, projects) {
 function setupExportImport() {
   el.btnExportJson.addEventListener('click', () => {
     const payload = {
-      version: '1.1',
+      version: '1.2',
       exportedAt: new Date().toISOString(),
       'case-studies': state.data['case-studies'],
       'clients': state.data['clients'],
@@ -1977,7 +2247,8 @@ function setupExportImport() {
         legend: state.skillsLegend || {},
         categories: state.data['skills']
       },
-      'hero': state.heroData
+      'hero': state.heroData,
+      'geometry-textures': state.geometryTextureData
     };
 
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -1987,7 +2258,7 @@ function setupExportImport() {
     a.download = `vandalit-portfolio-config-${new Date().toISOString().slice(0,10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast('Archivo JSON de configuración exportado (incluye Hero & Bentos)');
+    showToast('Configuración exportada (incluye Hero, Bentos y Texturas 3D)');
   });
 
   el.inputImportJson.addEventListener('change', (e) => {
@@ -2014,6 +2285,11 @@ function setupExportImport() {
           }
         }
         if (imported['hero']) state.heroData = imported['hero'];
+        if (imported['geometry-textures']) {
+          state.geometryTextureData = imported['geometry-textures'];
+          persistGeometryTextureDraft();
+          renderGeometryTextureEditor();
+        }
 
         persistDraft();
         persistHeroSettings();

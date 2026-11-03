@@ -25,7 +25,8 @@ El proyecto está diseñado bajo una filosofía **100% modular, desacoplada y es
    - **Capa 5 (`z-index: 30-32`)**: HUD interactivo frontal con animación *pop stroke* en yellow-green (`#ccf020`), flechas de callout informativas, metadata técnica y enlaces de ancla.
 3. **Contenido Desacoplado (`/content/`)**: Los proyectos y textos no están *hardcodeados*. Cada trabajo vive en su propio subdirectorio con su manifiesto `project.json`, y la landing entera se hidrata dinámicamente desde `site.json` y `hero.json`.
 4. **Studio & Backoffice Híbrido (`/backoffice/`)**: Interfaz visual de gestión conectada en local a un **Backend Node.js API** con subida real de imágenes por drag & drop, reorganización con migración física de proyectos entre secciones (`/api/content/move`) y persistencia directa a disco.
-5. **Generador Estático y Pipeline CI/CD (`build/build.js` + GitHub Actions)**:
+5. **Iteraciones de Casos de Estudio (`cases-v1` a `cases-v4`)**: Variantes aisladas y montadas en la landing para evaluación visual. Cases v4 añade un overlay negro `multiply` al 92% y tarjetas en escala de grises que recuperan el color al hover.
+6. **Generador Estático y Pipeline CI/CD (`build/build.js` + GitHub Actions)**:
    - **Zero-latency First Paint (SSG):** Al compilar con `npm run build`, se inyectan las tarjetas de casos, habilidades, trabajos y lab directamente en el HTML. Los crawlers y visitantes reciben el DOM completo de inmediato sin pantallas en blanco ni peticiones bloqueantes en el cliente.
    - **Optimización para Asistentes y Motores Generativos (GEO):** Generación automática de `llms.txt`, `sitemap.xml` y `robots.txt` con la metadata de proyectos y perfil técnico calibrado.
    - **Despliegue Continuo a GitHub Pages:** El workflow `.github/workflows/deploy.yml` compila y publica automáticamente la carpeta `./dist/` en cada push a `main`.
@@ -51,6 +52,9 @@ portafolio/
 │   ├── settings/
 │   │   ├── site.json              # Configuración global (Hero, textos de secciones, footer)
 │   │   └── hero.json              # Configuración de 12 bentos y videos de fondo
+│   ├── geometry-textures/
+│   │   ├── index.json             # Pool, asignación y tratamiento de superficies 3D
+│   │   └── assets/                 # Imágenes compartidas entre caras de las geometrías
 │   ├── case-studies/              # Sección: Casos de Estudio Seleccionados
 │   │   ├── index.json             # Lista y orden de slugs en carrusel
 │   │   ├── project.template.json  # Plantilla base en blanco
@@ -117,6 +121,7 @@ El portafolio incluye un panel visual integrado accesible en `/backoffice/` (o h
 │  • Lab (3)   │  ID / Slug:  [syzygy            ]  Categoría: [motion ] │
 │  • Skills (6)│  Título:     [Syzygy Design Sys ]  Cliente:   [Personal]│
 │  • Hero (12) │  Tags:       [design-system, motion, ui               ] │
+│  • Texturas 3D│  Pool de imágenes, mapeo por cara y tratamiento monocromo│
 ├──────────────┤  Cover:      [cover.webp       ] [🟢 OK: Asset detectado]│
 │  SISTEMA     │  Galería:    [01.webp, 02.webp                        ] │
 │  • Exportar  │  Reto:       [Crear una identidad visual con motion...] │
@@ -152,13 +157,19 @@ El portafolio incluye un panel visual integrado accesible en `/backoffice/` (o h
      - Poster de previsualización.
      - Título HUD, etiqueta técnica/meta, dirección de flecha de callout y ancla de destino (`#work`, `#cases`, `#lab`, `#skills`).
 
-5. **Verificador de Rutas de Imágenes (Asset Checker):**
+5. **Biblioteca de Texturas 3D:**
+   - Administra las imágenes en `content/geometry-textures/assets/` y la configuración en `content/geometry-textures/index.json`.
+   - Asigna el pool pseudoaleatoriamente, pero de manera estable, a las caras de las seis geometrías.
+   - Ajusta resolución (256/512/1024 px), blanco y negro, brillo, contraste y capa oscura; todas las caras comparten las texturas ya procesadas.
+   - Las subidas se guardan en la biblioteca local mediante el backend o File System Access API; en GitHub Pages el panel queda en modo de solo lectura y permite exportar la configuración.
+
+6. **Verificador de Rutas de Imágenes (Asset Checker):**
    - Detecta al escribir si el archivo de imagen especificado en `cover` existe físicamente en el servidor local devolviendo un badge visual:
      - `🟢 OK` (HTTP 200: archivo detectado y listo).
      - `🔴 404` (HTTP 404: archivo aún no colocado en la carpeta correspondiente).
 
-6. **Persistencia Híbrida Inteligente (Local vs Web):**
-   - **En Servidor Local (File System Access API):** El navegador solicita acceso a la carpeta del repositorio con `window.showDirectoryPicker()`. Al presionar **"💾 Guardar en Disco"**, el Backoffice escribe de forma nativa los archivos `project.json`, `index.json`, `hero.json` y `skills.json` directamente al almacenamiento físico, sin requerir scripts auxiliares ni servidores Node.js.
+7. **Persistencia Híbrida Inteligente (Local vs Web):**
+   - **En Servidor Local (File System Access API):** El navegador solicita acceso a la carpeta del repositorio con `window.showDirectoryPicker()`. Al presionar **"💾 Guardar en Disco"**, el Backoffice escribe de forma nativa los archivos `project.json`, `index.json`, `hero.json`, `skills.json` y el manifiesto de texturas directamente al almacenamiento físico, sin requerir scripts auxiliares ni servidores Node.js.
    - **En Despliegue Web (GitHub Pages):** Opera en modo seguro guardando borradores en `localStorage`. Almacena únicamente texto y referencias de ruta (menos de 25 KB), protegiendo la cuota del navegador y evitando el guardado destructivo de binarios en base64.
    - **Exportación e Importación JSON:** Genera y lee archivos descargables `vandalit-portfolio-config.json` para transferir configuraciones entre navegadores o respaldar cambios.
 
@@ -218,12 +229,14 @@ El portafolio incluye un panel visual integrado accesible en `/backoffice/` (o h
 
 ### B. Configuración del Hero (`content/settings/hero.json`)
 
+Los videos ambientales están desactivados temporalmente; ambos IDs permanecen vacíos mientras se investiga la regresión descrita en [docs/BUGS.md](./docs/BUGS.md).
+
 ```json
 {
-  "ambientVideos": {
-    "stage1VideoId": "Hse_HTX6KGs",
-    "stage2VideoId": "GKq9nKZpmu0",
-    "transitionScrollPx": 450
+  "videos": {
+    "stage1Id": "",
+    "stage2Id": "",
+    "transitionPx": 300
   },
   "bentos": [
     {
@@ -243,7 +256,32 @@ El portafolio incluye un panel visual integrado accesible en `/backoffice/` (o h
 }
 ```
 
-### C. Habilidades y Perfil (`content/skills/skills.json`)
+### C. Biblioteca de superficies 3D (`content/geometry-textures/index.json`)
+
+Las imágenes del pool viven en `content/geometry-textures/assets/`. El Hero las procesa a la resolución indicada y reutiliza las texturas entre caras:
+
+```json
+{
+  "version": 1,
+  "assignmentMode": "random",
+  "seed": "hero-surfaces-v1",
+  "textureSize": 512,
+  "appearance": {
+    "grayscale": true,
+    "brightness": 0.72,
+    "contrast": 0.68,
+    "overlayColor": "#080a0e",
+    "overlayOpacity": 0.38
+  },
+  "images": [
+    { "id": "screen-garden", "file": "assets/surface-screen-garden.png" }
+  ]
+}
+```
+
+La selección parece aleatoria, pero es determinista por cara para conservar una composición consistente; no se duplica un archivo por cada cara. La estimación actual para cuatro mapas de 512 px con mipmaps y dos contextos WebGL es ~10.7 MiB de GPU. Es una estimación; queda pendiente perfilar en dispositivos.
+
+### D. Habilidades y Perfil (`content/skills/skills.json`)
 
 Estructura calibrada por 3 ejes transversales (**Autoral/Multimedia**, **Desarrollo** y **Comercial**), con niveles técnicos y revelado porcentual en modal:
 
@@ -368,4 +406,3 @@ python3 -m http.server 8000
 ---
 
 *Diseño que comunica. Código que respira.*
-

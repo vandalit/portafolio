@@ -44,6 +44,8 @@ export class HeroScene {
     this.initialized = false;
     this.paused = false;
     this._firstRenderLogged = false;
+    this.geometryTextures = [];
+    this.destroyed = false;
 
     console.log('[HeroScene] Constructor instantiated with canvasBack:', this.canvasBack, 'canvasFront:', this.canvasFront);
   }
@@ -103,18 +105,18 @@ export class HeroScene {
     const ambient = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambient);
 
-    // Key light (warm magenta/pink tint)
-    const keyLight = new THREE.DirectionalLight(0xff609a, 1.8);
+    // Neutral key light keeps the toon shading monochromatic.
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.8);
     keyLight.position.set(5, 6, 6);
     scene.add(keyLight);
 
-    // Fill light (lime tint from lower opposite side)
-    const fillLight = new THREE.DirectionalLight(0xb8e030, 1.4);
+    // Soft graphite fill preserves detail in the darker faces.
+    const fillLight = new THREE.DirectionalLight(0xd8dce2, 1.4);
     fillLight.position.set(-6, -3, 4);
     scene.add(fillLight);
 
-    // Back rim light (cool lavender/cyan)
-    const backLight = new THREE.DirectionalLight(0x8080ff, 0.8);
+    // Neutral rim light adds a restrained silver edge.
+    const backLight = new THREE.DirectionalLight(0xaeb4bd, 0.8);
     backLight.position.set(0, -6, -4);
     scene.add(backLight);
   }
@@ -195,16 +197,162 @@ export class HeroScene {
     return group;
   }
 
+  async _loadGeometryFaceTextures() {
+    const THREE = this.three;
+    const manifestUrl = './content/geometry-textures/index.json';
+
+    try {
+      const response = await fetch(manifestUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const manifest = await response.json();
+      const images = manifest.images;
+      if (!Array.isArray(images) || images.length === 0) {
+        throw new Error('The texture library does not contain any images.');
+      }
+
+      const size = Math.max(64, Math.min(1024, Number(manifest.textureSize) || 512));
+      const appearance = manifest.appearance || {};
+      const textureLoader = new THREE.TextureLoader();
+      const textures = await Promise.all(images.map(async (image) => {
+        if (!image.id || !image.file || image.file.includes('..')) {
+          throw new Error(`Invalid texture entry: ${JSON.stringify(image)}`);
+        }
+
+        const source = await new Promise((resolve, reject) => {
+          textureLoader.load(
+            new URL(image.file, new URL(manifestUrl, window.location.href)).href,
+            resolve,
+            undefined,
+            reject
+          );
+        });
+        if (this.destroyed) {
+          source.dispose();
+          return null;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        if (!context) {
+          source.dispose();
+          throw new Error('Could not create a 2D context for geometry texture processing.');
+        }
+
+        const imageAspect = source.image.width / source.image.height;
+        const cropWidth = imageAspect > 1 ? source.image.height : source.image.width;
+        const cropHeight = imageAspect > 1 ? source.image.height : source.image.width;
+        const cropX = (source.image.width - cropWidth) / 2;
+        const cropY = (source.image.height - cropHeight) / 2;
+        context.drawImage(source.image, cropX, cropY, cropWidth, cropHeight, 0, 0, size, size);
+        source.dispose();
+
+        const pixels = context.getImageData(0, 0, size, size);
+        const configuredBrightness = Number(appearance.brightness);
+        const configuredContrast = Number(appearance.contrast);
+        const configuredOverlayOpacity = Number(appearance.overlayOpacity);
+        const brightness = Number.isFinite(configuredBrightness) ? Math.max(0, Math.min(1.5, configuredBrightness)) : 0.72;
+        const contrast = Number.isFinite(configuredContrast) ? Math.max(0, Math.min(2, configuredContrast)) : 0.68;
+        const overlayOpacity = Number.isFinite(configuredOverlayOpacity) ? Math.max(0, Math.min(1, configuredOverlayOpacity)) : 0.38;
+        const overlayHex = /^#[\da-f]{6}$/i.test(appearance.overlayColor) ? appearance.overlayColor.slice(1) : '080a0e';
+        const overlayR = parseInt(overlayHex.slice(0, 2), 16);
+        const overlayG = parseInt(overlayHex.slice(2, 4), 16);
+        const overlayB = parseInt(overlayHex.slice(4, 6), 16);
+
+        for (let index = 0; index < pixels.data.length; index += 4) {
+          const luminance = appearance.grayscale === false
+            ? (pixels.data[index] + pixels.data[index + 1] + pixels.data[index + 2]) / 3
+            : pixels.data[index] * 0.2126 + pixels.data[index + 1] * 0.7152 + pixels.data[index + 2] * 0.0722;
+          const tone = Math.max(0, Math.min(255, ((luminance - 128) * contrast + 128) * brightness));
+          pixels.data[index] = tone * (1 - overlayOpacity) + overlayR * overlayOpacity;
+          pixels.data[index + 1] = tone * (1 - overlayOpacity) + overlayG * overlayOpacity;
+          pixels.data[index + 2] = tone * (1 - overlayOpacity) + overlayB * overlayOpacity;
+        }
+        context.putImageData(pixels, 0, 0);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.generateMipmaps = true;
+        texture.minFilter = THREE.LinearMipmapLinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        this.geometryTextures.push(texture);
+        return { id: image.id, texture };
+      }));
+
+      if (this.destroyed) return;
+      const availableTextures = textures.filter(Boolean);
+      if (availableTextures.length === 0) return;
+
+      this.objects.forEach((group, geometryIndex) => {
+        const mesh = group.children.find((child) => child.isMesh);
+        if (!mesh) return;
+        const geometry = mesh.geometry;
+        const materials = availableTextures.map(({ texture }) => new THREE.MeshToonMaterial({
+          color: 0xffffff,
+          map: texture,
+          transparent: true,
+          opacity: 0.92,
+        }));
+
+        if (!geometry.index) {
+          const uv = geometry.attributes.uv;
+          geometry.clearGroups();
+          for (let vertex = 0; vertex < uv.count; vertex += 3) {
+            uv.setXY(vertex, 0, 0);
+            uv.setXY(vertex + 1, 1, 0);
+            uv.setXY(vertex + 2, 0.5, 1);
+            const faceIndex = vertex / 3;
+            const materialIndex = this._stableTextureIndex(geometryIndex, faceIndex, availableTextures.length, manifest.seed);
+            geometry.addGroup(vertex, 3, materialIndex);
+          }
+          uv.needsUpdate = true;
+        } else if (geometry.groups.length) {
+          geometry.groups.forEach((face, faceIndex) => {
+            face.materialIndex = this._stableTextureIndex(geometryIndex, faceIndex, availableTextures.length, manifest.seed);
+          });
+        } else {
+          geometry.clearGroups();
+          const indexCount = geometry.index.count;
+          for (let vertex = 0; vertex < indexCount; vertex += 3) {
+            const faceIndex = vertex / 3;
+            const materialIndex = this._stableTextureIndex(geometryIndex, faceIndex, availableTextures.length, manifest.seed);
+            geometry.addGroup(vertex, 3, materialIndex);
+          }
+        }
+
+        mesh.material.dispose();
+        mesh.material = materials;
+        group.userData.mat = null;
+        group.userData.surfaceMats = materials;
+      });
+    } catch (error) {
+      this.geometryTextures.forEach((texture) => texture.dispose());
+      this.geometryTextures = [];
+      console.error('[HeroScene] Could not load geometry texture library.', error);
+    }
+  }
+
+  _stableTextureIndex(geometryIndex, faceIndex, textureCount, seed = '') {
+    let hash = 2166136261;
+    const key = `${seed}:${geometryIndex}:${faceIndex}`;
+    for (let index = 0; index < key.length; index++) {
+      hash ^= key.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0) % textureCount;
+  }
+
   _createGeometries() {
     const THREE = this.three;
     console.log('[HeroScene] Distributing 3D geometries between Back [z:11] and Front [z:14] scenes...');
 
     // ── SCENE BACK (z-index: 11 - detrás del Bento HTML) ─────────
-    // 1. Large Icosahedron — center-left, magenta
+    // 1. Large Icosahedron — center-left, graphite with a bright outline
     this._createMesh(
       this.sceneBack,
       new THREE.IcosahedronGeometry(1.5, 0),
-      '#e8306e', '#ffa0c4',
+      '#41464e', '#f3f4f6',
       [-3.0, 0.2, -0.5], 1.0
     );
 
@@ -212,7 +360,7 @@ export class HeroScene {
     this._createMesh(
       this.sceneBack,
       new THREE.BoxGeometry(1.1, 1.1, 1.1),
-      '#8a1040', '#ff6090',
+      '#22262c', '#bfc5ce',
       [-2.0, -2.4, -1.0], 0.85
     );
 
@@ -220,26 +368,26 @@ export class HeroScene {
     this._createMesh(
       this.sceneBack,
       new THREE.DodecahedronGeometry(1.3, 0),
-      '#6a8010', '#d8ff40',
+      '#343941', '#e1e5ea',
       [2.0, -3.0, -3.0], 0.9
     );
 
     // ── SCENE FRONT (z-index: 14 - por delante del Bento HTML) ──
     const frontScene = this.sceneFront || this.sceneBack;
 
-    // 4. Octahedron — upper right, lime / yellowgreen
+    // 4. Octahedron — upper right, mid graphite with a white outline
     this._createMesh(
       frontScene,
       new THREE.OctahedronGeometry(1.2, 0),
-      '#b8e030', '#f0ff90',
+      '#4a5058', '#ffffff',
       [3.6, 1.8, -0.5], 1.0
     );
 
-    // 5. Tetrahedron — lower right, magenta reddish
+    // 5. Tetrahedron — lower right, obsidian with a silver outline
     this._createMesh(
       frontScene,
       new THREE.TetrahedronGeometry(1.1, 0),
-      '#d4205a', '#ff80a0',
+      '#2b3037', '#d5dae1',
       [4.2, -1.8, 0.5], 1.0
     );
 
@@ -247,9 +395,11 @@ export class HeroScene {
     this._createMesh(
       frontScene,
       new THREE.IcosahedronGeometry(0.7, 0),
-      '#ccf020', '#ffffff',
+      '#3a4048', '#f7f8fa',
       [-4.2, 2.5, 0.5], 0.9
     );
+
+    this._loadGeometryFaceTextures();
 
     console.log(`[HeroScene] Total 3D objects instantiated: ${this.objects.length} (3 in Back, 3 in Front).`);
   }
@@ -376,6 +526,12 @@ export class HeroScene {
       if (obj.userData.mat) {
         obj.userData.mat.opacity = Math.max(0.1, 0.92 - Math.max(0, sp - 0.75) * 3.5);
       }
+      if (obj.userData.surfaceMats) {
+        const opacity = Math.max(0.1, 0.92 - Math.max(0, sp - 0.75) * 3.5);
+        obj.userData.surfaceMats.forEach((material) => {
+          material.opacity = opacity;
+        });
+      }
       if (obj.userData.lineMat) {
         obj.userData.lineMat.opacity = Math.max(0.15, 0.95 - Math.max(0, sp - 0.75) * 3.0);
       }
@@ -441,7 +597,16 @@ export class HeroScene {
   }
 
   destroy() {
+    this.destroyed = true;
     if (this.animFrame) cancelAnimationFrame(this.animFrame);
+    this.geometryTextures.forEach((texture) => texture.dispose());
+    this.objects.forEach((group) => {
+      group.children.forEach((child) => {
+        child.geometry?.dispose();
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        materials.forEach((material) => material?.dispose());
+      });
+    });
     this.rendererBack?.dispose();
     this.rendererFront?.dispose();
   }

@@ -9,6 +9,7 @@ import { Carousel } from './carousel.js';
 import { CasesFeaturedCarousel } from './cases-featured-carousel.js';
 import { CasesV2 } from './cases-v2.js';
 import { CasesV3 } from './cases-v3.js';
+import { CasesV4 } from './cases-v4.js';
 import { GridFilter } from './grid-filter.js';
 import { ProjectModal } from './project-modal.js';
 import { LabModal } from './lab-modal.js';
@@ -600,6 +601,7 @@ function initNav() {
     hero: 'OVERVIEW · INTRO',
     cases: 'CASOS DE ESTUDIO',
     'cases-v3': 'CASOS DE ESTUDIO · V3',
+    'cases-v4': 'CASOS DE ESTUDIO · V4',
     skills: 'PERFIL TÉCNICO',
     work: 'TRABAJOS SELECCIONADOS',
     lab: 'LABORATORIO & LAB',
@@ -1017,6 +1019,10 @@ async function init() {
 
       if (document.getElementById('cases-v3')) {
         window.__casesV3 = new CasesV3(projectsData.cases);
+      }
+
+      if (document.getElementById('cases-v4')) {
+        window.__casesV4 = new CasesV4(projectsData.cases);
       }
 
       renderSkillCards(projectsData.skills.categories || []);

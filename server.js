@@ -55,6 +55,8 @@ const storage = multer.diskStorage({
       destDir = contentPath(section, slug, 'gallery');
     } else if (target === 'cover') {
       destDir = contentPath(section, slug);
+    } else if (target === 'geometry-texture') {
+      destDir = contentPath('geometry-textures', 'assets');
     } else if (target === 'bento') {
       destDir = assetsPath('images', 'bentos');
     } else {
@@ -128,7 +130,43 @@ app.put('/api/hero', (req, res) => {
   }
 });
 
-// 4. Skills
+// 4. Geometry Texture Library
+app.get('/api/geometry-textures', (req, res) => {
+  const filePath = contentPath('geometry-textures', 'index.json');
+  const data = readJsonFile(filePath);
+  if (!data) return res.status(404).json({ error: 'No se encontró la biblioteca de texturas.' });
+  res.json(data);
+});
+
+app.put('/api/geometry-textures', (req, res) => {
+  const manifest = req.body;
+  const validImages = Array.isArray(manifest?.images) && manifest.images.length > 0 && manifest.images.every((image) =>
+    typeof image?.id === 'string' &&
+    /^[a-z0-9][a-z0-9-]*$/i.test(image.id) &&
+    typeof image.file === 'string' &&
+    /^assets\/[a-z0-9._-]+$/i.test(image.file) &&
+    !image.file.includes('..')
+  );
+  const appearance = manifest?.appearance;
+  const validAppearance = appearance &&
+    typeof appearance.grayscale === 'boolean' &&
+    Number.isFinite(appearance.brightness) && appearance.brightness >= 0.2 && appearance.brightness <= 1.5 &&
+    Number.isFinite(appearance.contrast) && appearance.contrast >= 0.2 && appearance.contrast <= 2 &&
+    typeof appearance.overlayColor === 'string' && /^#[0-9a-f]{6}$/i.test(appearance.overlayColor) &&
+    Number.isFinite(appearance.overlayOpacity) && appearance.overlayOpacity >= 0 && appearance.overlayOpacity <= 1;
+  if (!validImages || !validAppearance || !Number.isInteger(manifest.textureSize) || manifest.textureSize < 64 || manifest.textureSize > 1024) {
+    return res.status(400).json({ error: 'El manifiesto de texturas contiene valores o rutas inválidas.' });
+  }
+
+  try {
+    writeJsonFile(contentPath('geometry-textures', 'index.json'), manifest);
+    res.json({ success: true, message: 'Biblioteca de texturas actualizada.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 5. Skills
 app.get('/api/skills', (req, res) => {
   const filePath = contentPath('skills', 'skills.json');
   const data = readJsonFile(filePath, []);
@@ -279,6 +317,8 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
     relativePath = `gallery/${fileName}`;
   } else if (target === 'cover') {
     relativePath = fileName;
+  } else if (target === 'geometry-texture') {
+    relativePath = `assets/${fileName}`;
   } else if (target === 'bento') {
     relativePath = `./assets/images/bentos/${fileName}`;
   } else {
@@ -317,4 +357,3 @@ app.listen(PORT, () => {
   console.log(`  • Backoffice:  http://localhost:${PORT}/backoffice/`);
   console.log(`  • Status API:  http://localhost:${PORT}/api/status\n`);
 });
-

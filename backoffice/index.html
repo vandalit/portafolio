@@ -98,6 +98,10 @@
           <span class="bo-sec-tab__name">🌐 Textos del Sitio (Landing Copy)</span>
           <span class="bo-sec-tab__count">Global</span>
         </button>
+        <button class="bo-sec-tab" data-section="geometry-textures" role="tab" aria-selected="false" style="grid-column: 1 / -1;">
+          <span class="bo-sec-tab__name">◈ Texturas 3D</span>
+          <span class="bo-sec-tab__count" id="count-geometry-textures">0</span>
+        </button>
       </div>
 
       <!-- Action: Add Project -->
@@ -469,6 +473,77 @@
                   <span>Sin imagen o video asignado</span>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="geometry-textures-editor" class="bo-form" style="display:none;">
+        <div class="bo-form__header">
+          <div class="bo-form__title-group">
+            <span class="bo-form__eyebrow">SECCIÓN: BIBLIOTECA DE SUPERFICIES</span>
+            <h1 class="bo-form__title">Texturas 3D</h1>
+            <code class="bo-form__slug">content/geometry-textures/index.json</code>
+          </div>
+        </div>
+
+        <div class="bo-form__grid">
+          <div class="bo-form__col">
+            <div class="bo-card">
+              <h3 class="bo-card__title">Imágenes disponibles</h3>
+              <p class="bo-help">Una ruta por línea, relativa a <code>content/geometry-textures/</code>. Las caras reciben imágenes de forma pseudoaleatoria y estable.</p>
+              <div class="bo-field">
+                <label for="geometry-texture-files">Archivos del pool</label>
+                <textarea id="geometry-texture-files" class="bo-textarea bo-input--mono" rows="8" spellcheck="false"></textarea>
+              </div>
+              <div class="bo-field">
+                <label for="geometry-texture-upload">Añadir imágenes a la biblioteca</label>
+                <input type="file" id="geometry-texture-upload" accept="image/*" multiple>
+                <span class="bo-help">Se copian a <code>content/geometry-textures/assets/</code>. Tamaño recomendado: 512 × 512 px.</span>
+              </div>
+              <div id="geometry-texture-previews" class="bo-texture-library"></div>
+            </div>
+          </div>
+
+          <div class="bo-form__col">
+            <div class="bo-card">
+              <h3 class="bo-card__title">Tratamiento de superficie</h3>
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="geometry-texture-size">Resolución de GPU</label>
+                  <select id="geometry-texture-size" class="bo-select">
+                    <option value="256">256 px · ligero</option>
+                    <option value="512">512 px · equilibrado</option>
+                    <option value="1024">1024 px · alta</option>
+                  </select>
+                </div>
+                <div class="bo-field">
+                  <label for="geometry-texture-grayscale">Color</label>
+                  <select id="geometry-texture-grayscale" class="bo-select">
+                    <option value="true">Blanco y negro</option>
+                    <option value="false">Original</option>
+                  </select>
+                </div>
+              </div>
+              <div class="bo-field">
+                <label for="geometry-texture-brightness">Brillo <output id="geometry-texture-brightness-value"></output></label>
+                <input type="range" id="geometry-texture-brightness" min="0.2" max="1.2" step="0.02">
+              </div>
+              <div class="bo-field">
+                <label for="geometry-texture-contrast">Contraste <output id="geometry-texture-contrast-value"></output></label>
+                <input type="range" id="geometry-texture-contrast" min="0.2" max="1.2" step="0.02">
+              </div>
+              <div class="bo-field-row">
+                <div class="bo-field">
+                  <label for="geometry-texture-overlay-color">Tono de capa oscura</label>
+                  <input type="color" id="geometry-texture-overlay-color" class="bo-input">
+                </div>
+                <div class="bo-field">
+                  <label for="geometry-texture-overlay-opacity">Opacidad de capa <output id="geometry-texture-overlay-value"></output></label>
+                  <input type="range" id="geometry-texture-overlay-opacity" min="0" max="0.8" step="0.02">
+                </div>
+              </div>
+              <span class="bo-help">El proceso reduce cada imagen una sola vez al cargar. La misma textura se comparte entre las geometrías y ambas capas WebGL.</span>
             </div>
           </div>
         </div>
