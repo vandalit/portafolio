@@ -36,6 +36,7 @@ export class CasesV4 {
     this._featuredMorph = null;
     this._featuredBackgroundRequest = null;
     this._decodedFeaturedImages = new Map();
+    this._dividerReleaseTimer = 0;
     this._exitPulseDistance = Number.parseFloat(
       getComputedStyle(root).getPropertyValue('--cv4-exit-pulse-distance')
     ) || 100;
@@ -121,6 +122,7 @@ export class CasesV4 {
       const source = event.target.closest('.cv4-carousel__viewport')
         || this.root.querySelector('.cv4-carousel--wide .cv4-carousel__viewport');
       if (!source) return;
+      this._setDividerMotion(horizontalDelta);
 
       const unit = event.deltaMode === WheelEvent.DOM_DELTA_LINE
         ? 16
@@ -174,6 +176,7 @@ export class CasesV4 {
     const previousAnchorSlot = this.anchorSlot;
     this.currentIndex = mod(this.currentIndex + step, this.items.length);
     this.anchorSlot += step;
+    this._setDividerMotion(step);
     window.clearTimeout(this._featuredMorphTimer);
     this._featuredMorph = null;
     if (Math.abs(step) === 1) {
@@ -186,7 +189,31 @@ export class CasesV4 {
     }
     this._updateFeatured(true);
     this._positionWindows(true);
+    this._releaseDividerAfter();
     this._scheduleRecenter();
+  }
+
+  _setDividerMotion(direction) {
+    if (!direction) return;
+    const divider = this.root.querySelector('.cv4-divider');
+    if (!divider) return;
+
+    window.clearTimeout(this._dividerReleaseTimer);
+    divider.dataset.direction = direction > 0 ? 'forward' : 'backward';
+    divider.classList.add('is-tracking');
+  }
+
+  _releaseDividerMotion() {
+    window.clearTimeout(this._dividerReleaseTimer);
+    this._dividerReleaseTimer = 0;
+    const divider = this.root.querySelector('.cv4-divider');
+    divider?.classList.remove('is-tracking');
+    divider?.removeAttribute('data-direction');
+  }
+
+  _releaseDividerAfter(delay = 10) {
+    window.clearTimeout(this._dividerReleaseTimer);
+    this._dividerReleaseTimer = window.setTimeout(() => this._releaseDividerMotion(), delay);
   }
 
   _updateFeatured(animate) {
@@ -468,15 +495,18 @@ export class CasesV4 {
       const step = slot - previousSlot;
       if (!step) {
         this._clearFeaturedMorph();
+        this._releaseDividerMotion();
         return;
       }
 
       this._setWindowSlot(source, slot);
       this.anchorSlot += step;
       this.currentIndex = mod(this.currentIndex + step, this.items.length);
+      this._setDividerMotion(step);
       this._clearFeaturedMorph();
       this._updateFeatured(true);
       this._positionWindows(true);
+      this._releaseDividerAfter();
       this._scheduleRecenter();
     }, 140));
   }
@@ -491,15 +521,18 @@ export class CasesV4 {
     const steps = slot - previousSlot;
     if (!steps) {
       this._positionWindows(false);
+      this._releaseDividerMotion();
       return;
     }
 
     this._setWindowSlot(source, slot);
     this.currentIndex = mod(this.currentIndex + steps, this.items.length);
     this.anchorSlot += steps;
+    this._setDividerMotion(steps);
     this._clearFeaturedMorph();
     this._updateFeatured(true);
     this._positionWindows(true);
+    this._releaseDividerAfter();
     this._scheduleRecenter();
   }
 
@@ -554,6 +587,7 @@ export class CasesV4 {
         this.viewports.forEach(viewport => viewport.classList.add('is-dragging'));
       }
 
+      this._setDividerMotion(-deltaX);
       const progress = -deltaX / gesture.strides[this.viewports.indexOf(gesture.source)];
       this.viewports.forEach((viewport, index) => {
         viewport.scrollLeft = gesture.startScrolls[index] + progress * gesture.strides[index];
@@ -573,6 +607,7 @@ export class CasesV4 {
     this.viewports.forEach(viewport => viewport.classList.remove('is-dragging'));
     if (!gesture.dragging) {
       this._clearFeaturedMorph();
+      this._releaseDividerMotion();
       return;
     }
 
@@ -580,8 +615,10 @@ export class CasesV4 {
     if (!cancelled) this._recordPointerSample(gesture, event);
     const releaseTime = event.timeStamp;
     const velocity = cancelled ? 0 : -this._estimatePointerVelocity(gesture, releaseTime);
+    if (event.clientX !== gesture.startX) this._setDividerMotion(gesture.startX - event.clientX);
     const distance = this._momentumDistance(velocity, sourceStride);
     if (distance && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this._setDividerMotion(distance);
       this._startMomentum(gesture.source, sourceStride, distance);
       return;
     }
@@ -672,9 +709,11 @@ export class CasesV4 {
     this._setWindowSlot(source, slot);
     this.currentIndex = mod(this.currentIndex + steps, this.items.length);
     this.anchorSlot += steps;
+    if (steps) this._setDividerMotion(steps);
     this._clearFeaturedMorph();
     this._updateFeatured(true);
     this._positionWindows(smooth);
+    this._releaseDividerAfter(smooth ? 10 : 0);
     this._scheduleRecenter();
   }
 
