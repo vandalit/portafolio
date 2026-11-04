@@ -99,8 +99,8 @@ function renderClientGrid(clients) {
   const grid = document.getElementById('clients-grid');
   if (!grid || !Array.isArray(clients)) return;
 
-  // Cover por defecto: imagen SVG blanca inlined (sin red, funciona estático)
-  const DEFAULT_COVER_SVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23f4f4f4'/%3E%3C/svg%3E`;
+  // Cover por defecto: placeholder grafito-cobalto inlined, sin dependencia de red.
+  const DEFAULT_COVER_SVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23343c48'/%3E%3C/svg%3E`;
 
   const allProjects = clients.map(c => ({ ...c, _type: 'client' }));
 
