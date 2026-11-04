@@ -5,7 +5,7 @@ export const bentoCard10 = createBentoCard({
   name: 'Bento #10',
   workTitle: 'Modular Studio Box 10',
   workMeta: '2024 · FRONT-END',
-  targetAnchor: '#cases',
+  targetAnchor: '#cases-v4',
   calloutDir: 'right',
   accentColor: '#ccf020',
   ratio: '1:1',

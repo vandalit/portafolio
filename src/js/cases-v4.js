@@ -7,6 +7,14 @@ const DIVIDER_BOUNCE_DURATION_MS = 140;
 const DIVIDER_BOUNCE_COMPRESS = 0.9;
 const DIVIDER_BOUNCE_OVERSHOOT = 1.05;
 const DIVIDER_MAIN_BOUNCE_GROWTH = 1.05;
+const CATEGORY_SIGILS = {
+  coding: '✦',
+  multimedia: '◈',
+  ux: '◈',
+  design: '◈',
+  commercial: '¤',
+  comercial: '¤'
+};
 
 const mod = (value, length) => ((value % length) + length) % length;
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, character => ({
@@ -38,6 +46,7 @@ export class CasesV4 {
     this._wheelTimer = 0;
     this._wheelSource = null;
     this._pointer = null;
+    this._lastDragClick = null;
     this._momentumFrame = 0;
     this._momentum = false;
     this._momentumSource = null;
@@ -78,16 +87,22 @@ export class CasesV4 {
           <article
             class="cv4-item"
             data-item-id="${escapeHTML(item.id)}"
+            data-project-id="${escapeHTML(item.id)}"
+            data-type="case"
             data-index="${index}"
             data-slot="${copy * this.items.length + index}"
-            role="listitem"
+            role="button"
+            tabindex="${copy === 2 ? '0' : '-1'}"
             aria-hidden="${copy !== 2}"
-            aria-label="${escapeHTML(item.title)}, ${escapeHTML(item.category)}"
+            aria-label="Ver caso: ${escapeHTML(item.title)}"
           >
             <img class="cv4-item__image" alt="" aria-hidden="true" loading="lazy" decoding="async">
             <span class="cv4-item__index">${String(index + 1).padStart(2, '0')}</span>
             <div class="cv4-item__copy">
-              <span class="cv4-item__role">${escapeHTML(item.role)}</span>
+              <div class="cv4-item__eyebrow">
+                <span class="cv4-item__sigil" aria-hidden="true">${this._getCategorySigil(item)}</span>
+                <span class="cv4-item__role">${escapeHTML(item.role)}</span>
+              </div>
               <h3 class="cv4-item__title">${escapeHTML(item.title)}</h3>
               <div class="cv4-item__tags">
                 ${(Array.isArray(item.tags) ? item.tags : []).map(tag => `
@@ -129,9 +144,32 @@ export class CasesV4 {
     });
 
     this.root.addEventListener('click', event => {
+      const card = event.target.closest('.cv4-item[data-project-id]');
+      if (card && this._isDragClick(event, card)) {
+        event.preventDefault();
+        event.stopPropagation();
+        this._lastDragClick = null;
+        return;
+      }
+
       const button = event.target.closest('[data-cv4-step]');
       if (!button) return;
       this._goTo(Number(button.dataset.cv4Step));
+    });
+
+    this.root.addEventListener('keydown', event => {
+      if (event.key !== ' ') return;
+      const card = event.target.closest('.cv4-item[role="button"]');
+      if (!card) return;
+      event.preventDefault();
+    });
+
+    this.root.addEventListener('keyup', event => {
+      if (event.key !== ' ') return;
+      const card = event.target.closest('.cv4-item[role="button"]');
+      if (!card) return;
+      event.preventDefault();
+      card.click();
     });
 
     this.root.addEventListener('wheel', event => {
@@ -364,7 +402,18 @@ export class CasesV4 {
   _setFeaturedContent(item, featured, eyebrow, title, description) {
     featured.dataset.activeItem = item.id;
     featured.style.setProperty('--cv4-accent-color', this._getAccentColor(item));
-    eyebrow.textContent = `${item.category} · Caso ${String(this.currentIndex + 1).padStart(2, '0')}`;
+    eyebrow.replaceChildren();
+    const sigil = this._getCategorySigil(item);
+    if (sigil) {
+      const sigilElement = document.createElement('span');
+      sigilElement.className = 'cv4-featured__sigil';
+      sigilElement.setAttribute('aria-hidden', 'true');
+      sigilElement.textContent = sigil;
+      eyebrow.append(sigilElement);
+    }
+    eyebrow.append(document.createTextNode(
+      `${item.category} · Caso ${String(this.currentIndex + 1).padStart(2, '0')}`
+    ));
     title.textContent = item.title;
     description.textContent = item.description || '';
 
@@ -394,6 +443,10 @@ export class CasesV4 {
   _getAccentColor(item) {
     const color = String(item?.accentColor || '').trim();
     return color && CSS.supports('color', color) ? color : 'var(--lime)';
+  }
+
+  _getCategorySigil(item) {
+    return CATEGORY_SIGILS[String(item?.category || '').trim().toLowerCase()] || '';
   }
 
   _decodeFeaturedImage(src) {
@@ -734,6 +787,7 @@ export class CasesV4 {
     this.viewports.forEach(viewport => {
       viewport.addEventListener('pointerdown', event => {
         if (!event.target.closest('.cv4-item')) return;
+        this._lastDragClick = null;
         if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
         if (this._pointer) return;
         this._cancelMomentum(false);
@@ -793,6 +847,16 @@ export class CasesV4 {
       return;
     }
 
+    if (!cancelled) {
+      this._lastDragClick = {
+        pointerId: event.pointerId,
+        source: gesture.source,
+        x: event.clientX,
+        y: event.clientY,
+        time: performance.now()
+      };
+    }
+
     const sourceStride = gesture.strides[this.viewports.indexOf(gesture.source)];
     if (!cancelled) this._recordPointerSample(gesture, event);
     const releaseTime = event.timeStamp;
@@ -806,6 +870,14 @@ export class CasesV4 {
     }
 
     this._settleDrag(gesture.source, cancelled);
+  }
+
+  _isDragClick(event, card) {
+    const drag = this._lastDragClick;
+    if (!drag || event.detail === 0 || performance.now() - drag.time > 500) return false;
+    if (card.closest('.cv4-carousel__viewport') !== drag.source) return false;
+    if (typeof event.pointerId === 'number' && event.pointerId !== drag.pointerId) return false;
+    return Math.hypot(event.clientX - drag.x, event.clientY - drag.y) <= 32;
   }
 
   _recordPointerSample(gesture, event) {

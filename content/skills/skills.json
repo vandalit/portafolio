@@ -87,27 +87,37 @@
           "state": "confirmado"
         },
         {
+          "name": "HTML",
+          "level": "intermedio",
+          "state": "confirmado"
+        },
+        {
+          "name": "CSS",
+          "level": "intermedio",
+          "state": "confirmado"
+        },
+        {
+          "name": "JavaScript",
+          "level": "intermedio",
+          "state": "confirmado"
+        },
+        {
           "name": "Laravel",
-          "level": "avanzado",
+          "level": "intermedio",
           "state": "confirmado"
         },
         {
           "name": "Angular",
-          "level": "avanzado",
-          "state": "confirmado"
-        },
-        {
-          "name": "HTML, CSS y JavaScript",
-          "level": "avanzado",
-          "state": "confirmado"
-        },
-        {
-          "name": "React",
           "level": "intermedio",
           "state": "confirmado"
         },
         {
           "name": "CMS headless",
+          "level": "intermedio",
+          "state": "confirmado"
+        },
+        {
+          "name": "React",
           "level": "intermedio",
           "state": "confirmado"
         }
@@ -117,11 +127,13 @@
       "accentColor": "#b6e030",
       "skills": [
         "WordPress",
+        "HTML",
+        "CSS",
+        "JavaScript",
         "Laravel",
         "Angular",
-        "HTML, CSS y JavaScript",
-        "React",
-        "CMS headless"
+        "CMS headless",
+        "React"
       ]
     },
     {
@@ -138,40 +150,51 @@
       "items": [
         {
           "name": "Estrategia de contenido",
+          "level": "0",
+          "state": "confirmado"
+        },
+        {
+          "name": "SEO",
           "level": "intermedio",
           "state": "confirmado"
         },
         {
-          "name": "SEO técnico y on-page",
-          "level": "intermedio",
-          "state": "confirmado"
-        },
-        {
-          "name": "Copywriting UX y storytelling",
-          "level": "intermedio",
+          "name": "Copywriting / UX Writing",
+          "level": "0",
           "state": "confirmado"
         },
         {
           "name": "Marketing con IA",
+          "level": "basico",
+          "state": "confirmado"
+        },
+        {
+          "name": "GEO",
+          "level": "basico",
+          "state": "confirmado"
+        },
+        {
+          "name": "Campañas SEM",
           "level": "intermedio",
           "state": "confirmado"
         },
         {
-          "name": "GEO (optimización para motores generativos)",
-          "level": "basico",
-          "state": "confirmado"
-        },
-        {
-          "name": "Campañas Meta y Google Ads",
-          "level": "basico",
-          "state": "confirmado"
-        },
-        {
           "name": "Analítica (GA4)",
-          "level": "basico",
-          "state": "en-curso",
-          "note": "Certificación Google Marketing en curso"
+          "level": "intermedio",
+          "state": "en-curso"
         }
+      ],
+      "category": "Estrategia de contenido, SEO y GEO",
+      "filterTag": "content",
+      "accentColor": "#ffaa00",
+      "skills": [
+        "Estrategia de contenido",
+        "SEO",
+        "Copywriting / UX Writing",
+        "Marketing con IA",
+        "GEO",
+        "Campañas SEM",
+        "Analítica (GA4)"
       ]
     },
     {

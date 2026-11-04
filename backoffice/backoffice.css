@@ -1032,6 +1032,14 @@ body.bo-body {
   transition: border-color 0.2s ease;
 }
 
+.bo-skill-item.is-dragging {
+  opacity: 0.45;
+}
+
+.bo-skill-item.is-drop-target {
+  border-color: var(--lime);
+}
+
 .bo-skill-item:hover {
   border-color: var(--border-2);
 }
@@ -1046,12 +1054,29 @@ body.bo-body {
   cursor: grab;
   color: var(--text-3);
   display: flex;
+  justify-content: center;
   align-items: center;
+  width: 28px;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   font-size: 16px;
   user-select: none;
 }
 
-.bo-skill-item__drag:active {
+.bo-skill-item__drag:hover,
+.bo-skill-item__drag:focus-visible {
+  color: var(--lime);
+}
+
+.bo-skill-item__drag:focus-visible {
+  outline: 1px solid var(--lime);
+  outline-offset: 2px;
+}
+
+.bo-skill-item__drag:active,
+.bo-skill-item.is-dragging .bo-skill-item__drag {
   cursor: grabbing;
 }
 

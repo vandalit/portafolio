@@ -402,6 +402,10 @@ const observer = new IntersectionObserver(entries => {
 sections.forEach(s => observer.observe(s));
 ```
 
+### Prototipo de estaciones de scroll
+
+Cases V4 introduce una estación de 400 px en escritorio: el tablero queda fijado al borde inferior del navbar cuando su borde superior llega a él, y se libera al terminar ese recorrido. El rótulo contextual de la sección junto al logo cambia a lima solo mientras el tablero está fijado; los tabs de navegación no cambian de color. Se implementa con `position: sticky` y un tramo de recorrido explícito, sin interceptar la rueda ni bloquear el scroll; se desactiva si el tablero no cabe en el viewport y en pantallas móviles. Es un patrón piloto: cada sección futura requiere definir su propio punto de anclaje y duración antes de aplicarlo.
+
 ---
 
 ## 11. Deploy — GitHub Pages

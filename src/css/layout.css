@@ -111,7 +111,7 @@ section {
   color: var(--text-2, #6a677a);
   font-weight: 500;
   letter-spacing: 0.14em;
-  transition: opacity 250ms ease, transform 250ms ease;
+  transition: color var(--transition), opacity 250ms ease, transform 250ms ease;
 }
 
 @media (max-width: 640px) {
@@ -156,6 +156,10 @@ section {
 .nav__link.active::after,
 .nav__link:hover::after {
   transform: scaleX(1);
+}
+
+.nav__context-text.is-station-active {
+  color: var(--lime);
 }
 
 .nav__cta {
@@ -522,7 +526,7 @@ body.fx-off .hero__canvas-front {
 
 /* ── SECTION ALTERNATING BG ──────────────────────────────── */
 #hero    { background: var(--bg-0); }
-#cases   { background: var(--bg-1); }
+#cases-v4 { background: var(--bg-1); }
 #skills  { background: var(--bg-2); }
 #work    { background: var(--bg-1); padding-bottom: 0; }
 #lab     { background: var(--bg-2); }

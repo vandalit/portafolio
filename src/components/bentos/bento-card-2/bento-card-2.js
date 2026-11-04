@@ -11,7 +11,7 @@ export const bentoCard2 = createBentoCard({
   name: 'Bento #02',
   workTitle: 'Screens Mockup Web UI',
   workMeta: '2024 · MULTIMEDIA',
-  targetAnchor: '#cases',
+  targetAnchor: '#cases-v4',
   calloutDir: 'left',
   accentColor: '#ccf020',
   ratio: '16:9',

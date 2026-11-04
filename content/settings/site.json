@@ -8,7 +8,7 @@
     "eyebrow": "UX/UI Designer & Front-end Developer",
     "tagline": "Diseño que comunica. Código que respira.",
     "ctaWorkText": "Ver trabajo",
-    "ctaWorkHref": "#cases",
+    "ctaWorkHref": "#cases-v4",
     "ctaContactText": "Contacto",
     "ctaContactHref": "mailto:vandalit@metamedia.cl",
     "email": "vandalit@metamedia.cl",
@@ -63,7 +63,7 @@
       },
       {
         "label": "Proyectos",
-        "url": "#cases",
+        "url": "#cases-v4",
         "external": false
       },
       {

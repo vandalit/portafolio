@@ -6,9 +6,6 @@ console.log('%c[Portafolio:Main] 🚀 main.js loaded', 'background: #080810; col
 
 import { HeroScene } from './three-scene.js';
 import { Carousel } from './carousel.js';
-import { CasesFeaturedCarousel } from './cases-featured-carousel.js';
-import { CasesV2 } from './cases-v2.js';
-import { CasesV3 } from './cases-v3.js';
 import { CasesV4 } from './cases-v4.js';
 import { GridFilter } from './grid-filter.js';
 import { ProjectModal } from './project-modal.js';
@@ -31,79 +28,6 @@ async function loadData() {
 }
 
 // ── RENDER ────────────────────────────────────────────────
-// NOTA: renderFeatured y renderCaseCards están deprecadas.
-// Ahora se usa CasesFeaturedCarousel que maneja ambas en sincronía.
-// Se mantienen comentadas por si se necesitan en el futuro.
-
-/*
-function renderCaseCards(cases) {
-  const track = document.querySelector('#cases-carousel .carousel-track');
-  if (!track) return;
-
-  const featured = cases.find(c => c.featured) || cases[0];
-  const carouselCases = featured ? cases.filter(c => c.id !== featured.id) : cases;
-
-  track.innerHTML = carouselCases.map((c, i) => {
-    const isMultimedia = c.category === 'multimedia';
-    const accentColor = isMultimedia ? 'var(--magenta)' : 'var(--lime)';
-    const tagClass = isMultimedia ? 'tag--magenta' : 'tag--lime';
-    return `
-      <article class="case-card ${i === 0 ? 'is-active' : ''}"
-               data-project-id="${c.id}"
-               data-type="case"
-               role="button" tabindex="0"
-               aria-label="Ver caso de estudio: ${c.title}">
-        <img class="case-card__img"
-             src="${c.coverPlaceholder}"
-             alt="${c.title}"
-             loading="${i < 2 ? 'eager' : 'lazy'}"
-             decoding="async"
-             onload="this.classList.add('is-loaded');this.closest('.case-card').classList.add('image-loaded')">
-        <div class="case-card__overlay"></div>
-        <div class="case-card__accent" style="background:${accentColor}"></div>
-        <div class="case-card__content">
-          <p class="case-card__eyebrow">${c.role}</p>
-          <h3 class="case-card__title">${c.title}</h3>
-          <div class="case-card__tags">
-            ${c.tags.map(t => `<span class="tag ${tagClass}">${t}</span>`).join('')}
-          </div>
-        </div>
-      </article>
-    `;
-  }).join('');
-}
-
-function renderFeatured(cases) {
-  const featured = cases.find(c => c.featured) || cases[0];
-  const el = document.getElementById('featured-case');
-  if (!el || !featured) return;
-
-  const isMultimedia = featured.category === 'multimedia';
-  const accentColor = isMultimedia ? 'var(--magenta)' : 'var(--lime)';
-
-  el.innerHTML = `
-    <img class="featured-case__img" src="${featured.coverPlaceholder}" alt="${featured.title}" loading="eager" decoding="async" onload="this.classList.add('is-loaded');this.closest('.featured-case').classList.add('image-loaded')">
-    <div class="featured-case__overlay"></div>
-    <div class="featured-case__strip" style="background:${accentColor}"></div>
-    <div class="featured-case__content">
-      <p class="featured-case__category" style="color:${accentColor}">${featured.category === 'coding' ? '✦ Coding' : '◈ Multimedia'}</p>
-      <h2 class="featured-case__title">${featured.title}</h2>
-      <p class="featured-case__desc">${featured.description}</p>
-      <div class="featured-case__meta">
-        <button class="btn ${isMultimedia ? 'btn--primary' : 'btn--lime'}"
-                data-project-id="${featured.id}" data-type="case">
-          Ver caso <span class="btn__icon">→</span>
-        </button>
-        <span class="tag ${isMultimedia ? 'tag--magenta' : 'tag--lime'}">${featured.year}</span>
-        <span class="tag">${featured.role}</span>
-      </div>
-    </div>
-  `;
-
-  el.dataset.projectId = featured.id;
-  el.dataset.type = 'case';
-}
-*/
 
 // Mapa de niveles a porcentaje de relleno para el ojo en modal
 const LEVEL_PCT = {
@@ -643,6 +567,54 @@ function initNav() {
   const sections = document.querySelectorAll('section[id]');
   const navLinks = document.querySelectorAll('.nav__link[href^="#"], .nav__cta[href^="#"]');
   const logo = document.querySelector('.nav__logo');
+  const casesSection = document.getElementById('cases-v4');
+  const casesBoard = casesSection?.querySelector('.cv4-board');
+  const casesContainer = casesBoard?.parentElement;
+  const casesContextText = nav?.querySelector('#nav-context-text');
+  let stationFrame = 0;
+
+  const updateCasesStation = () => {
+    stationFrame = 0;
+    if (!nav || !casesBoard || !casesContainer || !casesContextText) return;
+
+    const navBottom = nav.getBoundingClientRect().bottom;
+    const boardRect = casesBoard.getBoundingClientRect();
+    const containerBottom = casesContainer.getBoundingClientRect().bottom;
+    const stationEnabled = casesSection.classList.contains('is-station-ready');
+    const isPinned = Math.abs(boardRect.top - navBottom) <= 0.2
+      && containerBottom > boardRect.bottom + 0.5;
+    casesContextText.classList.toggle('is-station-active', stationEnabled && isPinned);
+  };
+
+  const scheduleCasesStationUpdate = () => {
+    if (stationFrame) return;
+    stationFrame = window.requestAnimationFrame(updateCasesStation);
+  };
+
+  const updateCasesStationOffset = () => {
+    if (nav && casesSection) {
+      const navHeight = nav.getBoundingClientRect().height;
+      casesSection.style.setProperty(
+        '--cv4-station-top',
+        `${navHeight}px`
+      );
+      const stationFits = window.matchMedia('(min-width: 641px)').matches
+        && casesBoard.offsetHeight <= window.innerHeight - navHeight;
+      casesSection.classList.toggle('is-station-ready', stationFits);
+    }
+    scheduleCasesStationUpdate();
+  };
+
+  if (nav && casesSection && casesBoard && casesContainer && casesContextText) {
+    updateCasesStationOffset();
+    window.addEventListener('scroll', scheduleCasesStationUpdate, { passive: true });
+    window.addEventListener('resize', updateCasesStationOffset, { passive: true });
+    if (typeof ResizeObserver !== 'undefined') {
+      const stationResizeObserver = new ResizeObserver(updateCasesStationOffset);
+      stationResizeObserver.observe(nav);
+      stationResizeObserver.observe(casesBoard);
+    }
+  }
 
   // Logo click -> always scroll smoothly to point 0 (top of page)
   if (logo) {
@@ -660,6 +632,7 @@ function initNav() {
       wasScrolled = isScrolled;
       nav.classList.toggle('scrolled', isScrolled);
     }
+    scheduleCasesStationUpdate();
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
@@ -668,9 +641,7 @@ function initNav() {
   const contextText = document.getElementById('nav-context-text');
   const sectionLabels = {
     hero: 'OVERVIEW · INTRO',
-    cases: 'CASOS DE ESTUDIO',
-    'cases-v3': 'CASOS DE ESTUDIO · V3',
-    'cases-v4': 'CASOS DE ESTUDIO · V4',
+    'cases-v4': 'CASOS DE ESTUDIO',
     skills: 'PERFIL TÉCNICO',
     work: 'TRABAJOS SELECCIONADOS',
     lab: 'LABORATORIO & LAB',
@@ -1070,26 +1041,6 @@ async function init() {
       hydrateSiteSettings(siteSettings);
     }
     if (projectsData) {
-      // Mantener el carrusel legado disponible solo si su markup está presente.
-      if (projectsData.cases?.length
-        && document.getElementById('featured-case')
-        && document.getElementById('cases-carousel')) {
-        window.__casesFeaturedCarousel = new CasesFeaturedCarousel(projectsData.cases, {
-          autoplaySpeed: 6000,
-          pauseOnHover: true,
-          loop: true,
-          timerVisible: true
-        });
-      }
-
-      if (document.getElementById('cv2-stage')) {
-        window.__casesV2 = new CasesV2(projectsData.cases);
-      }
-
-      if (document.getElementById('cases-v3')) {
-        window.__casesV3 = new CasesV3(projectsData.cases);
-      }
-
       if (document.getElementById('cases-v4')) {
         window.__casesV4 = new CasesV4(projectsData.cases);
       }
@@ -1154,7 +1105,6 @@ async function init() {
   initScrollTop();
 
   // 5. Carousels & Grid Filter
-  // (Cases carousel ya está inicializado por CasesFeaturedCarousel)
 
   const skillsCarousel = document.getElementById('skills-carousel');
   const skillsCarouselInstance = skillsCarousel ? new Carousel(skillsCarousel, { activeClass: '' }) : null;

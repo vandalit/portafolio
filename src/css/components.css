@@ -987,7 +987,9 @@
 }
 .skills-legend__item[data-dot]:hover .skills-legend__label { color: var(--text-0); }
 .skills-legend__item[data-dot].is-active .skills-legend__label { color: var(--text-0); }
-.skills-legend__item[data-dot].is-active .skills-legend__dot  { box-shadow: 0 0 12px currentColor; }
+.skills-legend__item[data-dot].is-active .skills-legend__sigil {
+  text-shadow: 0 0 12px currentColor;
+}
 
 /* Draft card overlay (Card 7 - Multimedia) */
 .skill-card--draft {
@@ -2680,27 +2682,19 @@
   gap: var(--sp-3);
 }
 
-.skills-legend__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: var(--radius-pill);
-  display: block;
+.skills-legend__sigil {
+  min-width: 1em;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 0 8px currentColor;
+  transition: text-shadow var(--transition-fast);
 }
 
-.skills-legend__dot--magenta {
-  background: var(--magenta);
-  box-shadow: 0 0 8px var(--magenta-glow);
-}
-
-.skills-legend__dot--lime {
-  background: var(--lime);
-  box-shadow: 0 0 8px var(--lime-glow);
-}
-
-.skills-legend__dot--mango {
-  background: var(--mango);
-  box-shadow: 0 0 8px var(--mango-glow);
-}
+.skills-legend__sigil--design { color: var(--magenta); }
+.skills-legend__sigil--development { color: var(--lime); }
+.skills-legend__sigil--commercial { color: var(--mango); }
 
 .skills-legend__label {
   color: var(--text-2);
@@ -2710,7 +2704,7 @@
 /* Clear filter button — X brutalista */
 .skills-legend__clear {
   display: none;
-  margin-top: var(--sp-4);
+  margin-top: 0;
   font-family: 'Impact', 'Arial Black', 'Franklin Gothic Heavy', var(--font-body);
   font-size: 1.4rem;
   font-weight: 900;

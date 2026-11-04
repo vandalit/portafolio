@@ -1,9 +1,9 @@
   <section id="cases-v4" class="cases-v4" aria-label="Casos de estudio v4">
     <div class="container">
       <header class="section-header reveal">
-        <p class="eyebrow section-header__eyebrow">Proyectos seleccionados · <span class="cv4-header__version">[V4 · MULTIPLY / CHROMA HOVER]</span></p>
-        <h2 class="section-header__title display">Casos de Estudio</h2>
-        <p class="section-header__desc">Imágenes monocromáticas que recuperan su color al interactuar.</p>
+        <p id="cases-eyebrow" class="eyebrow section-header__eyebrow">Proyectos seleccionados</p>
+        <h2 id="cases-title" class="section-header__title display">Casos de Estudio</h2>
+        <p id="cases-desc" class="section-header__desc">Proyectos donde el brief fue el punto de partida, no el límite.</p>
       </header>
 
       <div class="cv4-board">
@@ -35,7 +35,7 @@
         <div class="cv4-carousel-row">
           <div class="cv4-carousel cv4-carousel--compact" data-cv4-carousel="compact">
             <div class="cv4-carousel__viewport" tabindex="0" role="region" aria-label="Carrusel compacto de casos">
-              <div class="cv4-carousel__track" role="list"></div>
+              <div class="cv4-carousel__track" role="group" aria-label="Casos de estudio"></div>
             </div>
           </div>
 
@@ -50,7 +50,7 @@
 
           <div class="cv4-carousel cv4-carousel--wide" data-cv4-carousel="wide">
             <div class="cv4-carousel__viewport" tabindex="0" role="region" aria-label="Carrusel de serie de casos">
-              <div class="cv4-carousel__track" role="list"></div>
+              <div class="cv4-carousel__track" role="group" aria-label="Casos de estudio"></div>
             </div>
             <div class="cv4-carousel__controls" aria-label="Controles del carrusel">
               <span class="cv4-item-counter" aria-label="Número del item activo">
@@ -69,5 +69,6 @@
           </div>
         </div>
       </div>
+      <div class="cv4-station__runway" aria-hidden="true"></div>
     </div>
   </section>

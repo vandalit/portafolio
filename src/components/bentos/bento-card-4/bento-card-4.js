@@ -11,7 +11,7 @@ export const bentoCard4 = createBentoCard({
   name: 'Bento #04',
   workTitle: 'Fluor Street Punk Art',
   workMeta: '2024 · MOTION & ART',
-  targetAnchor: '#cases',
+  targetAnchor: '#cases-v4',
   calloutDir: 'left',
   accentColor: '#ccf020',
   ratio: '4:5',

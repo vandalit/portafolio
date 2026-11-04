@@ -1354,8 +1354,89 @@ function setupSkillEditorListeners() {
     });
   }
 
+  setupSkillItemReordering();
+
   el.btnDeleteSkill.addEventListener('click', () => {
     deleteActiveSkill();
+  });
+}
+
+function setupSkillItemReordering() {
+  const itemsList = document.getElementById('skill-items-list');
+  if (!itemsList) return;
+
+  let draggedItem = null;
+  let dropTarget = null;
+  let initialOrder = [];
+
+  itemsList.addEventListener('dragstart', event => {
+    const handle = event.target.closest('.bo-skill-item__drag');
+    if (!handle) return;
+
+    draggedItem = handle.closest('.bo-skill-item');
+    initialOrder = [...itemsList.children];
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', 'skill-item');
+    draggedItem.classList.add('is-dragging');
+  });
+
+  itemsList.addEventListener('dragover', event => {
+    if (!draggedItem) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+
+    const targetItem = event.target.closest('.bo-skill-item');
+    if (dropTarget && dropTarget !== targetItem) dropTarget.classList.remove('is-drop-target');
+    dropTarget = targetItem && targetItem !== draggedItem ? targetItem : null;
+    dropTarget?.classList.add('is-drop-target');
+
+    if (!targetItem || targetItem === draggedItem) {
+      if (event.target === itemsList) itemsList.appendChild(draggedItem);
+      return;
+    }
+
+    const { top, height } = targetItem.getBoundingClientRect();
+    if (event.clientY < top + height / 2) {
+      itemsList.insertBefore(draggedItem, targetItem);
+    } else {
+      targetItem.after(draggedItem);
+    }
+  });
+
+  itemsList.addEventListener('dragend', () => {
+    if (!draggedItem) return;
+
+    draggedItem.classList.remove('is-dragging');
+    dropTarget?.classList.remove('is-drop-target');
+    dropTarget = null;
+    const currentOrder = [...itemsList.children];
+    const didReorder = currentOrder.some((item, index) => item !== initialOrder[index]);
+    draggedItem = null;
+    initialOrder = [];
+
+    if (didReorder) {
+      saveActiveSkillValues();
+      updateSkillLivePreview();
+      showToast('Orden de capacidades actualizado', 'success');
+    }
+  });
+
+  itemsList.addEventListener('keydown', event => {
+    const handle = event.target.closest('.bo-skill-item__drag');
+    if (!handle || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
+
+    const item = handle.closest('.bo-skill-item');
+    const neighbor = event.key === 'ArrowUp' ? item.previousElementSibling : item.nextElementSibling;
+    if (!neighbor) return;
+
+    event.preventDefault();
+    if (event.key === 'ArrowUp') itemsList.insertBefore(item, neighbor);
+    else itemsList.insertBefore(neighbor, item);
+
+    saveActiveSkillValues();
+    updateSkillLivePreview();
+    handle.focus();
+    showToast('Orden de capacidades actualizado', 'success');
   });
 }
 
@@ -1498,7 +1579,8 @@ function renderSkillItem(item, index) {
 
   itemEl.innerHTML = `
     <div class="bo-skill-item__header">
-      <span class="bo-skill-item__drag" title="Arrastra para reordenar">⠿</span>
+      <button type="button" class="bo-skill-item__drag" draggable="true"
+              aria-label="Reordenar capacidad: usa las flechas arriba y abajo" title="Arrastra o usa ↑ / ↓ para reordenar">⠿</button>
       <input type="text" 
              class="bo-skill-item__name" 
              value="${itemName}" 
@@ -1841,17 +1923,17 @@ async function loadHeroSettings() {
       videos: { stage1Id: '', stage2Id: '', transitionPx: 300 },
       bentos: [
         { id: 'bento-card-1', num: '01', ratio: '9:16', workTitle: 'Valle de la Luna — Atacama', workMeta: '2023 · CLIENT WORK', targetAnchor: '#work', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'video', mediaSrc: 'https://turismolickancoy.cl/wp-content/uploads/2025/07/Duna-mayor-dentro-del-valle-de-la-luna.mp4', poster: './assets/images/midjourney/vandalit_Blob_graphic_dopamine_design_abstract_modern_design__7ce2ff82-6ce2-4c99-ba8d-15649dcbe2c2_1.png' },
-        { id: 'bento-card-2', num: '02', ratio: '16:9', workTitle: 'Screens Mockup Web UI', workMeta: '2024 · MULTIMEDIA', targetAnchor: '#cases', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_screens_mockup_web_design_--sref_httpss.mj.runcgBuE3_bdfc81af-66c5-42b8-9a78-09b2648c35f5_3.png' },
+        { id: 'bento-card-2', num: '02', ratio: '16:9', workTitle: 'Screens Mockup Web UI', workMeta: '2024 · MULTIMEDIA', targetAnchor: '#cases-v4', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_screens_mockup_web_design_--sref_httpss.mj.runcgBuE3_bdfc81af-66c5-42b8-9a78-09b2648c35f5_3.png' },
         { id: 'bento-card-3', num: '03', ratio: '1:1', workTitle: 'Dopamine Organic Fluid', workMeta: '2024 · AI EXPERIMENT', targetAnchor: '#lab', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_Blob_graphic_dopamine_design_abstract_modern_design__7ce2ff82-6ce2-4c99-ba8d-15649dcbe2c2_1.png' },
-        { id: 'bento-card-4', num: '04', ratio: '4:5', workTitle: 'Fluor Street Punk Art', workMeta: '2024 · MULTIMEDIA', targetAnchor: '#cases', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_a_vtuber_as_a_punk_fluor_colour_street_art_inspired__e1f91a82-97a9-4307-888e-654603a3dcd8_2.png' },
-        { id: 'bento-card-5', num: '05', ratio: '4:3', workTitle: 'Spatial Living Architecture', workMeta: '2024 · 3D SPACE', targetAnchor: '#cases', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_A_cozy_and_clean_suburban_living_room_staged_for_sal_81f8c780-9cd8-4b20-877f-d4edd27a1244_1.png' },
+        { id: 'bento-card-4', num: '04', ratio: '4:5', workTitle: 'Fluor Street Punk Art', workMeta: '2024 · MULTIMEDIA', targetAnchor: '#cases-v4', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_a_vtuber_as_a_punk_fluor_colour_street_art_inspired__e1f91a82-97a9-4307-888e-654603a3dcd8_2.png' },
+        { id: 'bento-card-5', num: '05', ratio: '4:3', workTitle: 'Spatial Living Architecture', workMeta: '2024 · 3D SPACE', targetAnchor: '#cases-v4', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_A_cozy_and_clean_suburban_living_room_staged_for_sal_81f8c780-9cd8-4b20-877f-d4edd27a1244_1.png' },
         { id: 'bento-card-6', num: '06', ratio: '21:9', workTitle: 'Iridescent Paper Texture', workMeta: '2024 · EDITORIAL', targetAnchor: '#skills', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_black_paper_with_iridescent_effect_texture_embossed_gr_dc33a515-4896-4553-9559-90821e277c1f.png' },
         { id: 'bento-card-7', num: '07', ratio: '9:16', workTitle: 'Rizoma Macro Biology', workMeta: '2024 · AI VISUAL', targetAnchor: '#lab', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_Rizoma_national_geographic_macro_coloured_photograph_64ec413f-e06f-4998-8654-5994bbba87c2_2.png' },
         { id: 'bento-card-8', num: '08', ratio: '16:10', workTitle: 'Digital Neon Outline', workMeta: '2024 · CODING', targetAnchor: '#skills', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_Outline_digital_illustration_hipertealostic_photogra_47c8bf74-1925-427f-8eda-ebf0690ac2b3_2.png' },
         { id: 'bento-card-9', num: '09', ratio: '3:2', workTitle: 'Natales Food Lettering', workMeta: '2023 · BRANDING', targetAnchor: '#work', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'image', mediaSrc: './assets/images/midjourney/vandalit_la_disqura_natales_logotype_as_lettering_on_a_food_d_fc757d24-20cc-4d78-93cd-75bf0fe88265_3.png' },
-        { id: 'bento-card-10', num: '10', ratio: '1:1', workTitle: 'Modular Studio Box 10', workMeta: '2024 · FRONT-END', targetAnchor: '#cases', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'image', mediaSrc: '' },
+        { id: 'bento-card-10', num: '10', ratio: '1:1', workTitle: 'Modular Studio Box 10', workMeta: '2024 · FRONT-END', targetAnchor: '#cases-v4', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'image', mediaSrc: '' },
         { id: 'bento-card-11', num: '11', ratio: '4:5', workTitle: 'Editorial Format 11', workMeta: '2024 · DESIGN SYSTEMS', targetAnchor: '#skills', calloutDir: 'right', accentColor: '#ccf020', mediaType: 'image', mediaSrc: '' },
-        { id: 'bento-card-12', num: '12', ratio: '2:1', workTitle: 'Cinema Banner 12', workMeta: '2024 · MULTIMEDIA', targetAnchor: '#cases', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: '' }
+        { id: 'bento-card-12', num: '12', ratio: '2:1', workTitle: 'Cinema Banner 12', workMeta: '2024 · MULTIMEDIA', targetAnchor: '#cases-v4', calloutDir: 'left', accentColor: '#ccf020', mediaType: 'image', mediaSrc: '' }
       ]
     };
   }

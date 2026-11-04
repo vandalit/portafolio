@@ -11,7 +11,7 @@ export const bentoCard8 = createBentoCard({
   name: 'Bento #08',
   workTitle: 'Digital Neon Outline',
   workMeta: '2024 · DESIGN SYSTEM',
-  targetAnchor: '#cases',
+  targetAnchor: '#cases-v4',
   calloutDir: 'right',
   accentColor: '#ccf020',
   ratio: '16:10',
