@@ -21,6 +21,7 @@
   ],
   "links": {
     "live": null,
+    "demo": null,
     "github": "https://github.com/vandalit/Kaktus"
   },
   "challenge": "Crear una experiencia editorial en mobile que no sea una versión empobrecida del desktop.",
@@ -28,5 +29,8 @@
   "result": "UI exploratoria completa con 12 pantallas y sistema de componentes documentado.",
   "cover": "cactus-en-flor-bajo-un-sol-retro.png",
   "client": "",
-  "stack": []
+  "stack": [],
+  "cardType": "compressed",
+  "wrapperGroup": "wip",
+  "techStack": []
 }

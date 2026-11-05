@@ -142,7 +142,6 @@ export class CasesV4 {
         this._goTo(event.key === 'ArrowRight' ? 1 : -1);
       });
     });
-
     this.root.addEventListener('click', event => {
       const card = event.target.closest('.cv4-item[data-project-id]');
       if (card && this._isDragClick(event, card)) {

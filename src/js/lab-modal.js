@@ -1,3 +1,5 @@
+import { attachLightboxImageControls } from './lightbox-image-controls.js';
+
 /* ==========================================================
    LAB-MODAL.JS — Frontier Tech & Experimentos Showcase Modal
    Estructura Split Screen exclusiva para Lab:
@@ -36,6 +38,7 @@ export class LabModal {
     this.lightboxClose = this.lightbox?.querySelector('.modal__lightbox-close');
     this.lightboxPrev = this.lightbox?.querySelector('.modal__lightbox-btn--prev');
     this.lightboxNext = this.lightbox?.querySelector('.modal__lightbox-btn--next');
+    this.lightboxImageControls = attachLightboxImageControls(this.lightbox);
 
     this.currentProject = null;
     this.photos = [];
@@ -132,6 +135,7 @@ export class LabModal {
 
   closeLightbox() {
     if (!this.lightbox || !this.isLightboxOpen) return;
+    this.lightboxImageControls?.reset();
     this.isLightboxOpen = false;
     this.lightbox.classList.remove('is-open');
     this.lightbox.setAttribute('aria-hidden', 'true');
@@ -150,15 +154,14 @@ export class LabModal {
   }
 
   _updateLightboxView() {
+    this.lightboxImageControls?.reset();
     const src = this.photos[this.currentPhotoIndex];
     if (this.lightboxImg) {
       this.lightboxImg.style.opacity = '0';
-      this.lightboxImg.style.transform = 'scale(0.97)';
       setTimeout(() => {
         this.lightboxImg.src = src;
         this.lightboxImg.alt = `${this.currentProject?.title || 'Experimento'} — Captura ${this.currentPhotoIndex + 1}`;
         this.lightboxImg.style.opacity = '1';
-        this.lightboxImg.style.transform = 'scale(1)';
       }, 80);
     }
 

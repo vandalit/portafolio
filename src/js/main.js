@@ -6,7 +6,7 @@ console.log('%c[Portafolio:Main] 🚀 main.js loaded', 'background: #080810; col
 
 import { HeroScene } from './three-scene.js';
 import { Carousel } from './carousel.js';
-import { CasesV4 } from './cases-v4.js';
+import { CasesV5 } from './cases-v5.js';
 import { GridFilter } from './grid-filter.js';
 import { ProjectModal } from './project-modal.js';
 import { LabModal } from './lab-modal.js';
@@ -101,6 +101,13 @@ function renderClientGrid(clients) {
 
   // Cover por defecto: placeholder grafito-cobalto inlined, sin dependencia de red.
   const DEFAULT_COVER_SVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23343c48'/%3E%3C/svg%3E`;
+  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[character]);
 
   const allProjects = clients.map(c => ({ ...c, _type: 'client' }));
 
@@ -110,7 +117,8 @@ function renderClientGrid(clients) {
     const badge = c.client ? c.client : (c.category === 'coding' ? '✦ Coding' : '◈ Multimedia');
     const tagsStr = (c.tags || []).join(' ');
     const coverSrc = c.cover || c.coverPlaceholder || DEFAULT_COVER_SVG;
-    const isEmpty = !c.client && !c.description;
+    const isEmpty = c.placeholder === true || (!c.client && !c.description);
+    const entityName = escapeHtml(c.client || c.title || '');
 
     return `
       <article class="project-thumb ${isEmpty ? 'project-thumb--wip' : ''}"
@@ -119,8 +127,8 @@ function renderClientGrid(clients) {
                data-project-id="${isEmpty ? '' : c.id}"
                data-type="${c._type}"
                ${isEmpty ? '' : 'role="button" tabindex="0"'}
-               aria-label="${isEmpty ? 'Proyecto próximamente' : 'Ver proyecto: ' + c.title}">
-        <img class="project-thumb__img" src="${coverSrc}" alt="${c.title || 'Próximamente'}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded');this.closest('.project-thumb').classList.add('image-loaded')">
+               aria-label="${isEmpty ? `Proyecto próximamente: ${entityName}` : 'Ver proyecto: ' + c.title}">
+        <img class="project-thumb__img" src="${coverSrc}" alt="${isEmpty ? entityName || 'Próximamente' : c.title}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded');this.closest('.project-thumb').classList.add('image-loaded')">
         ${isEmpty ? '<div class="project-thumb__wip-badge">Próximamente</div>' : `
         <div class="project-thumb__overlay"></div>
         <div class="project-thumb__info">
@@ -133,6 +141,7 @@ function renderClientGrid(clients) {
             ${c.subtitle || c.role}
           </p>
         </div>`}
+        ${isEmpty && entityName ? `<h3 class="project-thumb__wip-title">${entityName}</h3>` : ''}
       </article>
     `;
   }).join('');
@@ -174,7 +183,7 @@ function renderLabGrid(lab) {
       return `
         <article class="lab-card--expanded" data-lab-id="${l.id}" tabindex="0" role="button" aria-label="Ver experimento: ${l.title}">
           <div class="lab-card__thumb lab-scanline">
-            <img class="lab-card__img" src="${l.coverPlaceholder || l.cover}" alt="${l.title}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded');this.closest('.lab-card__thumb').classList.add('image-loaded')">
+            <img class="lab-card__img" src="${l.coverPlaceholder || l.cover}" alt="${l.title}" draggable="false" loading="lazy" decoding="async" onload="this.classList.add('is-loaded');this.closest('.lab-card__thumb').classList.add('image-loaded')">
             <span class="lab-card__badge">${badge}</span>
           </div>
           <div class="lab-card__body">
@@ -189,19 +198,22 @@ function renderLabGrid(lab) {
         </article>
       `;
     } else {
-      // Wrapper con cards comprimidas (Templates / Trabajos anteriores sin modal detalle)
+      // Wrapper con cards comprimidas (Templates / Trabajos anteriores)
       const items = block.items;
       const isOverlap = items.length >= 4;
 
       const innerCards = items.map(l => {
         const badge = l.badge || (l.tags && l.tags[0]) || 'Ejemplo';
+        const coverSrc = l.coverPlaceholder || l.cover || '';
         const demoUrl = (l.links?.demo || l.links?.live || '').trim();
         const codeUrl = (l.links?.github || '').trim();
         const demoBtn = demoUrl ? `<a href="${demoUrl}" class="btn btn--lime btn--sm" target="_blank" rel="noopener">Demo <span class="btn__icon">↗</span></a>` : '';
         const codeBtn = codeUrl ? `<a href="${codeUrl}" class="btn btn--ghost btn--ghost-lime btn--sm" target="_blank" rel="noopener">Código</a>` : '';
 
         return `
-          <div class="lab-card--compressed" data-lab-id="${l.id}" aria-label="Template o caso base: ${l.title}">
+          <div class="lab-card--compressed" data-lab-id="${l.id}" tabindex="0" role="button" aria-label="Ver experimento: ${l.title}">
+            ${coverSrc ? `<img class="lab-card__cover--compressed" src="${coverSrc}" alt="" aria-hidden="true" draggable="false" loading="lazy" decoding="async">` : ''}
+            <div class="lab-card__cover-tint--compressed" aria-hidden="true"></div>
             <div class="lab-card__header--compressed">
               <span class="lab-pill-outline">${badge}</span>
             </div>
@@ -226,10 +238,9 @@ function renderLabGrid(lab) {
     }
   }).join('');
 
-  // Event listener para abrir LabModal SOLO en las cards expandidas
-  track.querySelectorAll('.lab-card--expanded').forEach(cardEl => {
+  // Both card layouts open the same Lab detail; nested links keep their own behavior.
+  track.querySelectorAll('.lab-card--expanded, .lab-card--compressed').forEach(cardEl => {
     cardEl.addEventListener('click', (e) => {
-      // Si hizo clic en un link o botón dentro de la tarjeta, dejamos que navegue
       if (e.target.closest('a, button')) return;
 
       const id = cardEl.dataset.labId;
@@ -567,8 +578,8 @@ function initNav() {
   const sections = document.querySelectorAll('section[id]');
   const navLinks = document.querySelectorAll('.nav__link[href^="#"], .nav__cta[href^="#"]');
   const logo = document.querySelector('.nav__logo');
-  const casesSection = document.getElementById('cases-v4');
-  const casesBoard = casesSection?.querySelector('.cv4-board');
+  const casesSection = document.getElementById('cases-v5');
+  const casesBoard = casesSection?.querySelector('.cv5-board');
   const casesContainer = casesBoard?.parentElement;
   const casesContextText = nav?.querySelector('#nav-context-text');
   let stationFrame = 0;
@@ -581,7 +592,7 @@ function initNav() {
     const boardRect = casesBoard.getBoundingClientRect();
     const containerBottom = casesContainer.getBoundingClientRect().bottom;
     const stationEnabled = casesSection.classList.contains('is-station-ready');
-    const isPinned = Math.abs(boardRect.top - navBottom) <= 0.2
+    const isPinned = Math.abs(boardRect.top - navBottom) <= 2
       && containerBottom > boardRect.bottom + 0.5;
     casesContextText.classList.toggle('is-station-active', stationEnabled && isPinned);
   };
@@ -593,14 +604,14 @@ function initNav() {
 
   const updateCasesStationOffset = () => {
     if (nav && casesSection) {
-      const navHeight = nav.getBoundingClientRect().height;
       casesSection.style.setProperty(
-        '--cv4-station-top',
-        `${navHeight}px`
+        '--cv5-station-top',
+        `${nav.getBoundingClientRect().height}px`
       );
-      const stationFits = window.matchMedia('(min-width: 641px)').matches
-        && casesBoard.offsetHeight <= window.innerHeight - navHeight;
-      casesSection.classList.toggle('is-station-ready', stationFits);
+      casesSection.classList.toggle(
+        'is-station-ready',
+        window.matchMedia('(min-width: 641px)').matches
+      );
     }
     scheduleCasesStationUpdate();
   };
@@ -641,7 +652,7 @@ function initNav() {
   const contextText = document.getElementById('nav-context-text');
   const sectionLabels = {
     hero: 'OVERVIEW · INTRO',
-    'cases-v4': 'CASOS DE ESTUDIO',
+    'cases-v5': 'CASOS DE ESTUDIO',
     skills: 'PERFIL TÉCNICO',
     work: 'TRABAJOS SELECCIONADOS',
     lab: 'LABORATORIO & LAB',
@@ -1041,8 +1052,8 @@ async function init() {
       hydrateSiteSettings(siteSettings);
     }
     if (projectsData) {
-      if (document.getElementById('cases-v4')) {
-        window.__casesV4 = new CasesV4(projectsData.cases);
+      if (document.getElementById('cases-v5')) {
+        window.__casesV5 = new CasesV5(projectsData.cases);
       }
 
       renderSkillCards(projectsData.skills.categories || []);

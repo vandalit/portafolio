@@ -30,5 +30,8 @@
     "live": null,
     "demo": null,
     "github": null
-  }
+  },
+  "cardType": "compressed",
+  "wrapperGroup": "wip",
+  "techStack": []
 }

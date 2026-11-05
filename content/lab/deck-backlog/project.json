@@ -31,6 +31,7 @@
     "demo": null,
     "github": "https://github.com/vandalit/Deck-Backlog"
   },
-  "cardType": "expanded",
-  "techStack": []
+  "cardType": "compressed",
+  "techStack": [],
+  "wrapperGroup": "wip"
 }

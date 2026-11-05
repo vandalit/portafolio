@@ -29,5 +29,8 @@
   "result": "Case study completo con 20+ pantallas rediseñadas y sistema de componentes.",
   "cover": "chat-nea-n-cyberpunk-en-vivo.png",
   "client": "",
-  "stack": []
+  "stack": [],
+  "cardType": "compressed",
+  "wrapperGroup": "wip",
+  "techStack": []
 }

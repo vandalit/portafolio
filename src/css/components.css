@@ -363,6 +363,7 @@
   gap: var(--grid-gap);
   cursor: grab;
   user-select: none;
+  touch-action: pan-y;
   transform: translateZ(0);
   will-change: transform;
   transition: transform var(--dur-slow) var(--ease-out);
@@ -394,10 +395,6 @@
 .carousel-controls {
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
-  margin-top: var(--sp-8);
-  justify-content: flex-end;
-}
   gap: var(--sp-4);
   margin-top: var(--sp-8);
   justify-content: flex-end;
@@ -1150,6 +1147,7 @@
 .project-thumb--wip::after {
   content: 'Próximamente';
   position: absolute;
+  z-index: 1;
   inset: 0;
   display: flex;
   align-items: center;
@@ -1160,6 +1158,20 @@
   text-transform: uppercase;
   color: var(--text-2);
   background: rgba(8, 8, 16, 0.3);
+}
+
+.project-thumb__wip-title {
+  position: absolute;
+  z-index: 2;
+  right: var(--sp-5);
+  bottom: var(--sp-5);
+  left: var(--sp-5);
+  color: var(--text-0);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
 }
 
 .project-thumb__wip-badge {
@@ -1607,6 +1619,7 @@
 
 /* Card Comprimida (Referente Figma: Contorno redondeado, sin cover, apilamiento) */
 .lab-card--compressed {
+  isolation: isolate;
   background: var(--bg-surface-elevated);
   border: 1.5px solid var(--lime-glow);
   border-radius: 18px;
@@ -1614,7 +1627,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  cursor: default;
+  cursor: pointer;
   position: relative;
   transition: transform 240ms var(--ease-out),
               border-color 240ms var(--ease-out),
@@ -1632,7 +1645,37 @@
   z-index: 10;
 }
 
+.lab-card--compressed:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 3px;
+}
+
+.lab-card__cover--compressed,
+.lab-card__cover-tint--compressed {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.lab-card__cover--compressed {
+  z-index: -1;
+  object-fit: cover;
+  filter: grayscale(1) contrast(0.9);
+  opacity: 0.5;
+  mix-blend-mode: luminosity;
+}
+
+.lab-card__cover-tint--compressed {
+  z-index: -1;
+  background: linear-gradient(110deg, rgba(8, 8, 16, 0.52), rgba(8, 8, 16, 0.24));
+}
+
 .lab-card__header--compressed {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1655,6 +1698,8 @@
 }
 
 .lab-card__body--compressed {
+  position: relative;
+  z-index: 1;
   flex: 1;
   min-height: 0;
 }
@@ -1680,6 +1725,8 @@
 
 /* Enlaces y botones de card compacta */
 .lab-card__links--compressed {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: var(--sp-2);
@@ -2338,12 +2385,16 @@
 }
 
 .modal__lightbox-stage {
+  position: relative;
+  width: 90vw;
+  height: 86vh;
   max-width: 90vw;
   max-height: 86vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   user-select: none;
 }
 
@@ -2353,7 +2404,17 @@
   object-fit: contain;
   border-radius: var(--radius-sm);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
-  transition: opacity 200ms ease, transform 200ms ease;
+  transition: opacity 200ms ease;
+  transform-origin: center;
+  cursor: zoom-in;
+}
+
+.modal__lightbox.is-zoomed .modal__lightbox-img {
+  cursor: grab;
+}
+
+.modal__lightbox.is-panning .modal__lightbox-img {
+  cursor: grabbing;
 }
 
 @media (max-width: 768px) {
@@ -2410,12 +2471,18 @@
               transform var(--dur-slow) var(--ease-out);
 }
 
+.stagger.revealed > * {
+  opacity: 1;
+  transform: none;
+}
+
 .stagger.revealed > *:nth-child(1) { opacity:1; transform:none; transition-delay:  50ms; }
 .stagger.revealed > *:nth-child(2) { opacity:1; transform:none; transition-delay: 100ms; }
 .stagger.revealed > *:nth-child(3) { opacity:1; transform:none; transition-delay: 150ms; }
 .stagger.revealed > *:nth-child(4) { opacity:1; transform:none; transition-delay: 200ms; }
 .stagger.revealed > *:nth-child(5) { opacity:1; transform:none; transition-delay: 250ms; }
 .stagger.revealed > *:nth-child(6) { opacity:1; transform:none; transition-delay: 300ms; }
+.stagger.revealed > .project-thumb--wip { opacity: 0.5; transform: none; }
 
 /* ── SVG DOODLES ─────────────────────────────────────────── */
 .doodle-circle {

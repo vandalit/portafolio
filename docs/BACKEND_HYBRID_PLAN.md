@@ -4,6 +4,8 @@
 > **Objetivo:** Implementar un backend local liviano para edición viva y gestión real de imágenes y textos desde `/backoffice`, manteniendo compatibilidad nativa 100% estática para el despliegue en **GitHub Pages**.  
 > **Estrategia ante cortes de contexto:** Fases atómicas, modulares e independientes, verificables por artefactos concretos.
 
+> **Estado:** Este documento conserva el plan y sus criterios originales; la arquitectura híbrida ya está implementada. Para el flujo vigente y la fuente de verdad operativa, consultar [`arquitectura-despliegue.md`](./arquitectura-despliegue.md). No interpretar las casillas de este plan como el estado actual del despliegue.
+
 ---
 
 ## 1. Análisis y Recomendación de Conciliación (Local Vivo vs. GitHub Pages)
@@ -182,4 +184,3 @@ flowchart TD
 | **Modificado** | `backoffice/index.html` | Pestaña de Ajustes Generales y UI de upload de galería. |
 | **Modificado** | `backoffice/backoffice.js` | Conexión con endpoints `/api/*` y subida de archivos multipart. |
 | **Modificado** | `README.md` | Guía de ejecución local con backend. |
-

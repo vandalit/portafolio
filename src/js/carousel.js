@@ -21,12 +21,10 @@ export class Carousel {
 
     this.currentIndex = 0;
     this.isDragging = false;
+    this.pointerId = null;
     this.startX = 0;
     this.currentTranslate = 0;
     this.prevTranslate = 0;
-    this.velocity = 0;
-    this.lastX = 0;
-    this.lastTime = 0;
     this.rafId = null;
     this.hasDragged = false;
     this.dragDistance = 0;
@@ -57,19 +55,23 @@ export class Carousel {
   }
 
   _bindEvents() {
-    // Touch
-    this.track.addEventListener('touchstart', (e) => this._onStart(e.touches[0].clientX), { passive: true });
-    this.track.addEventListener('touchmove',  (e) => this._onMove(e.touches[0].clientX), { passive: true });
-    this.track.addEventListener('touchend',   () => this._onEnd());
-
-    // Mouse — do not prevent default on interactive elements (buttons, links)
-    this.track.addEventListener('mousedown',  (e) => {
-      if (e.target.closest('button, a')) return;
-      e.preventDefault();
-      this._onStart(e.clientX);
+    this.track.addEventListener('pointerdown', event => {
+      if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
+      if (event.target.closest('button, a')) return;
+      this.pointerId = event.pointerId;
+      this._onStart(event.clientX);
     });
-    window.addEventListener('mousemove', (e) => { if (this.isDragging) this._onMove(e.clientX); });
-    window.addEventListener('mouseup',   () => { if (this.isDragging) this._onEnd(); });
+    window.addEventListener('pointermove', event => {
+      if (event.pointerId !== this.pointerId || !this.isDragging) return;
+      this._onMove(event.clientX);
+      if (this.hasDragged) event.preventDefault();
+    });
+    window.addEventListener('pointerup', event => {
+      if (event.pointerId === this.pointerId) this._onEnd();
+    });
+    window.addEventListener('pointercancel', event => {
+      if (event.pointerId === this.pointerId) this._onEnd();
+    });
 
     // Buttons
     this.prevBtn?.addEventListener('click', () => this.prev());
@@ -127,9 +129,6 @@ export class Carousel {
   _onStart(x) {
     this.isDragging = true;
     this.startX = x;
-    this.lastX = x;
-    this.lastTime = Date.now();
-    this.velocity = 0;
     this.dragDistance = 0;
     this.hasDragged = false;
     this.prevTranslate = this.currentTranslate;
@@ -140,27 +139,21 @@ export class Carousel {
 
   _onMove(x) {
     if (!this.isDragging) return;
-    const now = Date.now();
-    const dt = now - this.lastTime;
-    if (dt > 0) {
-      this.velocity = (x - this.lastX) / dt;
-    }
-    this.lastX = x;
-    this.lastTime = now;
-
     const delta = x - this.startX;
     this.dragDistance = Math.abs(delta);
     if (this.dragDistance > 6) {
       this.hasDragged = true;
     }
 
-    this.currentTranslate = this.prevTranslate + delta;
+    const minTranslate = Math.min(0, -(this.track.scrollWidth - this.container.offsetWidth));
+    this.currentTranslate = Math.max(minTranslate, Math.min(0, this.prevTranslate + delta));
     this._setTranslate(this.currentTranslate);
   }
 
   _onEnd() {
     if (!this.isDragging) return;
     this.isDragging = false;
+    this.pointerId = null;
     this.track.style.cursor = 'grab';
 
     // Clear hasDragged after click event dispatch window if no click caught
@@ -170,13 +163,7 @@ export class Carousel {
       }, 100);
     }
 
-    // Snap based on velocity or position
-    if (Math.abs(this.velocity) > 0.3) {
-      if (this.velocity < 0) this.next();
-      else this.prev();
-    } else {
-      this._snapToNearest();
-    }
+    this._snapToNearest();
   }
 
   _snapToNearest() {
@@ -239,7 +226,7 @@ export class Carousel {
   _updateProgress() {
     if (!this.progressFill) return;
     const pct = this.items.length > 1
-      ? (this.currentIndex / (this.items.length - 1)) * 100
+      ? ((this.currentIndex + 1) / this.items.length) * 100
       : 100;
     this.progressFill.style.width = `${pct}%`;
   }

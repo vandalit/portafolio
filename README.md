@@ -25,11 +25,21 @@ El proyecto está diseñado bajo una filosofía **100% modular, desacoplada y es
    - **Capa 5 (`z-index: 30-32`)**: HUD interactivo frontal con animación *pop stroke* en yellow-green (`#ccf020`), flechas de callout informativas, metadata técnica y enlaces de ancla.
 3. **Contenido Desacoplado (`/content/`)**: Los proyectos y textos no están *hardcodeados*. Cada trabajo vive en su propio subdirectorio con su manifiesto `project.json`, y la landing entera se hidrata dinámicamente desde `site.json` y `hero.json`.
 4. **Studio & Backoffice Híbrido (`/backoffice/`)**: Interfaz visual de gestión conectada en local a un **Backend Node.js API** con subida real de imágenes por drag & drop, reorganización con migración física de proyectos entre secciones (`/api/content/move`) y persistencia directa a disco.
-5. **Iteraciones de Casos de Estudio (`cases-v1` a `cases-v4`)**: Variantes aisladas y montadas en la landing para evaluación visual. Cases v4 añade un overlay negro `multiply` al 92% y tarjetas en escala de grises que recuperan el color al hover.
+5. **Casos de Estudio (Cases V5)**: V5 está montada en la landing; V3 y V4 se conservan como implementaciones independientes. En escritorio, el tablero tiene una estación sticky de aproximadamente 400 px bajo el navbar y activa el acento lima del rótulo contextual durante el pin. La columna central de V5 agrupa navegación, aguja y contador entre ambos carruseles.
 6. **Generador Estático y Pipeline CI/CD (`build/build.js` + GitHub Actions)**:
    - **Zero-latency First Paint (SSG):** Al compilar con `npm run build`, se inyectan las tarjetas de casos, habilidades, trabajos y lab directamente en el HTML. Los crawlers y visitantes reciben el DOM completo de inmediato sin pantallas en blanco ni peticiones bloqueantes en el cliente.
    - **Optimización para Asistentes y Motores Generativos (GEO):** Generación automática de `llms.txt`, `sitemap.xml` y `robots.txt` con la metadata de proyectos y perfil técnico calibrado.
-   - **Despliegue Continuo a GitHub Pages:** El workflow `.github/workflows/deploy.yml` compila y publica automáticamente la carpeta `./dist/` en cada push a `main`.
+   - **Despliegue Continuo a GitHub Pages:** El workflow `.github/workflows/deploy.yml` compila y publica `./dist/` en cada push a `main`. Pages debe tener **Source: GitHub Actions**; no se debe publicar la raíz de `main`, porque allí vive la plantilla con directivas `include:`.
+
+### Flujo fuente → build → publicación
+
+- `content/` contiene los datos y medios fuente; `src/partials/` contiene los fragmentos HTML.
+- El `index.html` de la raíz es una **plantilla de composición**, no el HTML público. `build/assembler.js` resuelve sus directivas `include:` y `build/build.js` prerenderiza el contenido.
+- `npm run build` genera el sitio completo en `dist/` (incluyendo `dist/index.html` y artefactos SEO). `dist/` está ignorado por Git: Actions lo genera y lo sube como artefacto de Pages.
+- La fuente única de publicación en GitHub Pages debe ser **GitHub Actions**, usando el workflow del repositorio. La publicación directa desde `main:/` serviría la plantilla sin procesar y no debe quedar activa en paralelo.
+- El CMS es híbrido: el Backoffice usa el backend Express local para guardar en disco y subir medios; Git versiona esos cambios. En Pages no existe API ni escritura al repositorio, y las capacidades de edición/subida quedan bloqueadas; los borradores/exportaciones del modo web son locales al navegador y no publican cambios.
+- La guía operativa completa está en [docs/arquitectura-despliegue.md](docs/arquitectura-despliegue.md).
+- La evolución y estructura de Cases se detallan en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 
@@ -37,7 +47,7 @@ El proyecto está diseñado bajo una filosofía **100% modular, desacoplada y es
 
 ```text
 portafolio/
-├── index.html                     # One-page principal (GitHub Pages entry point)
+├── index.html                     # Plantilla de composición para el build (no publicar directamente)
 ├── server.js                      # Backend local Express (API REST y upload de medios)
 ├── package.json                   # Dependencias y scripts de ejecución
 ├── README.md                      # Documentación del proyecto
@@ -81,6 +91,7 @@ portafolio/
 │   └── backoffice.js              # Motor reactivo, conexión a API local y export/import
 │
 ├── src/                           # ── CÓDIGO FUENTE DE LA APLICACIÓN ──
+│   ├── partials/                  # Fragmentos HTML ensamblados por build/assembler.js
 │   ├── components/
 │   │   └── bentos/                # Módulo de 12 tarjetas Bento + HUD
 │   │       ├── bento-base.js      # Factory de físicas y capas Bento + HUD
@@ -99,6 +110,8 @@ portafolio/
 │       ├── carousel.js            # Motor elástico drag + snap + progress bar
 │       ├── grid-filter.js         # Filtrado interactivo por categorías
 │       └── project-modal.js       # Modal de detalle split-canvas con galería
+├── build/                         # Ensamblador de parciales y generador SSG
+├── dist/                          # Salida generada, ignorada por Git y publicada por Actions
 │
 └── assets/
     ├── icons/                     # Favicons y SVGs

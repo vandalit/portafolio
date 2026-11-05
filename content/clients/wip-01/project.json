@@ -1,24 +1,6 @@
 {
   "id": "wip-01",
   "category": "ux",
-  "title": "Próximamente",
-  "client": "",
-  "subtitle": "En desarrollo",
-  "description": "",
-  "year": 2025,
-  "role": "",
-  "tags": [
-    "ux"
-  ],
-  "cover": "",
-  "coverPlaceholder": "",
-  "challenge": "",
-  "solution": "",
-  "result": "",
-  "stack": [],
-  "gallery": [],
-  "links": {
-    "live": null,
-    "github": null
-  }
+  "client": "Entidad UX 01",
+  "placeholder": true
 }

@@ -312,6 +312,8 @@ class SplitCanvas {
 }
 ```
 
+El visor de imágenes compartido por los modales de proyectos y Lab permite ampliar con la rueda del mouse y desplazar la imagen ampliada manteniendo el botón medio. El zoom se limita a 5×, el pan permanece dentro del área visible y cada cambio de imagen restablece el encuadre.
+
 ---
 
 ## 7. Carrusel — Skills y Cases
@@ -402,33 +404,22 @@ const observer = new IntersectionObserver(entries => {
 sections.forEach(s => observer.observe(s));
 ```
 
-### Prototipo de estaciones de scroll
+### Estación de scroll implementada: Cases V5
 
-Cases V4 introduce una estación de 400 px en escritorio: el tablero queda fijado al borde inferior del navbar cuando su borde superior llega a él, y se libera al terminar ese recorrido. El rótulo contextual de la sección junto al logo cambia a lima solo mientras el tablero está fijado; los tabs de navegación no cambian de color. Se implementa con `position: sticky` y un tramo de recorrido explícito, sin interceptar la rueda ni bloquear el scroll; se desactiva si el tablero no cabe en el viewport y en pantallas móviles. Es un patrón piloto: cada sección futura requiere definir su propio punto de anclaje y duración antes de aplicarlo.
+Cases V5 tiene una estación de aproximadamente 400 px efectivos en escritorio: el tablero queda fijado bajo el navbar y se libera al terminar el recorrido. Solo el rótulo contextual junto al logo cambia a lima durante el pin; el tab «CASES» conserva su estilo. Se implementa con `position: sticky` y un runway, sin interceptar la rueda ni bloquear el scroll. Se mantiene activa en escritorio aunque el tablero supere el alto disponible, y se desactiva en pantallas móviles. V4 se conserva como implementación independiente de referencia.
+
+La duración se define en `--cv5-station-length` (`src/css/cases-v5.css`); `src/js/main.js` observa el estado fijado y aplica `is-station-active` exclusivamente a `#nav-context-text`. El rótulo se estiliza en `src/css/layout.css` y el runway está en `src/partials/cases-v5.html`. En escritorio, la fila inferior organiza en tres columnas el carrusel compacto, la aguja con contador y el carrusel ancho. La línea de progreso y las flechas se ubican en una fila separada debajo de ambos carruseles. En móvil se oculta el carrusel compacto y esos controles siguen debajo del carrusel ancho. Las tags de las tarjetas se ocultan y el contenido/CTA del feature se compacta.
+
+El snapshot histórico de esta composición se conserva como Cases V6 en `src/partials/cases-v6.html`, `src/css/cases-v6.css` y `src/js/cases-v6.js`. Es una copia independiente y no está importada ni activada por el sitio.
+
+La aguja divisora `.cv4-divider` permanece fija en la columna central del grid entre ambos carruseles; no sigue el desplazamiento de las tarjetas. En escritorio, la columna del carrusel compacto mide una tarjeta más el padding horizontal del track, para evitar espacio sobrante; el ancho de las tarjetas es responsivo al viewport (`clamp(190px, 24vw, 280px)`, con un rango menor en móvil).
 
 ---
 
 ## 11. Deploy — GitHub Pages
 
-```yaml
-# .github/workflows/pages.yml (opcional)
-name: Deploy to GitHub Pages
-on:
-  push:
-    branches: [main]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
-```
-
-O simplemente activar Pages en Settings → Pages → Source: main / root.
+El contrato de build y despliegue vigente está documentado en [`arquitectura-despliegue.md`](./arquitectura-despliegue.md). En resumen: `index.html` es la plantilla de parciales; `npm run build` ensambla y prerenderiza `dist/`; GitHub Actions publica ese artefacto. La fuente de Pages debe ser **GitHub Actions**, nunca `main:/`, y no debe mantenerse un publicador de rama en paralelo.
 
 ---
 
-*Este documento describe las decisiones de arquitectura actuales. Actualizar si hay cambios significativos.*
+*Este documento describe decisiones de arquitectura y patrones del frontend. Para el flujo operativo de contenido, build y deploy, mantener como referencia única `docs/arquitectura-despliegue.md`.*

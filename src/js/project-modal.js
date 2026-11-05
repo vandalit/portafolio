@@ -1,3 +1,5 @@
+import { attachLightboxImageControls } from './lightbox-image-controls.js';
+
 /* ==========================================================
    PROJECT-MODAL.JS — Split Canvas with Dual Scroll & Lightbox Carousel
    ========================================================== */
@@ -18,6 +20,7 @@ export class ProjectModal {
     this.lightboxClose = this.lightbox?.querySelector('.modal__lightbox-close');
     this.lightboxPrev = this.lightbox?.querySelector('.modal__lightbox-btn--prev');
     this.lightboxNext = this.lightbox?.querySelector('.modal__lightbox-btn--next');
+    this.lightboxImageControls = attachLightboxImageControls(this.lightbox);
 
     this.sidebarBottom = false;
     this.galleryBottom = false;
@@ -143,6 +146,7 @@ export class ProjectModal {
 
   closeLightbox() {
     if (!this.lightbox || !this.isLightboxOpen) return;
+    this.lightboxImageControls?.reset();
     this.isLightboxOpen = false;
     this.lightbox.classList.remove('is-open');
     this.lightbox.setAttribute('aria-hidden', 'true');
@@ -161,15 +165,14 @@ export class ProjectModal {
   }
 
   _updateLightboxView() {
+    this.lightboxImageControls?.reset();
     const src = this.photos[this.currentPhotoIndex];
     if (this.lightboxImg) {
       this.lightboxImg.style.opacity = '0';
-      this.lightboxImg.style.transform = 'scale(0.97)';
       setTimeout(() => {
         this.lightboxImg.src = src;
         this.lightboxImg.alt = `${this.currentProject?.title || 'Proyecto'} — Foto ${this.currentPhotoIndex + 1}`;
         this.lightboxImg.style.opacity = '1';
-        this.lightboxImg.style.transform = 'scale(1)';
       }, 80);
     }
 

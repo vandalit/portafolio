@@ -1,128 +1,100 @@
-# Portafolio vandalit: arquitectura y despliegue
+# Arquitectura de contenido, build y despliegue
 
 **Repositorio:** `vandalit/portafolio`
-**Sitio publicado:** https://vandalit.github.io/portafolio/
-**Alcance:** cómo se genera y publica el sitio. No cubre cambios de contenido (textos, habilidades, casos) ni la estrategia de SEO; esas capas se trabajan en documentos separados.
+**Sitio:** https://vandalit.github.io/portafolio/
+**Alcance:** flujo de edición local, composición HTML, generación estática y publicación en GitHub Pages.
 
----
+## 1. Modelo de trabajo
 
-## 1. Diagnóstico del estado actual
-
-- La landing se hidrata en el navegador: `src/js/main.js` lee `content/settings/site.json`, `content/settings/hero.json` y `content/skills/skills.json` con `fetch` y construye el DOM. El HTML inicial es un shell casi vacío.
-- El repositorio se publica directamente desde la rama `main` en GitHub Pages, sin paso de build.
-- Hay URLs de prueba (Unsplash) en `hero.json` y un caso con portada provisional (`content/case-studies/syzygy/`), que llegan a producción.
-- El README describe el sitio como "estático de alto rendimiento", pero el contenido visible no existe en el HTML publicado.
-- `server.js` y el Studio (`backoffice/`) se usan solo en local, sin separación explícita entre lo que se publica y lo que es herramienta de edición.
-
----
-
-## 2. Arquitectura objetivo
-
-```
-content/ (JSON + assets)  →  build/  →  dist/  →  GitHub Pages
-        ↑
-   Studio (local, escribe JSON)
-```
-
-**Principios:**
-
-1. **`content/` es la única fuente de verdad.** Nadie edita HTML generado.
-2. **`dist/` no se versiona.** Se genera en cada despliegue y se incluye en `.gitignore`.
-3. **El texto debe estar en el HTML inicial.** Todo contenido visible o indexable se renderiza en el build.
-4. **El JavaScript mejora, no construye.** Si el JS falla, la página sigue mostrando contenido, navegación y enlaces.
-5. **El Studio no forma parte del sitio público.** Su salida es JSON e imágenes, nunca HTML.
-
----
-
-## 3. Build
-
-Un script de build en Node, sin framework en esta primera versión (ver decisiones abiertas), con estas responsabilidades:
-
-- Leer `content/settings/`, `content/case-studies/`, `content/clients/`, `content/lab/` y `content/skills/`.
-- Generar `dist/index.html` completo: todo el texto, navegación y enlaces de contacto.
-- Generar `dist/sitemap.xml` y `dist/robots.txt`.
-- Copiar `assets/` y las imágenes de `content/` a `dist/` conservando sus rutas.
-- Generar `dist/llms.txt` desde los mismos JSON, para que no se desfase del sitio.
-- Copiar los scripts de `src/js/` y los estilos de `src/css/` a `dist/`, para cargarlos después del primer render.
-- **Fallar el build** si detecta:
-  - URLs de Unsplash u otros servicios de prueba en cualquier JSON.
-  - Rutas de imagen que no existen en disco.
-  - Campos obligatorios vacíos (título, descripción, enlace de contacto).
-  - JSON mal formado.
-
----
-
-## 4. Despliegue
-
-- GitHub Pages cambia su fuente de **rama `main`** a **GitHub Actions**.
-- Un workflow en `.github/workflows/deploy.yml` se ejecuta en cada push a `main`:
-  1. Instala dependencias.
-  2. Ejecuta el build.
-  3. Sube `dist/` como artefacto con `actions/upload-pages-artifact`.
-  4. Publica con `actions/deploy-pages`.
-- El paso de build debe fallar si no pasa las validaciones del punto 3, y el despliegue no debe ejecutarse en ese caso.
-- Si el workflow falla, Pages conserva la última versión publicada correctamente.
-
----
-
-## 5. Requisitos de carga y JavaScript
-
-- **Three.js:** se carga después del evento `load`, o cuando la escena entra en pantalla con `IntersectionObserver`. En dispositivos móviles la escena se reemplaza por una imagen estática.
-- **Videos de YouTube:** se muestra una imagen de portada y el iframe se carga solo al hacer clic. Ningún iframe se carga al inicio.
-- **Imágenes:** `loading="lazy"` en todo lo que está fuera del primer pantallazo, con `width` y `height` declarados para evitar saltos de diseño.
-- **Scripts:** `defer` en todos los scripts de la página.
-- **Sin dependencias de runtime:** el sitio no requiere Node en producción.
-
----
-
-## 6. Studio
-
-- Sigue siendo una herramienta local. Escribe JSON y copia imágenes a `content/`.
-- Deja de ser necesario para publicar. El flujo es: editar en el Studio → revisar con `git diff content/` → commit → push.
-- El modo web (borradores en `localStorage` y exportación/importación de `vandalit-portfolio-config.json`) se mantiene como respaldo, documentado en el README.
-
----
-
-## 7. Estructura de carpetas propuesta
-
-```
-portafolio/
-├── content/            # fuente de verdad (JSON + imágenes)
-├── build/              # script de build
-├── src/                # JS y CSS del sitio (mejora progresiva)
-├── backoffice/         # Studio (solo local)
-├── assets/             # favicons, iconos y recursos estáticos
-├── dist/               # generado; en .gitignore
-├── .github/workflows/deploy.yml
-└── README.md
+```text
+Studio local ──→ API Express local ──→ content/ (JSON + assets)
+                                           │
+                                  git commit + push
+                                           │
+                                           ▼
+index.html (plantilla) + src/partials/ + content/
+                                           │
+                                    GitHub Actions
+                                           │
+                                      npm run build
+                                           │
+                                           ▼
+                                       dist/
+                                           │
+                                 artefacto de Pages
+                                           │
+                                           ▼
+                                    GitHub Pages
 ```
 
----
+La fuente de contenido es `content/`. El Studio edita esos archivos en local; Git es el mecanismo de revisión, historial y publicación. El sitio desplegado es estático y no requiere Node ni una API en producción.
 
-## 8. Criterios de aceptación
+## 2. HTML fuente y parciales
 
-El despliegue se considera correcto cuando:
+- El `index.html` de la raíz es la **plantilla de composición**, no el documento que debe servirse al visitante. Sus comentarios `<!-- include:... -->` referencian las piezas de `src/partials/`.
+- `build/assembler.js` resuelve esas referencias. `build/build.js` ensambla el HTML, prerenderiza los datos de contenido y escribe el documento final en `dist/index.html`.
+- El build también genera `robots.txt`, `sitemap.xml` y `llms.txt`, y copia a `dist/` los recursos requeridos (`src/`, `assets/`, `content/`, `backoffice/` y demos).
+- `dist/` es un artefacto generado, está excluido de Git y no debe editarse manualmente.
+- El JavaScript del navegador conserva las interacciones y la mejora progresiva; los contenidos principales también quedan en el HTML prerenderizado.
 
-- [ ] Una petición HTTP simple a la URL publicada devuelve el texto de identidad, habilidades y casos, sin ejecutar JavaScript.
-- [ ] No hay URLs de prueba ni rutas de imagen rotas en `dist/`.
-- [ ] `dist/` no está versionado y el repositorio no contiene HTML generado.
-- [ ] El workflow se ejecuta en cada push a `main` y no publica si el build no pasa validaciones.
-- [ ] La página es usable con JavaScript deshabilitado.
-- [ ] `sitemap.xml`, `robots.txt` y `llms.txt` existen en la URL publicada.
+**Regla de publicación:** no configurar Pages para servir `main:/`. Esa ruta contiene la plantilla con `include:`, que Pages no procesa. La salida pública es `dist/`.
 
----
+## 3. Build y publicación
 
-## 9. Decisiones abiertas
+El workflow [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) define el único flujo de publicación previsto:
 
-1. **Script de Node propio o Astro.** Un script propio da control total y es más código que mantener. Astro resuelve el pre-renderizado y las islas de JavaScript, pero agrega una dependencia. **Recomendación:** script propio, por ser un ejercicio de arquitectura.
-2. **Dominio.** Se mantiene la URL de GitHub Pages por ahora. La migración a dominio propio no cambia la arquitectura.
-3. **Repositorio.** Se mantiene `vandalit/portafolio`, con las identidades separadas según lo definido.
+1. Se dispara en `push` a `main` o manualmente.
+2. Instala dependencias con `npm ci`.
+3. Ejecuta `npm run build`.
+4. Sube `./dist` como artefacto de Pages.
+5. Publica el artefacto con `actions/deploy-pages`.
 
----
+La configuración del repositorio en **Settings → Pages → Build and deployment → Source** debe ser **GitHub Actions**. No debe coexistir con **Deploy from a branch (`main` / `/`)**: esa modalidad publica el `index.html`-plantilla y puede competir con el artefacto generado.
 
-## 10. Fuera de alcance de este documento
+Un workflow verde demuestra que ese workflow construyó y publicó su artefacto; no sustituye la verificación de la fuente configurada en Pages ni de la respuesta pública. Tras desplegar, comprobar que la URL devuelve HTML completo y que existen `/robots.txt`, `/sitemap.xml` y `/llms.txt`.
 
-- Correcciones de contenido: textos, habilidades y niveles, casos y laboratorio.
-- Estrategia de SEO: metadatos por página, JSON-LD, imágenes de vista previa (`og:image`, `twitter:image`), favicon y políticas de robots para crawlers de IA.
+**Estado verificado el 3 de noviembre de 2026:** la API de Pages informa `build_type: workflow`, el último workflow `Deploy to GitHub Pages` terminó exitosamente y la URL pública devuelve un documento HTML completo, no las directivas `include:`. Esta comprobación confirma que la ruta de publicación por Actions está activa actualmente.
 
-Estas capas se documentan por separado y dependen de los criterios de este documento.
+## 4. CMS híbrido: local frente a web
+
+### Local
+
+1. Ejecutar `npm run dev`.
+2. Abrir `http://localhost:3000/backoffice/`.
+3. El Backoffice detecta `/api/status` y usa el backend Express local para leer/escribir datos y subir archivos a `content/`.
+4. Revisar `git diff`, ejecutar `npm run build` para validar y previsualizar `dist/`.
+5. Hacer commit y push de los cambios fuente; no versionar `dist/`.
+
+### Producción
+
+- GitHub Pages sirve archivos estáticos. No ejecuta `server.js`, no tiene API de escritura ni acceso al disco del repositorio.
+- El Backoffice puede estar incluido como interfaz estática en `dist/`, pero la edición física y la subida están deshabilitadas fuera de `localhost`. El modo web permite borradores/exportación local; esos cambios no modifican el repositorio ni se publican automáticamente.
+- Para publicar contenido editado, usar el Studio local y el flujo Git descrito arriba.
+
+## 5. Estación de scroll de Cases V5
+
+Cases V5 implementa una estación piloto de aproximadamente **400 px efectivos** en escritorio. El tablero se fija (`position: sticky`) bajo el navbar y se libera al terminar el recorrido. Mientras está fijado, el rótulo contextual junto al logo cambia a lima; el tab «CASES» no recibe ese estado. La estación se desactiva en móvil, pero se mantiene en escritorio aunque el tablero supere el alto disponible para permitir revisar y ajustar los elementos que quedan bajo el pliegue. V4 permanece como implementación independiente de referencia.
+
+La duración se controla con `--cv5-station-length` en `src/css/cases-v5.css`; el runway compensa 1 px para el límite de sticky. `src/js/main.js` calcula el estado fijado y activa la clase solo en `#nav-context-text`. En escritorio, la fila inferior organiza el carrusel compacto, una columna central con navegación/aguja/contador y el carrusel ancho; la columna compacta mide una tarjeta más el padding del track y la columna derecha ocupa el espacio restante. Las barras de la aguja son más cortas. En móvil, el compacto y la aguja se ocultan y los controles pasan bajo el carrusel ancho. El estilo contextual está en `src/css/layout.css` y el runway en `src/partials/cases-v5.html`. Es un patrón piloto: cada nueva estación requiere definir por separado anclaje, duración y componente contextual.
+
+## 6. Estructura relevante
+
+```text
+index.html                 # Plantilla de composición; no publicar directamente
+src/partials/              # Fragmentos HTML fuente
+content/                   # Fuente de contenido: JSON y medios
+build/                     # Ensamblador y generador SSG
+dist/                      # Sitio generado; ignorado por Git; artefacto Pages
+server.js                  # Backend del CMS local, no disponible en Pages
+backoffice/                # Interfaz del Studio; escritura solo en entorno local
+.github/workflows/deploy.yml
+```
+
+## 7. Verificación de aceptación
+
+- `npm run build` termina correctamente y genera `dist/index.html` completo, sin directivas `include:`.
+- El HTML de `dist/` contiene el contenido prerenderizado y las rutas necesarias funcionan bajo `/portafolio/`.
+- `dist/` no está versionado.
+- Pages tiene seleccionada la fuente **GitHub Actions**, y el workflow publica el artefacto `./dist`.
+- La respuesta publicada contiene HTML completo sin ejecutar JavaScript; los archivos SEO generados están disponibles.
+- El Backoffice no puede escribir archivos ni subir medios en el sitio público.

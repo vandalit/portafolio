@@ -1,24 +1,6 @@
 {
   "id": "wip-05",
   "category": "content",
-  "title": "Próximamente",
-  "client": "",
-  "subtitle": "En desarrollo",
-  "description": "",
-  "year": 2024,
-  "role": "",
-  "tags": [
-    "content"
-  ],
-  "cover": "",
-  "coverPlaceholder": "",
-  "challenge": "",
-  "solution": "",
-  "result": "",
-  "stack": [],
-  "gallery": [],
-  "links": {
-    "live": null,
-    "github": null
-  }
+  "client": "Entidad Contenido 01",
+  "placeholder": true
 }

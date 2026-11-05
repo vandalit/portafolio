@@ -224,7 +224,7 @@
 
 .cv4-carousel-row {
   display: grid;
-  grid-template-columns: minmax(calc(var(--cv4-card-width) + 22px), 0.32fr) 44px minmax(0, 1fr);
+  grid-template-columns: calc(var(--cv4-card-width) + 20px) 44px minmax(0, 1fr);
   column-gap: var(--cv4-gap);
   row-gap: var(--cv4-gap);
   min-width: 0;
