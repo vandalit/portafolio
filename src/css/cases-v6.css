@@ -1,4 +1,4 @@
-/* ── Cases V6: initial bento layout and linked mock carousels ── */
+/* ── Cases V5: initial bento layout and linked mock carousels ── */
 .cases-v6 {
   --cv6-gap: clamp(14px, 2vw, 24px);
   --cv6-card-width: clamp(190px, 24vw, 280px);
@@ -84,7 +84,7 @@
 
 .cv6-featured__art {
   position: absolute;
-  z-index: -2;
+  z-index: 0;
   inset: 0;
   overflow: hidden;
   background:
@@ -114,6 +114,14 @@
   position: absolute;
   z-index: -1;
   inset: 0;
+  pointer-events: none;
+  content: '';
+}
+
+.cv6-featured__art::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
   background: linear-gradient(90deg, rgba(8, 8, 16, 0.88), rgba(8, 8, 16, 0.12) 90%),
     linear-gradient(0deg, rgba(8, 8, 16, 0.72), transparent 70%);
   content: '';
@@ -121,6 +129,7 @@
 
 .cv6-featured__label {
   position: absolute;
+  z-index: 2;
   top: clamp(18px, 2.5vw, 30px);
   right: clamp(18px, 2.5vw, 30px);
   color: var(--text-1);
@@ -131,6 +140,8 @@
 }
 
 .cv6-featured__content {
+  position: relative;
+  z-index: 2;
   width: min(100%, 620px);
 }
 

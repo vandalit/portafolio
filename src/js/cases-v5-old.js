@@ -25,10 +25,10 @@ const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, character =>
   "'": '&#39;'
 })[character]);
 
-export class CasesV5 {
-  constructor(cases, root = document.getElementById('cases-v5')) {
+export class CasesV5Old {
+  constructor(cases, root = document.getElementById('cases-v5-old')) {
     if (!root || !cases?.length) {
-      console.warn('[CasesV5] Missing root element or case study data');
+      console.warn('[CasesV5Old] Missing root element or case study data');
       return;
     }
 
@@ -37,7 +37,7 @@ export class CasesV5 {
       ...item,
       image: item.cover || item.coverPlaceholder || ''
     }));
-    this.viewports = [...root.querySelectorAll('.cv5-carousel__viewport')];
+    this.viewports = [...root.querySelectorAll('.cv5-old-carousel__viewport')];
     this.currentIndex = 0;
     this.anchorSlot = this.items.length * 2 + this.currentIndex;
     this._scrollTimers = new WeakMap();
@@ -67,10 +67,10 @@ export class CasesV5 {
     this._dividerBounceRunIds = { main: 0, left: 0, right: 0 };
     this._dividerReleasePending = false;
     this._exitPulseDistance = Number.parseFloat(
-      getComputedStyle(root).getPropertyValue('--cv5-exit-pulse-distance')
+      getComputedStyle(root).getPropertyValue('--cv5-old-exit-pulse-distance')
     ) || 100;
     this._exitPulseScale = Number.parseFloat(
-      getComputedStyle(root).getPropertyValue('--cv5-exit-pulse-scale')
+      getComputedStyle(root).getPropertyValue('--cv5-old-exit-pulse-scale')
     ) || 0.88;
     this._renderTracks();
     this._bind();
@@ -80,13 +80,13 @@ export class CasesV5 {
 
   _renderTracks() {
     this.viewports.forEach(viewport => {
-      const track = viewport.querySelector('.cv5-carousel__track');
+      const track = viewport.querySelector('.cv5-old-carousel__track');
       if (!track) return;
 
       track.innerHTML = Array.from({ length: TRACK_COPIES }, (_, copy) =>
         this.items.map((item, index) => `
           <article
-            class="cv5-item"
+            class="cv5-old-item"
             data-item-id="${escapeHTML(item.id)}"
             data-project-id="${escapeHTML(item.id)}"
             data-type="case"
@@ -97,17 +97,17 @@ export class CasesV5 {
             aria-hidden="${copy !== 2}"
             aria-label="Ver caso: ${escapeHTML(item.title)}"
           >
-            <img class="cv5-item__image" alt="" aria-hidden="true" loading="lazy" decoding="async">
-            <span class="cv5-item__index">${String(index + 1).padStart(2, '0')}</span>
-            <div class="cv5-item__copy">
-              <div class="cv5-item__eyebrow">
-                <span class="cv5-item__sigil" aria-hidden="true">${this._getCategorySigil(item)}</span>
-                <span class="cv5-item__role">${escapeHTML(item.role)}</span>
+            <img class="cv5-old-item__image" alt="" aria-hidden="true" loading="lazy" decoding="async">
+            <span class="cv5-old-item__index">${String(index + 1).padStart(2, '0')}</span>
+            <div class="cv5-old-item__copy">
+              <div class="cv5-old-item__eyebrow">
+                <span class="cv5-old-item__sigil" aria-hidden="true">${this._getCategorySigil(item)}</span>
+                <span class="cv5-old-item__role">${escapeHTML(item.role)}</span>
               </div>
-              <h3 class="cv5-item__title">${escapeHTML(item.title)}</h3>
-              <div class="cv5-item__tags">
+              <h3 class="cv5-old-item__title">${escapeHTML(item.title)}</h3>
+              <div class="cv5-old-item__tags">
                 ${(Array.isArray(item.tags) ? item.tags : []).map(tag => `
-                  <span class="cv5-item__tag">${escapeHTML(tag)}</span>
+                  <span class="cv5-old-item__tag">${escapeHTML(tag)}</span>
                 `).join('')}
               </div>
             </div>
@@ -115,12 +115,12 @@ export class CasesV5 {
         `).join('')
       ).join('');
 
-      track.querySelectorAll('.cv5-item').forEach(card => {
+      track.querySelectorAll('.cv5-old-item').forEach(card => {
         const item = this.items[Number(card.dataset.index)];
-        card.style.setProperty('--cv5-accent-color', this._getAccentColor(item));
+        card.style.setProperty('--cv5-old-accent-color', this._getAccentColor(item));
       });
-      track.querySelectorAll('.cv5-item__image').forEach(image => {
-        image.src = this.items[Number(image.closest('.cv5-item').dataset.index)].image;
+      track.querySelectorAll('.cv5-old-item__image').forEach(image => {
+        image.src = this.items[Number(image.closest('.cv5-old-item').dataset.index)].image;
       });
     });
   }
@@ -148,7 +148,7 @@ export class CasesV5 {
       });
     });
     this.root.addEventListener('click', event => {
-      const card = event.target.closest('.cv5-item[data-project-id]');
+      const card = event.target.closest('.cv5-old-item[data-project-id]');
       if (card && this._isDragClick(event, card)) {
         event.preventDefault();
         event.stopPropagation();
@@ -156,21 +156,21 @@ export class CasesV5 {
         return;
       }
 
-      const button = event.target.closest('[data-cv5-step]');
+      const button = event.target.closest('[data-cv5-old-step]');
       if (!button) return;
-      this._goTo(Number(button.dataset.cv5Step));
+      this._goTo(Number(button.dataset.cv6Step));
     });
 
     this.root.addEventListener('keydown', event => {
       if (event.key !== ' ') return;
-      const card = event.target.closest('.cv5-item[role="button"]');
+      const card = event.target.closest('.cv5-old-item[role="button"]');
       if (!card) return;
       event.preventDefault();
     });
 
     this.root.addEventListener('keyup', event => {
       if (event.key !== ' ') return;
-      const card = event.target.closest('.cv5-item[role="button"]');
+      const card = event.target.closest('.cv5-old-item[role="button"]');
       if (!card) return;
       event.preventDefault();
       card.click();
@@ -189,8 +189,8 @@ export class CasesV5 {
       if (this._momentumFrame) this._cancelMomentum(false);
       this.viewports.forEach(viewport => this._cancelProgrammaticScroll(viewport));
 
-      const source = event.target.closest('.cv5-carousel__viewport')
-        || this.root.querySelector('.cv5-carousel--wide .cv5-carousel__viewport');
+      const source = event.target.closest('.cv5-old-carousel__viewport')
+        || this.root.querySelector('.cv5-old-carousel--wide .cv5-old-carousel__viewport');
       if (!source) return;
       this._setDividerMotion(horizontalDelta);
 
@@ -267,7 +267,7 @@ export class CasesV5 {
     this._featuredDirection = Math.sign(direction);
     this._hideFeaturedContent();
 
-    const divider = this.root.querySelector('.cv5-divider');
+    const divider = this.root.querySelector('.cv5-old-divider');
     if (!divider) return;
 
     this._dividerPendingScrolls.clear();
@@ -302,14 +302,14 @@ export class CasesV5 {
 
   _finishDividerMotion() {
     this._dividerReleasePending = false;
-    const divider = this.root.querySelector('.cv5-divider');
+    const divider = this.root.querySelector('.cv5-old-divider');
     divider?.classList.remove('is-tracking');
     divider?.removeAttribute('data-direction');
     this._showFeaturedContent(this._featuredDirection);
   }
 
   _hideFeaturedContent() {
-    const content = this.root.querySelector('.cv5-featured__content');
+    const content = this.root.querySelector('.cv5-old-featured__content');
     if (!content || this._featuredContentHidden) return;
 
     content.getAnimations().forEach(animation => animation.cancel());
@@ -320,7 +320,7 @@ export class CasesV5 {
   }
 
   _showFeaturedContent(direction) {
-    const content = this.root.querySelector('.cv5-featured__content');
+    const content = this.root.querySelector('.cv5-old-featured__content');
     if (!content || !this._featuredContentHidden) return;
 
     content.classList.remove('is-transition-hidden');
@@ -343,7 +343,7 @@ export class CasesV5 {
 
   _queueDividerBounce(target, count) {
     if (!count || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const divider = this.root.querySelector('.cv5-divider');
+    const divider = this.root.querySelector('.cv5-old-divider');
     if (!divider?.classList.contains('is-tracking')) return;
 
     this._dividerReleasePending = false;
@@ -351,15 +351,15 @@ export class CasesV5 {
   }
 
   _playDividerBounce(target) {
-    const divider = this.root.querySelector('.cv5-divider');
+    const divider = this.root.querySelector('.cv5-old-divider');
     if (!divider?.classList.contains('is-tracking')) return;
 
     this._dividerBounceAnimations.get(target)?.cancel();
     this._dividerBounceRunning.add(target);
     const runId = ++this._dividerBounceRunIds[target];
     const element = target === 'main'
-      ? divider.querySelector('.cv5-divider__bar--main')
-      : divider.querySelector(`.cv5-divider__bar--${target}`);
+      ? divider.querySelector('.cv5-old-divider__bar--main')
+      : divider.querySelector(`.cv5-old-divider__bar--${target}`);
     const direction = divider.dataset.direction;
     const sideScale = direction === 'forward'
       ? { left: 1.1, right: 0.9 }
@@ -392,11 +392,11 @@ export class CasesV5 {
 
   _updateFeatured() {
     const item = this.items[this.currentIndex];
-    const content = this.root.querySelector('.cv5-featured__content');
-    const featured = this.root.querySelector('.cv5-featured');
-    const eyebrow = this.root.querySelector('.cv5-featured__eyebrow');
-    const title = this.root.querySelector('.cv5-featured__title');
-    const description = this.root.querySelector('.cv5-featured__description');
+    const content = this.root.querySelector('.cv5-old-featured__content');
+    const featured = this.root.querySelector('.cv5-old-featured');
+    const eyebrow = this.root.querySelector('.cv5-old-featured__eyebrow');
+    const title = this.root.querySelector('.cv5-old-featured__title');
+    const description = this.root.querySelector('.cv5-old-featured__description');
     if (!content || !featured || !eyebrow || !title || !description) return;
 
     content.getAnimations().forEach(animation => animation.cancel());
@@ -405,12 +405,12 @@ export class CasesV5 {
 
   _setFeaturedContent(item, featured, eyebrow, title, description) {
     featured.dataset.activeItem = item.id;
-    featured.style.setProperty('--cv5-accent-color', this._getAccentColor(item));
+    featured.style.setProperty('--cv5-old-accent-color', this._getAccentColor(item));
     eyebrow.replaceChildren();
     const sigil = this._getCategorySigil(item);
     if (sigil) {
       const sigilElement = document.createElement('span');
-      sigilElement.className = 'cv5-featured__sigil';
+      sigilElement.className = 'cv5-old-featured__sigil';
       sigilElement.setAttribute('aria-hidden', 'true');
       sigilElement.textContent = sigil;
       eyebrow.append(sigilElement);
@@ -421,30 +421,30 @@ export class CasesV5 {
     title.textContent = item.title;
     description.textContent = item.description || '';
 
-    const cta = featured.querySelector('.cv5-featured__cta');
+    const cta = featured.querySelector('.cv5-old-featured__cta');
     if (cta) {
       cta.dataset.projectId = item.id;
       cta.dataset.type = 'case';
       cta.setAttribute('aria-label', `Ver caso: ${item.title}`);
     }
 
-    const year = featured.querySelector('[data-cv5-featured-year]');
+    const year = featured.querySelector('[data-cv5-old-featured-year]');
     if (year) {
       year.textContent = item.year ? String(item.year) : '';
       year.hidden = !item.year;
     }
 
-    const role = featured.querySelector('[data-cv5-featured-role]');
+    const role = featured.querySelector('[data-cv5-old-featured-role]');
     if (role) {
       role.textContent = item.role || '';
       role.hidden = !item.role;
     }
 
-    const itemNumber = this.root.querySelector('[data-cv5-item-number]');
+    const itemNumber = this.root.querySelector('[data-cv5-old-item-number]');
     if (itemNumber) itemNumber.textContent = String(this.currentIndex + 1).padStart(2, '0');
 
-    const progress = this.root.querySelector('.cv5-carousel__progress');
-    const progressFill = this.root.querySelector('[data-cv5-progress-fill]');
+    const progress = this.root.querySelector('.cv5-old-carousel__progress');
+    const progressFill = this.root.querySelector('[data-cv5-old-progress-fill]');
     const progressValue = this.items.length > 1
       ? ((this.currentIndex + 1) / this.items.length) * 100
       : 100;
@@ -515,7 +515,7 @@ export class CasesV5 {
       this._applyFeaturedBackground(request);
     }).catch(error => {
       if (this._featuredBackgroundRequest !== request) return;
-      console.warn('[CasesV5] Could not decode featured images before transition:', error);
+      console.warn('[CasesV5Old] Could not decode featured images before transition:', error);
       request.ready = true;
       this._applyFeaturedBackground(request);
     });
@@ -530,8 +530,8 @@ export class CasesV5 {
         incoming: this.root.querySelector('[data-featured-layer="incoming"]')
       },
       {
-        active: this.root.querySelector('[data-cv5-backdrop-layer="active"]'),
-        incoming: this.root.querySelector('[data-cv5-backdrop-layer="incoming"]')
+        active: this.root.querySelector('[data-cv5-old-backdrop-layer="active"]'),
+        incoming: this.root.querySelector('[data-cv5-old-backdrop-layer="incoming"]')
       }
     ];
 
@@ -542,7 +542,7 @@ export class CasesV5 {
       incoming.style.opacity = String(request.progress);
     });
 
-    const itemNumber = this.root.querySelector('[data-cv5-item-number]');
+    const itemNumber = this.root.querySelector('[data-cv5-old-item-number]');
     if (itemNumber) {
       const activeIndex = request.progress > 0 ? request.toIndex : request.fromIndex;
       itemNumber.textContent = String(activeIndex + 1).padStart(2, '0');
@@ -553,7 +553,7 @@ export class CasesV5 {
     this._dividerPendingScrolls.clear();
     this.viewports.forEach((viewport, index) => {
       const slot = this.anchorSlot + (index === 0 ? -1 : 1);
-      const item = viewport.querySelector(`.cv5-item[data-slot="${mod(slot, this.items.length * TRACK_COPIES)}"]`);
+      const item = viewport.querySelector(`.cv5-old-item[data-slot="${mod(slot, this.items.length * TRACK_COPIES)}"]`);
       if (!item) return;
 
       const viewportRect = viewport.getBoundingClientRect();
@@ -572,11 +572,11 @@ export class CasesV5 {
   }
 
   _updateCarouselEdgePulse(viewport) {
-    if (viewport.closest('.cv5-carousel--compact')) {
+    if (viewport.closest('.cv5-old-carousel--compact')) {
       const clipRight = viewport.getBoundingClientRect().left
         + viewport.clientLeft + viewport.clientWidth;
       let boundaryCrossings = 0;
-      [...viewport.querySelectorAll('.cv5-item')].forEach(item => {
+      [...viewport.querySelectorAll('.cv5-old-item')].forEach(item => {
         const rect = item.getBoundingClientRect();
         const unscaledRight = rect.right + (item.offsetWidth - rect.width) / 2;
         const previousRight = this._dividerBoundaryPositions.compactRight.get(item);
@@ -589,20 +589,20 @@ export class CasesV5 {
           (clipRight - unscaledRight + this._exitPulseDistance) / this._exitPulseDistance
         ));
         const scale = this._exitPulseScale + (1 - this._exitPulseScale) * visibility;
-        item.style.setProperty('--cv5-right-edge-opacity', visibility.toFixed(3));
-        item.style.setProperty('--cv5-right-edge-scale', scale.toFixed(3));
+        item.style.setProperty('--cv5-old-right-edge-opacity', visibility.toFixed(3));
+        item.style.setProperty('--cv5-old-right-edge-scale', scale.toFixed(3));
       });
       // this._queueDividerBounce('left', boundaryCrossings);
       return;
     }
 
-    if (!viewport.closest('.cv5-carousel--wide')) return;
+    if (!viewport.closest('.cv5-old-carousel--wide')) return;
 
     const clipLeft = viewport.getBoundingClientRect().left + viewport.clientLeft;
     const controlMorph = this._featuredMorph?.kind === 'control' ? this._featuredMorph : null;
     let rightBoundaryCrossings = 0;
     let centerBoundaryCrossings = 0;
-    const items = [...viewport.querySelectorAll('.cv5-item')].map(item => {
+    const items = [...viewport.querySelectorAll('.cv5-old-item')].map(item => {
       const rect = item.getBoundingClientRect();
       const unscaledLeft = rect.left - (item.offsetWidth - rect.width) / 2;
       const previousLeft = this._dividerBoundaryPositions.wideLeft.get(item);
@@ -636,8 +636,8 @@ export class CasesV5 {
     // this._queueDividerBounce('right', rightBoundaryCrossings);
     // this._queueDividerBounce('main', centerBoundaryCrossings);
     items.forEach(({ item, opacity, scale }) => {
-      item.style.setProperty('--cv5-left-edge-opacity', opacity.toFixed(3));
-      item.style.setProperty('--cv5-left-edge-scale', scale.toFixed(3));
+      item.style.setProperty('--cv5-old-left-edge-opacity', opacity.toFixed(3));
+      item.style.setProperty('--cv5-old-left-edge-scale', scale.toFixed(3));
     });
     if (controlMorph) {
       this._updateFeaturedBackground(
@@ -657,7 +657,7 @@ export class CasesV5 {
 
     if (displacement >= 0) {
       const firstSlot = mod(this.anchorSlot + 1, totalSlots);
-      const firstItem = viewport.querySelector(`.cv5-item[data-slot="${firstSlot}"]`);
+      const firstItem = viewport.querySelector(`.cv5-old-item[data-slot="${firstSlot}"]`);
       if (!firstItem) return;
       const rect = firstItem.getBoundingClientRect();
       const initialLeft = rect.left - (firstItem.offsetWidth - rect.width) / 2
@@ -675,7 +675,7 @@ export class CasesV5 {
     }
 
     const firstSlot = mod(this.anchorSlot, totalSlots);
-    const firstItem = viewport.querySelector(`.cv5-item[data-slot="${firstSlot}"]`);
+    const firstItem = viewport.querySelector(`.cv5-old-item[data-slot="${firstSlot}"]`);
     if (!firstItem) return;
     const rect = firstItem.getBoundingClientRect();
     const initialLeft = rect.left - (firstItem.offsetWidth - rect.width) / 2
@@ -692,7 +692,7 @@ export class CasesV5 {
   }
 
   _stride(viewport) {
-    const items = viewport.querySelectorAll('.cv5-item');
+    const items = viewport.querySelectorAll('.cv5-old-item');
     if (items.length < 2) return items[0]?.offsetWidth || 1;
     return items[1].offsetLeft - items[0].offsetLeft;
   }
@@ -804,10 +804,10 @@ export class CasesV5 {
   }
 
   _nearestSlot(viewport) {
-    const track = viewport.querySelector('.cv5-carousel__track');
+    const track = viewport.querySelector('.cv5-old-carousel__track');
     const trackPadding = parseFloat(getComputedStyle(track).paddingLeft) || 0;
     const viewportLeft = viewport.getBoundingClientRect().left + viewport.clientLeft + trackPadding;
-    return [...viewport.querySelectorAll('.cv5-item')].reduce((best, item) => {
+    return [...viewport.querySelectorAll('.cv5-old-item')].reduce((best, item) => {
       const distance = Math.abs(item.getBoundingClientRect().left - viewportLeft);
       return distance < best.distance
         ? { slot: Number(item.dataset.slot), distance }
@@ -818,7 +818,7 @@ export class CasesV5 {
   _bindPointerDrag() {
     this.viewports.forEach(viewport => {
       viewport.addEventListener('pointerdown', event => {
-        const card = event.target.closest('.cv5-item');
+        const card = event.target.closest('.cv5-old-item');
         if (!card) return;
         this._lastDragClick = null;
         if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
@@ -916,7 +916,7 @@ export class CasesV5 {
   _isDragClick(event, card) {
     const drag = this._lastDragClick;
     if (!drag || event.detail === 0 || performance.now() - drag.time > 500) return false;
-    if (card.closest('.cv5-carousel__viewport') !== drag.source) return false;
+    if (card.closest('.cv5-old-carousel__viewport') !== drag.source) return false;
     if (typeof event.pointerId === 'number' && event.pointerId !== drag.pointerId) return false;
     return Math.hypot(event.clientX - drag.x, event.clientY - drag.y) <= 32;
   }

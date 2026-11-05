@@ -24,7 +24,7 @@ bentoCard5.renderContent = function() {
   return `
     <img 
       class="bento-image-fill"
-      src="./assets/images/midjourney/vandalit_A_cozy_and_clean_suburban_living_room_staged_for_sal_81f8c780-9cd8-4b20-877f-d4edd27a1244_1.png"
+      data-src="./assets/images/midjourney/vandalit_A_cozy_and_clean_suburban_living_room_staged_for_sal_81f8c780-9cd8-4b20-877f-d4edd27a1244_1.png"
       alt="Suburban Living Room Staged"
       loading="lazy">
   `;

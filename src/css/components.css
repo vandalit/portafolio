@@ -1532,6 +1532,7 @@
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
+  background-color: var(--bg-2);
 }
 
 .lab-card__img {
@@ -1666,6 +1667,10 @@
   filter: grayscale(1) contrast(0.9);
   opacity: 0.5;
   mix-blend-mode: luminosity;
+}
+
+.lab-card--compressed.is-image-loaded > .lab-card__cover--compressed {
+  opacity: 0.5;
 }
 
 .lab-card__cover-tint--compressed {
@@ -2045,6 +2050,7 @@
 .lab-gallery-thumb {
   width: 120px;
   height: 75px;
+  position: relative;
   border-radius: 6px;
   overflow: hidden;
   border: 1.5px solid rgba(255, 255, 255, 0.15);
@@ -2285,6 +2291,14 @@
   transition: transform 600ms var(--ease-out);
 }
 
+.modal__masonry-item.image-loading-square {
+  aspect-ratio: 1;
+}
+
+.modal__masonry-item.is-image-loaded {
+  aspect-ratio: auto;
+}
+
 .modal__masonry-item:hover .modal__masonry-img {
   transform: scale(1.03);
 }
@@ -2396,9 +2410,12 @@
   justify-content: center;
   overflow: hidden;
   user-select: none;
+  background: #101116;
 }
 
 .modal__lightbox-img {
+  position: relative;
+  z-index: 2;
   max-width: 88vw;
   max-height: 82vh;
   object-fit: contain;
@@ -2561,17 +2578,105 @@
   transform: translateY(-2px);
 }
 
-/* ── LAZYLOADING FLUID DECODE FOR IMAGES ─────────────────── */
-.project-thumb,
-.case-card__thumb,
-.lab-card__thumb {
-  background-color: var(--bg-2);
+/* ── LAZY IMAGE SKELETONS ────────────────────────────────── */
+.image-loading-placeholder {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: linear-gradient(110deg, #242630 8%, #343743 18%, #242630 33%);
+  background-size: 200% 100%;
+  animation: imageLoadingShimmer 1.6s linear infinite;
+  opacity: 1;
+  transition: opacity 220ms ease-out, visibility 220ms ease-out;
+  pointer-events: none;
 }
 
-/* Spinner de carga: visible mientras la imagen no ha cargado */
-.project-thumb::after,
+.image-loading-placeholder::after {
+  content: '';
+  width: 34px;
+  height: 34px;
+  border: 2px solid #52545e;
+  border-top-color: var(--lime);
+  border-radius: 50%;
+  animation: imageLoadingSpin 0.8s linear infinite;
+}
+
+.image-loading-surface.is-image-loaded > .image-loading-placeholder {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.image-loading-surface.is-image-error > .image-loading-placeholder {
+  background: var(--bg-2);
+  animation: none;
+}
+
+.image-loading-surface.is-image-error > .image-loading-placeholder::after {
+  display: none;
+}
+
+.image-loading-surface > img,
+.image-loading-surface video {
+  opacity: 0;
+  transition: opacity 380ms ease-out;
+}
+
+.image-loading-surface.is-image-loaded > img,
+.image-loading-surface.is-image-loaded video {
+  opacity: 1;
+}
+
+.image-loading-square > .image-loading-placeholder {
+  inset: 50% auto auto 50%;
+  width: min(100%, 320px);
+  max-height: 70vh;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: var(--radius-sm);
+}
+
+.project-thumb.image-loading-surface > .image-loading-placeholder {
+  z-index: 0;
+}
+
+.lab-card__thumb.image-loading-surface > .image-loading-placeholder,
+.lab-gallery-thumb.image-loading-surface > .image-loading-placeholder,
+.modal__masonry-item.image-loading-surface > .image-loading-placeholder {
+  z-index: 1;
+}
+
+.lab-card--compressed.image-loading-surface > .image-loading-placeholder {
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.cv6-item.image-loading-surface > .image-loading-placeholder {
+  z-index: 2;
+  border-radius: inherit;
+}
+
+.cv6-board__art.image-loading-surface > .image-loading-placeholder {
+  z-index: 2;
+}
+
+.cv6-featured__art.image-loading-surface > .image-loading-placeholder {
+  z-index: 2;
+}
+
+.bento-card__content.image-loading-surface > .image-loading-placeholder,
+.bento-video-wrapper.image-loading-surface > .image-loading-placeholder {
+  z-index: 2;
+}
+
+.modal__lightbox-stage.image-loading-surface > .image-loading-placeholder {
+  z-index: 1;
+}
+
+/* Legacy Cases cards retain their existing spinner. */
 .case-card::after,
-.lab-card__thumb::after,
 .featured-case::after {
   content: '';
   position: absolute;
@@ -2584,23 +2689,21 @@
   border-top-color: var(--lime);
   border-radius: 50%;
   animation: imageLoadingSpin 0.8s linear infinite;
-  opacity: 1;
-  transition: opacity 200ms ease-out;
   pointer-events: none;
   z-index: 10;
 }
 
-/* Ocultar spinner cuando la imagen está cargada */
-.project-thumb.image-loaded::after,
 .case-card.image-loaded::after,
-.lab-card__thumb.image-loaded::after,
 .featured-case.image-loaded::after {
   opacity: 0;
 }
 
-/* Keyframe para rotación del spinner */
 @keyframes imageLoadingSpin {
   to { transform: rotate(360deg); }
+}
+
+@keyframes imageLoadingShimmer {
+  to { background-position: -200% 0; }
 }
 
 .project-thumb__img,
@@ -2614,8 +2717,16 @@
 .project-thumb__img.is-loaded,
 .case-card__img.is-loaded,
 .lab-card__img.is-loaded,
-.lab-gallery-thumb img.is-loaded {
+.lab-gallery-thumb img.is-loaded,
+.cv6-item__image.is-loaded {
   opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-loading-placeholder,
+  .image-loading-placeholder::after {
+    animation: none;
+  }
 }
 
 /* ── FOOTER COMPONENTS ────────────────────────────────────── */

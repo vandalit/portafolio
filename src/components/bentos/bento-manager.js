@@ -16,6 +16,7 @@ import { bentoCard9 } from './bento-card-9/bento-card-9.js';
 import { bentoCard10 } from './bento-card-10/bento-card-10.js';
 import { bentoCard11 } from './bento-card-11/bento-card-11.js';
 import { bentoCard12 } from './bento-card-12/bento-card-12.js';
+import { watchImageLoading, watchMediaLoading } from '../../utils/image-loading.js';
 
 class BentoManager {
   constructor() {
@@ -46,10 +47,16 @@ class BentoManager {
       if (local) {
         return JSON.parse(local);
       }
-      const res = await fetch('./content/settings/hero.json');
-      if (res.ok) {
-        return await res.json();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 1500);
+      let res;
+      try {
+        res = await fetch('./content/settings/hero.json', { signal: controller.signal });
+      } finally {
+        clearTimeout(timeout);
       }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
     } catch (e) {
       console.warn('[BentoManager] Could not load hero.json, using static defaults:', e);
     }
@@ -86,10 +93,10 @@ class BentoManager {
                 <div class="bento-video-wrapper">
                   <video 
                     class="bento-video-element"
-                    src="${conf.mediaSrc}"
-                    ${conf.poster ? `poster="${conf.poster}"` : ''}
+                    data-src="${conf.mediaSrc}"
+                    ${conf.poster ? `data-poster="${conf.poster}"` : ''}
                     autoplay loop muted playsinline webkit-playsinline
-                    disablepictureinpicture preload="metadata"
+                    disablepictureinpicture preload="none"
                     aria-hidden="true"
                     oncanplay="this.defaultMuted=true; this.muted=true; this.play().catch(()=>{});">
                   </video>
@@ -97,7 +104,7 @@ class BentoManager {
               `;
             } else {
               bento.renderContent = () => `
-                <img class="bento-image-fill" src="${conf.mediaSrc}" alt="${bento.workTitle}" loading="lazy">
+                <img class="bento-image-fill" data-src="${conf.mediaSrc}" alt="${bento.workTitle}" loading="lazy" decoding="async">
               `;
             }
           }
@@ -127,7 +134,47 @@ class BentoManager {
       this.mountedElements.set(bento.id, { def: bento, el: bentoEl, hudEl });
     });
 
+    this.container.querySelectorAll('.bento-card__content img').forEach(image => {
+      watchImageLoading(image, image.closest('.bento-card__content'), { defer: true });
+    });
+
+    this.container.querySelectorAll('.bento-video-element').forEach(video => {
+      watchMediaLoading(video, video.closest('.bento-video-wrapper'));
+    });
+
     console.log(`[BentoManager] ${this.bentos.length} Bento & HUD interfaces montadas exitosamente.`);
+  }
+
+  activateDeferredVideos() {
+    const videos = this.container?.querySelectorAll('.bento-video-element[data-src]');
+    if (!videos?.length) return;
+
+    const loadVideo = video => {
+      const source = video.dataset.src;
+      if (!source) return;
+      if (video.dataset.poster) {
+        video.poster = video.dataset.poster;
+        delete video.dataset.poster;
+      }
+      video.src = source;
+      delete video.dataset.src;
+      video.load();
+    };
+
+    if (!('IntersectionObserver' in window)) {
+      videos.forEach(loadVideo);
+      return;
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        loadVideo(entry.target);
+        observer.unobserve(entry.target);
+      });
+    }, { rootMargin: '200px' });
+
+    videos.forEach(video => observer.observe(video));
   }
 
   /**

@@ -24,7 +24,7 @@ bentoCard8.renderContent = function() {
   return `
     <img 
       class="bento-image-fill"
-      src="./assets/images/midjourney/vandalit_Outline_digital_illustration_hipertealostic_photogra_47c8bf74-1925-427f-8eda-ebf0690ac2b3_2.png"
+      data-src="./assets/images/midjourney/vandalit_Outline_digital_illustration_hipertealostic_photogra_47c8bf74-1925-427f-8eda-ebf0690ac2b3_2.png"
       alt="Outline Digital Illustration"
       loading="lazy">
   `;

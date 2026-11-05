@@ -13,7 +13,7 @@
   ],
   "accentColor": "#b6e030",
   "featured": true,
-  "coverPlaceholder": "ondas-ne--n-sobre-panel-oscuro.png",
+  "coverPlaceholder": "ondas-ne--n-sobre-panel-oscuro.webp",
   "gallery": [
     "https://picsum.photos/seed/syzygy-1/1200/800",
     "https://picsum.photos/seed/syzygy-2/800/1000",
@@ -29,7 +29,7 @@
   "challenge": "Crear un sistema de diseño que pueda escalar sin perder su carácter propio, integrando motion como parte fundamental del lenguaje.",
   "solution": "Tokens semánticos + motion principles documentados + biblioteca de componentes con estados animados.",
   "result": "Sistema funcional desplegado, utilizable como base para proyectos futuros.",
-  "cover": "ondas-ne--n-sobre-panel-oscuro.png",
+  "cover": "ondas-ne--n-sobre-panel-oscuro.webp",
   "client": "",
   "stack": []
 }

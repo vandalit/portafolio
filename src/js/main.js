@@ -6,10 +6,11 @@ console.log('%c[Portafolio:Main] 🚀 main.js loaded', 'background: #080810; col
 
 import { HeroScene } from './three-scene.js';
 import { Carousel } from './carousel.js';
-import { CasesV5 } from './cases-v5.js';
+import { CasesV6 } from './cases-v6.js';
 import { GridFilter } from './grid-filter.js';
 import { ProjectModal } from './project-modal.js';
 import { LabModal } from './lab-modal.js';
+import { activateDeferredImages, watchImageLoading } from '../utils/image-loading.js';
 import { initVideoBackground } from './video-bg.js';
 import { bentoManager } from '../components/bentos/bento-manager.js';
 import { loadAllContent, loadSiteSettings } from './content-loader.js';
@@ -128,7 +129,7 @@ function renderClientGrid(clients) {
                data-type="${c._type}"
                ${isEmpty ? '' : 'role="button" tabindex="0"'}
                aria-label="${isEmpty ? `Proyecto próximamente: ${entityName}` : 'Ver proyecto: ' + c.title}">
-        <img class="project-thumb__img" src="${coverSrc}" alt="${isEmpty ? entityName || 'Próximamente' : c.title}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded');this.closest('.project-thumb').classList.add('image-loaded')">
+        <img class="project-thumb__img" data-src="${coverSrc}" alt="${isEmpty ? entityName || 'Próximamente' : c.title}" loading="lazy" decoding="async">
         ${isEmpty ? '<div class="project-thumb__wip-badge">Próximamente</div>' : `
         <div class="project-thumb__overlay"></div>
         <div class="project-thumb__info">
@@ -145,6 +146,10 @@ function renderClientGrid(clients) {
       </article>
     `;
   }).join('');
+
+  grid.querySelectorAll('.project-thumb__img').forEach(image => {
+    watchImageLoading(image, image.closest('.project-thumb'), { defer: true });
+  });
 }
 
 let labModalInstance = null;
@@ -183,7 +188,7 @@ function renderLabGrid(lab) {
       return `
         <article class="lab-card--expanded" data-lab-id="${l.id}" tabindex="0" role="button" aria-label="Ver experimento: ${l.title}">
           <div class="lab-card__thumb lab-scanline">
-            <img class="lab-card__img" src="${l.coverPlaceholder || l.cover}" alt="${l.title}" draggable="false" loading="lazy" decoding="async" onload="this.classList.add('is-loaded');this.closest('.lab-card__thumb').classList.add('image-loaded')">
+            <img class="lab-card__img" data-src="${l.coverPlaceholder || l.cover}" alt="${l.title}" draggable="false" loading="lazy" decoding="async">
             <span class="lab-card__badge">${badge}</span>
           </div>
           <div class="lab-card__body">
@@ -212,7 +217,7 @@ function renderLabGrid(lab) {
 
         return `
           <div class="lab-card--compressed" data-lab-id="${l.id}" tabindex="0" role="button" aria-label="Ver experimento: ${l.title}">
-            ${coverSrc ? `<img class="lab-card__cover--compressed" src="${coverSrc}" alt="" aria-hidden="true" draggable="false" loading="lazy" decoding="async">` : ''}
+            ${coverSrc ? `<img class="lab-card__cover--compressed" data-src="${coverSrc}" alt="" aria-hidden="true" draggable="false" loading="lazy" decoding="async">` : ''}
             <div class="lab-card__cover-tint--compressed" aria-hidden="true"></div>
             <div class="lab-card__header--compressed">
               <span class="lab-pill-outline">${badge}</span>
@@ -237,6 +242,13 @@ function renderLabGrid(lab) {
       `;
     }
   }).join('');
+
+  track.querySelectorAll('.lab-card__img').forEach(image => {
+    watchImageLoading(image, image.closest('.lab-card__thumb'), { defer: true });
+  });
+  track.querySelectorAll('.lab-card__cover--compressed').forEach(image => {
+    watchImageLoading(image, image.closest('.lab-card--compressed'), { defer: true });
+  });
 
   // Both card layouts open the same Lab detail; nested links keep their own behavior.
   track.querySelectorAll('.lab-card--expanded, .lab-card--compressed').forEach(cardEl => {
@@ -578,8 +590,8 @@ function initNav() {
   const sections = document.querySelectorAll('section[id]');
   const navLinks = document.querySelectorAll('.nav__link[href^="#"], .nav__cta[href^="#"]');
   const logo = document.querySelector('.nav__logo');
-  const casesSection = document.getElementById('cases-v5');
-  const casesBoard = casesSection?.querySelector('.cv5-board');
+  const casesSection = document.getElementById('cases-v6');
+  const casesBoard = casesSection?.querySelector('.cv6-board');
   const casesContainer = casesBoard?.parentElement;
   const casesContextText = nav?.querySelector('#nav-context-text');
   let stationFrame = 0;
@@ -605,7 +617,7 @@ function initNav() {
   const updateCasesStationOffset = () => {
     if (nav && casesSection) {
       casesSection.style.setProperty(
-        '--cv5-station-top',
+        '--cv6-station-top',
         `${nav.getBoundingClientRect().height}px`
       );
       casesSection.classList.toggle(
@@ -652,7 +664,7 @@ function initNav() {
   const contextText = document.getElementById('nav-context-text');
   const sectionLabels = {
     hero: 'OVERVIEW · INTRO',
-    'cases-v5': 'CASOS DE ESTUDIO',
+    'cases-v6': 'CASOS DE ESTUDIO',
     skills: 'PERFIL TÉCNICO',
     work: 'TRABAJOS SELECCIONADOS',
     lab: 'LABORATORIO & LAB',
@@ -988,6 +1000,7 @@ const preloaderEl = document.getElementById('preloader');
 const preloaderBar = document.getElementById('preloader-bar');
 const preloaderStatus = document.getElementById('preloader-status');
 const preloaderPercent = document.getElementById('preloader-percent');
+let preloaderFinishPromise = null;
 
 function setPreloadProgress(percent, statusText) {
   if (preloaderBar) preloaderBar.style.width = `${percent}%`;
@@ -995,14 +1008,29 @@ function setPreloadProgress(percent, statusText) {
   if (preloaderStatus && statusText) preloaderStatus.textContent = `// ${statusText}`;
 }
 
-async function finishPreloader() {
-  if (!preloaderEl || preloaderEl.classList.contains('is-loaded')) return;
+function finishPreloader() {
+  if (!preloaderEl || preloaderEl.classList.contains('is-loaded')) return Promise.resolve();
+  if (preloaderFinishPromise) return preloaderFinishPromise;
+
   setPreloadProgress(100, 'SYSTEM_READY');
-  await new Promise(r => setTimeout(r, 180));
-  preloaderEl.classList.add('is-loaded');
-  setTimeout(() => {
-    preloaderEl.style.display = 'none';
-  }, 650);
+  preloaderFinishPromise = new Promise(resolve => {
+    setTimeout(() => {
+      preloaderEl.classList.add('is-loaded');
+      setTimeout(() => {
+        preloaderEl.style.display = 'none';
+        resolve();
+      }, 650);
+    }, 180);
+  });
+  return preloaderFinishPromise;
+}
+
+function nextPaint() {
+  return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+function reportPreloaderStage(percent, statusText) {
+  setPreloadProgress(percent, statusText);
 }
 
 // ── SCROLL TO TOP ─────────────────────────────────────────
@@ -1035,67 +1063,179 @@ function initScrollTop() {
   update();
 }
 
+function preloadCaseCovers(cases, onProgress) {
+  const sources = [...new Set(cases.map(item => item.cover || item.coverPlaceholder).filter(Boolean))];
+  if (!sources.length) {
+    onProgress?.(1, 0, 0);
+    return Promise.resolve(new Map());
+  }
+
+  const state = new Map(sources.map(source => [source, { loaded: 0, total: null, complete: false }]));
+  const objectUrls = new Map();
+  let completed = 0;
+  const report = () => {
+    const assets = [...state.values()];
+    const allSizesKnown = assets.every(asset => asset.total > 0);
+    const fraction = allSizesKnown
+      ? assets.reduce((sum, asset) => sum + Math.min(asset.loaded, asset.total), 0)
+        / assets.reduce((sum, asset) => sum + asset.total, 0)
+      : assets.reduce((sum, asset) => {
+        const progress = asset.total
+          ? Math.min(1, asset.loaded / asset.total)
+          : Number(asset.complete);
+        return sum + progress;
+      }, 0) / sources.length;
+    const failures = assets.filter(asset => asset.failed).length;
+    onProgress?.(
+      Math.min(fraction, completed === sources.length ? 1 : 0.99),
+      completed,
+      sources.length,
+      failures
+    );
+  };
+
+  const pending = sources.map(source => new Promise(resolve => {
+    const xhr = new XMLHttpRequest();
+    const asset = state.get(source);
+    let settled = false;
+    const fail = () => {
+      asset.failed = true;
+      settle(null);
+    };
+    const settle = async blob => {
+      if (settled) return;
+      settled = true;
+
+      if (blob) {
+        const objectUrl = URL.createObjectURL(blob);
+        const image = new Image();
+        image.src = objectUrl;
+        try {
+          if (typeof image.decode === 'function') {
+            await image.decode();
+          } else if (!image.complete || image.naturalWidth === 0) {
+            await new Promise((resolveLoad, rejectLoad) => {
+              image.addEventListener('load', resolveLoad, { once: true });
+              image.addEventListener('error', () => rejectLoad(new Error('Cover decode failed')), { once: true });
+            });
+          }
+          objectUrls.set(source, objectUrl);
+        } catch (error) {
+          URL.revokeObjectURL(objectUrl);
+          console.warn(`[Preloader] Could not decode case cover: ${source}`, error);
+        }
+      } else {
+        console.warn(`[Preloader] Could not load case cover: ${source}`);
+      }
+
+      asset.complete = true;
+      completed += 1;
+      report();
+      resolve();
+    };
+
+    xhr.open('GET', source, true);
+    xhr.responseType = 'blob';
+    xhr.timeout = 30000;
+    xhr.onprogress = event => {
+      asset.loaded = event.loaded;
+      if (event.lengthComputable) asset.total = event.total;
+      report();
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300 && xhr.response?.size) {
+        asset.loaded = xhr.response.size;
+        asset.total ??= xhr.response.size;
+        settle(xhr.response);
+      } else {
+        fail();
+      }
+    };
+    xhr.onerror = fail;
+    xhr.onabort = fail;
+    xhr.ontimeout = fail;
+    xhr.send();
+  }));
+
+  return Promise.all(pending).then(() => {
+    window.addEventListener('pagehide', () => {
+      objectUrls.forEach(objectUrl => URL.revokeObjectURL(objectUrl));
+    }, { once: true });
+    return objectUrls;
+  });
+}
+
 // ── INIT ──────────────────────────────────────────────────
 async function init() {
   console.log('%c[Portafolio:Main] ⏳ init() running, readyState:', 'color: #b8e030; font-weight: bold;', document.readyState);
 
-  // Safety fallback: si algún recurso tarda de más, el preloader se retira en máx 2.2s
-  const preloaderTimer = setTimeout(finishPreloader, 2200);
+  let caseCoverPreload = Promise.resolve(new Map());
+  let pageStructureReady = false;
+  let caseCoverProgress = { fraction: 0, completed: 0, total: 0, failures: 0 };
+  const reportCaseCoverProgress = () => {
+    const percent = 25 + caseCoverProgress.fraction * 65;
+    const fallbackStatus = caseCoverProgress.failures
+      ? ` · ${caseCoverProgress.failures} FALLBACK`
+      : '';
+    reportPreloaderStage(
+      percent,
+      `LOADING CASE COVERS ${caseCoverProgress.completed}/${caseCoverProgress.total}${fallbackStatus}`
+    );
+  };
 
-  setPreloadProgress(18, 'INITIALIZING MANIFESTS');
+  reportPreloaderStage(2, 'LOADING CONTENT DATA');
 
   // 1. Cargar datos dinámicos de proyectos y configuración
   try {
     await loadData();
-    setPreloadProgress(38, 'HYDRATING SITE TOKENS');
+    reportPreloaderStage(15, 'MOUNTING SITE CONTENT');
     if (siteSettings) {
       hydrateSiteSettings(siteSettings);
     }
     if (projectsData) {
-      if (document.getElementById('cases-v5')) {
-        window.__casesV5 = new CasesV5(projectsData.cases);
+      if (Array.isArray(projectsData.cases)) {
+        caseCoverPreload = preloadCaseCovers(projectsData.cases, (progress, completed, total, failures) => {
+          caseCoverProgress = { fraction: progress, completed, total, failures };
+          if (pageStructureReady) reportCaseCoverProgress();
+        });
+      }
+      if (document.getElementById('cases-v6')) {
+        window.__casesV6 = new CasesV6(projectsData.cases);
       }
 
       renderSkillCards(projectsData.skills.categories || []);
       renderClientGrid(projectsData.clients);
       renderLabGrid(projectsData.lab);
-
-      // Pre-decodificar bitmaps en GPU de las primeras tarjetas de Casos de Estudio
-      // para eliminar cualquier pausa de rasterizado al scrollear por primera vez
-      if (Array.isArray(projectsData.cases)) {
-        const warmupImgs = projectsData.cases.slice(0, 3).map(c => c.coverPlaceholder || c.cover).filter(Boolean);
-        warmupImgs.forEach(src => {
-          const img = new Image();
-          img.decoding = 'async';
-          img.src = src;
-          if (img.decode) img.decode().catch(() => { });
-        });
-      }
     }
   } catch (err) {
     console.error('[Main] loadData error:', err);
   }
 
-  setPreloadProgress(60, 'MOUNTING MODULAR BENTOS');
+  reportPreloaderStage(18, 'MOUNTING HERO COMPONENTS');
 
   // 2. Capa 2.b: Montar componentes Bento modulares
   const bentoContainer = document.getElementById('hero-bento-container');
   if (bentoContainer) {
     window.__bentoManagerInstance = bentoManager;
-    await bentoManager.mount(bentoContainer);
+    try {
+      await bentoManager.mount(bentoContainer);
+    } catch (error) {
+      console.error('[Main] Could not mount Hero Bento components.', error);
+    }
   }
 
-  setPreloadProgress(78, 'COMPILING 3D SHADERS');
+  reportPreloaderStage(21, 'PREPARING INTERACTIONS');
 
   // 3. Capa 2.a & 2.c: Inicializar Sandwich 3D (canvas-back z:11, canvas-front z:14)
   const canvasBack = document.getElementById('three-canvas-back');
   const canvasFront = document.getElementById('three-canvas-front');
+  let heroScene = null;
   if (canvasBack || canvasFront) {
     try {
       console.log('[Portafolio:Main] Instantiating dual-canvas HeroScene sandwich...');
-      const scene = new HeroScene({ canvasBack, canvasFront }, bentoManager);
-      window.__heroSceneInstance = scene;
-      scene.init();
+      heroScene = new HeroScene({ canvasBack, canvasFront }, bentoManager);
+      window.__heroSceneInstance = heroScene;
+      heroScene.init();
       console.log('[Portafolio:Main] HeroScene dual-canvas initialized.');
     } catch (err) {
       console.error('%c[Portafolio:Main] HeroScene init error:', 'background: red; color: white;', err);
@@ -1127,18 +1267,22 @@ async function init() {
   const workSection = document.getElementById('work');
   if (workSection) new GridFilter(workSection);
 
-  setPreloadProgress(92, 'VERIFYING FONTS & LAYOUT');
+  pageStructureReady = true;
+  reportCaseCoverProgress();
+  const caseCoverUrls = await caseCoverPreload;
+  window.__casesV6?.setImageSources(caseCoverUrls);
+  reportPreloaderStage(92, 'WAITING FOR FONTS');
 
-  // Esperar a que las fuentes web terminen de renderizar (máx 300ms)
   if (document.fonts && document.fonts.ready) {
-    await Promise.race([
-      document.fonts.ready,
-      new Promise(r => setTimeout(r, 300))
-    ]);
+    await document.fonts.ready;
   }
 
-  clearTimeout(preloaderTimer);
+  reportPreloaderStage(98, 'PAGE STRUCTURE READY');
+  await nextPaint();
   await finishPreloader();
+  activateDeferredImages();
+  bentoManager.activateDeferredVideos();
+  heroScene?.deferGeometryFaceTextures();
 
   // 6. Defer Video Ambient Background: iniciarlo en idle / tras disipar el loader
   // para evitar saturación de ancho de banda y contención de hilos con YouTube en el primer paint

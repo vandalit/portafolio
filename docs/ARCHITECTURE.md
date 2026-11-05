@@ -373,9 +373,33 @@ function filterProjects(category) {
 ## 9. Rendimiento
 
 ### Estrategias
-- **Images:** `loading="lazy"` en todas las imágenes del grid
-- **Fonts:** `font-display: swap` en todas las fuentes
-- **Three.js:** Solo se carga cuando el hero es visible (`IntersectionObserver`)
+- **Preloader:** el avance se mantiene en 2% mientras se cargan los datos; al terminar esos datos, el montaje de la estructura y la descarga de los covers empiezan en paralelo. Llega a 25% cuando la estructura, los modales y los skeletons están montados; de 25% a 90% refleja bytes descargados (ponderados por tamaño cuando el navegador informa todos los tamaños; en caso contrario, promedio por cover) y decodificación de cada cover único de Cases. Los covers que fallen o superen 30 segundos se marcan como fallback y no bloquean indefinidamente el preloader. 92% espera fuentes, 98% espera el siguiente paint y 100% inicia la salida visual.
+- **Orden de carga:**
+
+  ```text
+  HTML/CSS/JS + datos de contenido
+              ↓
+  ┌─────────────────────────────────────┐
+  │ En paralelo                         │
+  ├─────────────────────────────────────┤
+  │ Montar secciones, modales y skeletons│
+  │ Descargar y decodificar covers Cases│
+  └─────────────────────────────────────┘
+              ↓
+  Fuentes + paint → retirar el preloader
+              ↓
+  Activar imágenes lazy a baja prioridad; skeleton → imagen/error
+              ↓
+  Cargar videos Bento al acercarse al viewport
+              ↓
+  Si el usuario permanece en Hero: texturas 3D secuenciales y de baja prioridad
+  Si se desplaza o sale del Hero: cancelar la cola de texturas
+  ```
+
+- **Images:** `loading="lazy"` y prioridad baja para grids, galerías y covers Bento; los skeletons se montan antes de asignarles `src`.
+- **Cases:** cuatro covers de portada se sirven como WebP; los originales PNG y las rutas de galería se conservan. Los covers únicos se descargan durante el preloader, se muestran con sus skeletons y alimentan las instancias activas del carrusel.
+- **Fonts:** `font-display: swap`; el preloader espera `document.fonts.ready`.
+- **Three.js:** la escena base se prepara durante el montaje; las texturas se solicitan después de retirar el preloader y solo si el usuario sigue en Hero.
 - **Reduced motion:** `@media (prefers-reduced-motion: reduce)` desactiva parallax y reveal animations
 
 ### Target de Performance
@@ -404,15 +428,15 @@ const observer = new IntersectionObserver(entries => {
 sections.forEach(s => observer.observe(s));
 ```
 
-### Estación de scroll implementada: Cases V5
+### Estación de scroll implementada: Cases V6
 
-Cases V5 tiene una estación de aproximadamente 400 px efectivos en escritorio: el tablero queda fijado bajo el navbar y se libera al terminar el recorrido. Solo el rótulo contextual junto al logo cambia a lima durante el pin; el tab «CASES» conserva su estilo. Se implementa con `position: sticky` y un runway, sin interceptar la rueda ni bloquear el scroll. Se mantiene activa en escritorio aunque el tablero supere el alto disponible, y se desactiva en pantallas móviles. V4 se conserva como implementación independiente de referencia.
+Cases V6 parte de la implementación V5 y tiene una estación de aproximadamente 400 px efectivos en escritorio: el tablero queda fijado bajo el navbar y se libera al terminar el recorrido. Solo el rótulo contextual junto al logo cambia a lima durante el pin; el tab «CASES» conserva su estilo. Se implementa con `position: sticky` y un runway, sin interceptar la rueda ni bloquear el scroll. Se mantiene activa en escritorio aunque el tablero supere el alto disponible, y se desactiva en pantallas móviles. V4 se conserva como implementación independiente de referencia.
 
-La duración se define en `--cv5-station-length` (`src/css/cases-v5.css`); `src/js/main.js` observa el estado fijado y aplica `is-station-active` exclusivamente a `#nav-context-text`. El rótulo se estiliza en `src/css/layout.css` y el runway está en `src/partials/cases-v5.html`. En escritorio, la fila inferior organiza en tres columnas el carrusel compacto, la aguja con contador y el carrusel ancho. La línea de progreso y las flechas se ubican en una fila separada debajo de ambos carruseles. En móvil se oculta el carrusel compacto y esos controles siguen debajo del carrusel ancho. Las tags de las tarjetas se ocultan y el contenido/CTA del feature se compacta.
+La duración se define en `--cv6-station-length` (`src/css/cases-v6.css`); `src/js/main.js` observa el estado fijado y aplica `is-station-active` exclusivamente a `#nav-context-text`. El rótulo se estiliza en `src/css/layout.css` y el runway está en `src/partials/cases-v6.html`. En escritorio, la fila inferior organiza en tres columnas el carrusel compacto, la aguja con contador y el carrusel ancho. La línea de progreso y las flechas se ubican en una fila separada debajo de ambos carruseles. En móvil se oculta el carrusel compacto y esos controles siguen debajo del carrusel ancho. Las tags de las tarjetas se ocultan y el contenido/CTA del feature se compacta.
 
-El snapshot histórico de esta composición se conserva como Cases V6 en `src/partials/cases-v6.html`, `src/css/cases-v6.css` y `src/js/cases-v6.js`. Es una copia independiente y no está importada ni activada por el sitio.
+Cases V6 queda activo en el ensamblado. La implementación anterior se conserva como `cases-deprecated.html`, `cases-deprecated.css` y `cases-deprecated.js`; no se importa ni activa, y sus selectores `cv5` no se comparten con V6. El snapshot histórico V5-old permanece en `src/partials/cases-v5-old.html`, `src/css/cases-v5-old.css` y `src/js/cases-v5-old.js`, también sin importarse ni activarse.
 
-La aguja divisora `.cv4-divider` permanece fija en la columna central del grid entre ambos carruseles; no sigue el desplazamiento de las tarjetas. En escritorio, la columna del carrusel compacto mide una tarjeta más el padding horizontal del track, para evitar espacio sobrante; el ancho de las tarjetas es responsivo al viewport (`clamp(190px, 24vw, 280px)`, con un rango menor en móvil).
+La aguja divisora `.cv6-divider` permanece fija en la columna central del grid entre ambos carruseles; no sigue el desplazamiento de las tarjetas. En escritorio, la columna del carrusel compacto mide una tarjeta más el padding horizontal del track, para evitar espacio sobrante; el ancho de las tarjetas es responsivo al viewport (`clamp(190px, 24vw, 280px)`, con un rango menor en móvil).
 
 ---
 

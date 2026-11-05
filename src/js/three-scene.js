@@ -45,6 +45,9 @@ export class HeroScene {
     this.paused = false;
     this._firstRenderLogged = false;
     this.geometryTextures = [];
+    this.geometryTexturesStarted = false;
+    this.geometryTextureStartTimer = null;
+    this.geometryTextureController = null;
     this.destroyed = false;
 
     console.log('[HeroScene] Constructor instantiated with canvasBack:', this.canvasBack, 'canvasFront:', this.canvasFront);
@@ -197,56 +200,127 @@ export class HeroScene {
     return group;
   }
 
-  async _loadGeometryFaceTextures() {
+  deferGeometryFaceTextures(delay = 900) {
+    if (this.geometryTexturesStarted || this.geometryTextureStartTimer || this.destroyed) return;
+
+    this.geometryTextureStartTimer = setTimeout(() => {
+      this.geometryTextureStartTimer = null;
+      if (this.destroyed || !this.isHeroVisible || window.scrollY > 8) return;
+
+      this.geometryTexturesStarted = true;
+      const controller = new AbortController();
+      this.geometryTextureController = controller;
+      const cancelOnScroll = () => {
+        if (window.scrollY > 8) controller.abort();
+      };
+      window.addEventListener('scroll', cancelOnScroll, { passive: true });
+
+      this._loadGeometryFaceTextures(controller.signal)
+        .catch(error => {
+          if (!controller.signal.aborted) {
+            console.error('[HeroScene] Geometry texture initialization failed.', error);
+          }
+        })
+        .finally(() => {
+          window.removeEventListener('scroll', cancelOnScroll);
+          if (this.geometryTextureController === controller) {
+            this.geometryTextureController = null;
+          }
+        });
+    }, delay);
+  }
+
+  _cancelGeometryFaceTextures() {
+    if (this.geometryTextureStartTimer) {
+      clearTimeout(this.geometryTextureStartTimer);
+      this.geometryTextureStartTimer = null;
+    }
+    this.geometryTextureController?.abort();
+  }
+
+  async _loadGeometryImage(url, signal) {
+    const response = await fetch(url, { signal, priority: 'low' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const blob = await response.blob();
+    if (typeof createImageBitmap === 'function') {
+      return createImageBitmap(blob);
+    }
+
+    return new Promise((resolve, reject) => {
+      const objectUrl = URL.createObjectURL(blob);
+      const image = new Image();
+      const cleanup = () => {
+        URL.revokeObjectURL(objectUrl);
+        signal.removeEventListener('abort', abort);
+      };
+      const abort = () => {
+        image.src = '';
+        cleanup();
+        reject(new DOMException('Geometry texture loading aborted.', 'AbortError'));
+      };
+      image.addEventListener('load', () => {
+        cleanup();
+        resolve(image);
+      }, { once: true });
+      image.addEventListener('error', () => {
+        cleanup();
+        reject(new Error(`Could not decode geometry texture: ${url}`));
+      }, { once: true });
+      signal.addEventListener('abort', abort, { once: true });
+      image.src = objectUrl;
+    });
+  }
+
+  async _loadGeometryFaceTextures(signal) {
     const THREE = this.three;
     const manifestUrl = './content/geometry-textures/index.json';
 
+    let manifest;
     try {
-      const response = await fetch(manifestUrl);
+      const response = await fetch(manifestUrl, { signal, priority: 'low' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const manifest = await response.json();
-      const images = manifest.images;
-      if (!Array.isArray(images) || images.length === 0) {
-        throw new Error('The texture library does not contain any images.');
+      manifest = await response.json();
+    } catch (error) {
+      if (signal.aborted || error.name === 'AbortError') return;
+      console.error('[HeroScene] Could not load geometry texture library.', error);
+      return;
+    }
+
+    const images = manifest.images;
+    if (!Array.isArray(images) || images.length === 0) {
+      console.error('[HeroScene] The texture library does not contain any images.');
+      return;
+    }
+
+    const size = Math.max(64, Math.min(1024, Number(manifest.textureSize) || 512));
+    const appearance = manifest.appearance || {};
+    for (const image of images) {
+      if (signal.aborted || this.destroyed) break;
+      if (!image.id || !image.file || image.file.includes('..')) {
+        console.warn(`[HeroScene] Skipping invalid geometry texture entry: ${JSON.stringify(image)}`);
+        continue;
       }
 
-      const size = Math.max(64, Math.min(1024, Number(manifest.textureSize) || 512));
-      const appearance = manifest.appearance || {};
-      const textureLoader = new THREE.TextureLoader();
-      const textures = await Promise.all(images.map(async (image) => {
-        if (!image.id || !image.file || image.file.includes('..')) {
-          throw new Error(`Invalid texture entry: ${JSON.stringify(image)}`);
-        }
-
-        const source = await new Promise((resolve, reject) => {
-          textureLoader.load(
-            new URL(image.file, new URL(manifestUrl, window.location.href)).href,
-            resolve,
-            undefined,
-            reject
-          );
-        });
-        if (this.destroyed) {
-          source.dispose();
-          return null;
-        }
+      let bitmap;
+      try {
+        const sourceUrl = new URL(image.file, new URL(manifestUrl, window.location.href)).href;
+        bitmap = await this._loadGeometryImage(sourceUrl, signal);
+        if (signal.aborted) break;
 
         const canvas = document.createElement('canvas');
         canvas.width = size;
         canvas.height = size;
         const context = canvas.getContext('2d', { willReadFrequently: true });
-        if (!context) {
-          source.dispose();
-          throw new Error('Could not create a 2D context for geometry texture processing.');
-        }
+        if (!context) throw new Error('Could not create a 2D context for geometry texture processing.');
 
-        const imageAspect = source.image.width / source.image.height;
-        const cropWidth = imageAspect > 1 ? source.image.height : source.image.width;
-        const cropHeight = imageAspect > 1 ? source.image.height : source.image.width;
-        const cropX = (source.image.width - cropWidth) / 2;
-        const cropY = (source.image.height - cropHeight) / 2;
-        context.drawImage(source.image, cropX, cropY, cropWidth, cropHeight, 0, 0, size, size);
-        source.dispose();
+        const imageAspect = bitmap.width / bitmap.height;
+        const cropWidth = imageAspect > 1 ? bitmap.height : bitmap.width;
+        const cropHeight = imageAspect > 1 ? bitmap.height : bitmap.width;
+        const cropX = (bitmap.width - cropWidth) / 2;
+        const cropY = (bitmap.height - cropHeight) / 2;
+        context.drawImage(bitmap, cropX, cropY, cropWidth, cropHeight, 0, 0, size, size);
+        bitmap.close();
+        bitmap = null;
 
         const pixels = context.getImageData(0, 0, size, size);
         const configuredBrightness = Number(appearance.brightness);
@@ -277,60 +351,65 @@ export class HeroScene {
         texture.minFilter = THREE.LinearMipmapLinearFilter;
         texture.magFilter = THREE.LinearFilter;
         this.geometryTextures.push(texture);
-        return { id: image.id, texture };
+      } catch (error) {
+        if (!signal.aborted && error.name !== 'AbortError') {
+          console.warn(`[HeroScene] Could not process geometry texture "${image.id}".`, error);
+        }
+      } finally {
+        bitmap?.close();
+      }
+    }
+
+    if (this.destroyed) return;
+    this._applyGeometryFaceTextures(manifest.seed);
+  }
+
+  _applyGeometryFaceTextures(seed) {
+    const THREE = this.three;
+    if (!this.geometryTextures.length) return;
+
+    this.objects.forEach((group, geometryIndex) => {
+      const mesh = group.children.find((child) => child.isMesh);
+      if (!mesh) return;
+      const geometry = mesh.geometry;
+      const materials = this.geometryTextures.map((texture) => new THREE.MeshToonMaterial({
+        color: 0xffffff,
+        map: texture,
+        transparent: true,
+        opacity: 0.92,
       }));
 
-      if (this.destroyed) return;
-      const availableTextures = textures.filter(Boolean);
-      if (availableTextures.length === 0) return;
-
-      this.objects.forEach((group, geometryIndex) => {
-        const mesh = group.children.find((child) => child.isMesh);
-        if (!mesh) return;
-        const geometry = mesh.geometry;
-        const materials = availableTextures.map(({ texture }) => new THREE.MeshToonMaterial({
-          color: 0xffffff,
-          map: texture,
-          transparent: true,
-          opacity: 0.92,
-        }));
-
-        if (!geometry.index) {
-          const uv = geometry.attributes.uv;
-          geometry.clearGroups();
-          for (let vertex = 0; vertex < uv.count; vertex += 3) {
-            uv.setXY(vertex, 0, 0);
-            uv.setXY(vertex + 1, 1, 0);
-            uv.setXY(vertex + 2, 0.5, 1);
-            const faceIndex = vertex / 3;
-            const materialIndex = this._stableTextureIndex(geometryIndex, faceIndex, availableTextures.length, manifest.seed);
-            geometry.addGroup(vertex, 3, materialIndex);
-          }
-          uv.needsUpdate = true;
-        } else if (geometry.groups.length) {
-          geometry.groups.forEach((face, faceIndex) => {
-            face.materialIndex = this._stableTextureIndex(geometryIndex, faceIndex, availableTextures.length, manifest.seed);
-          });
-        } else {
-          geometry.clearGroups();
-          const indexCount = geometry.index.count;
-          for (let vertex = 0; vertex < indexCount; vertex += 3) {
-            const faceIndex = vertex / 3;
-            const materialIndex = this._stableTextureIndex(geometryIndex, faceIndex, availableTextures.length, manifest.seed);
-            geometry.addGroup(vertex, 3, materialIndex);
-          }
+      if (!geometry.index) {
+        const uv = geometry.attributes.uv;
+        geometry.clearGroups();
+        for (let vertex = 0; vertex < uv.count; vertex += 3) {
+          uv.setXY(vertex, 0, 0);
+          uv.setXY(vertex + 1, 1, 0);
+          uv.setXY(vertex + 2, 0.5, 1);
+          const faceIndex = vertex / 3;
+          const materialIndex = this._stableTextureIndex(geometryIndex, faceIndex, this.geometryTextures.length, seed);
+          geometry.addGroup(vertex, 3, materialIndex);
         }
+        uv.needsUpdate = true;
+      } else if (geometry.groups.length) {
+        geometry.groups.forEach((face, faceIndex) => {
+          face.materialIndex = this._stableTextureIndex(geometryIndex, faceIndex, this.geometryTextures.length, seed);
+        });
+      } else {
+        geometry.clearGroups();
+        const indexCount = geometry.index.count;
+        for (let vertex = 0; vertex < indexCount; vertex += 3) {
+          const faceIndex = vertex / 3;
+          const materialIndex = this._stableTextureIndex(geometryIndex, faceIndex, this.geometryTextures.length, seed);
+          geometry.addGroup(vertex, 3, materialIndex);
+        }
+      }
 
-        mesh.material.dispose();
-        mesh.material = materials;
-        group.userData.mat = null;
-        group.userData.surfaceMats = materials;
-      });
-    } catch (error) {
-      this.geometryTextures.forEach((texture) => texture.dispose());
-      this.geometryTextures = [];
-      console.error('[HeroScene] Could not load geometry texture library.', error);
-    }
+      mesh.material.dispose();
+      mesh.material = materials;
+      group.userData.mat = null;
+      group.userData.surfaceMats = materials;
+    });
   }
 
   _stableTextureIndex(geometryIndex, faceIndex, textureCount, seed = '') {
@@ -399,8 +478,6 @@ export class HeroScene {
       [-4.2, 2.5, 0.5], 0.9
     );
 
-    this._loadGeometryFaceTextures();
-
     console.log(`[HeroScene] Total 3D objects instantiated: ${this.objects.length} (3 in Back, 3 in Front).`);
   }
 
@@ -413,6 +490,7 @@ export class HeroScene {
       const heroObs = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           this.isHeroVisible = entry.isIntersecting;
+          if (!entry.isIntersecting) this._cancelGeometryFaceTextures();
         });
       }, { threshold: 0 });
       heroObs.observe(heroEl);
@@ -598,6 +676,7 @@ export class HeroScene {
 
   destroy() {
     this.destroyed = true;
+    this._cancelGeometryFaceTextures();
     if (this.animFrame) cancelAnimationFrame(this.animFrame);
     this.geometryTextures.forEach((texture) => texture.dispose());
     this.objects.forEach((group) => {

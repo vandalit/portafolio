@@ -26,15 +26,15 @@ bentoCard1.renderContent = function() {
     <div class="bento-video-wrapper">
       <video 
         class="bento-video-element"
-        src="https://turismolickancoy.cl/wp-content/uploads/2025/07/Duna-mayor-dentro-del-valle-de-la-luna.mp4"
-        poster="./assets/images/midjourney/vandalit_Blob_graphic_dopamine_design_abstract_modern_design__7ce2ff82-6ce2-4c99-ba8d-15649dcbe2c2_1.png"
+        data-src="https://turismolickancoy.cl/wp-content/uploads/2025/07/Duna-mayor-dentro-del-valle-de-la-luna.mp4"
+        data-poster="./assets/images/midjourney/vandalit_Blob_graphic_dopamine_design_abstract_modern_design__7ce2ff82-6ce2-4c99-ba8d-15649dcbe2c2_1.png"
         autoplay
         loop
         muted
         playsinline
         webkit-playsinline
         disablepictureinpicture
-        preload="metadata"
+        preload="none"
         aria-hidden="true"
         oncanplay="this.defaultMuted=true; this.muted=true; this.play().catch(()=>{});">
       </video>

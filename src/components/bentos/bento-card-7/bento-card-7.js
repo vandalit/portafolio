@@ -24,7 +24,7 @@ bentoCard7.renderContent = function() {
   return `
     <img 
       class="bento-image-fill"
-      src="./assets/images/midjourney/vandalit_Rizoma_national_geographic_macro_coloured_photograph_64ec413f-e06f-4998-8654-5994bbba87c2_2.png"
+      data-src="./assets/images/midjourney/vandalit_Rizoma_national_geographic_macro_coloured_photograph_64ec413f-e06f-4998-8654-5994bbba87c2_2.png"
       alt="Rizoma Macro Photograph"
       loading="lazy">
   `;

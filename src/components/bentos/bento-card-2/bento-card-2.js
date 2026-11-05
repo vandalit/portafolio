@@ -24,7 +24,7 @@ bentoCard2.renderContent = function() {
   return `
     <img 
       class="bento-image-fill"
-      src="./assets/images/midjourney/vandalit_screens_mockup_web_design_--sref_httpss.mj.runcgBuE3_bdfc81af-66c5-42b8-9a78-09b2648c35f5_3.png"
+      data-src="./assets/images/midjourney/vandalit_screens_mockup_web_design_--sref_httpss.mj.runcgBuE3_bdfc81af-66c5-42b8-9a78-09b2648c35f5_3.png"
       alt="Screens Mockup Web Design"
       loading="lazy">
   `;

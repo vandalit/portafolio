@@ -24,7 +24,7 @@ bentoCard6.renderContent = function() {
   return `
     <img 
       class="bento-image-fill"
-      src="./assets/images/midjourney/vandalit_black_paper_with_iridescent_effect_texture_embossed_gr_dc33a515-4896-4553-9559-90821e277c1f.png"
+      data-src="./assets/images/midjourney/vandalit_black_paper_with_iridescent_effect_texture_embossed_gr_dc33a515-4896-4553-9559-90821e277c1f.png"
       alt="Black Paper Iridescent Texture"
       loading="lazy">
   `;

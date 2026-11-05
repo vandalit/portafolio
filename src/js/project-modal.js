@@ -1,4 +1,5 @@
 import { attachLightboxImageControls } from './lightbox-image-controls.js';
+import { watchImageLoading } from '../utils/image-loading.js';
 
 /* ==========================================================
    PROJECT-MODAL.JS — Split Canvas with Dual Scroll & Lightbox Carousel
@@ -15,6 +16,7 @@ export class ProjectModal {
 
     // Lightbox / Vista Detalle de Imágenes (Compartido a nivel raíz de DOM)
     this.lightbox = document.querySelector('.modal__lightbox');
+    this.lightboxStage = this.lightbox?.querySelector('.modal__lightbox-stage');
     this.lightboxImg = this.lightbox?.querySelector('.modal__lightbox-img');
     this.lightboxCounter = this.lightbox?.querySelector('.modal__lightbox-counter');
     this.lightboxClose = this.lightbox?.querySelector('.modal__lightbox-close');
@@ -168,12 +170,9 @@ export class ProjectModal {
     this.lightboxImageControls?.reset();
     const src = this.photos[this.currentPhotoIndex];
     if (this.lightboxImg) {
-      this.lightboxImg.style.opacity = '0';
-      setTimeout(() => {
-        this.lightboxImg.src = src;
-        this.lightboxImg.alt = `${this.currentProject?.title || 'Proyecto'} — Foto ${this.currentPhotoIndex + 1}`;
-        this.lightboxImg.style.opacity = '1';
-      }, 80);
+      this.lightboxImg.src = src;
+      this.lightboxImg.alt = `${this.currentProject?.title || 'Proyecto'} — Foto ${this.currentPhotoIndex + 1}`;
+      watchImageLoading(this.lightboxImg, this.lightboxStage, { square: true });
     }
 
     if (this.lightboxCounter) {
@@ -268,9 +267,13 @@ export class ProjectModal {
       if (this.photos.length > 0) {
         masonry.innerHTML = this.photos.map((src, i) => `
           <div class="modal__masonry-item" data-photo-index="${i}" role="button" tabindex="0" aria-label="Ver imagen ${i + 1} ampliada" style="animation-delay:${i * 80}ms">
-            <img class="modal__masonry-img" src="${src}" alt="${data.title} — imagen ${i + 1}" loading="lazy">
+            <img class="modal__masonry-img" src="${src}" alt="${data.title} — imagen ${i + 1}" loading="lazy" decoding="async">
           </div>
         `).join('');
+
+        masonry.querySelectorAll('.modal__masonry-img').forEach(image => {
+          watchImageLoading(image, image.closest('.modal__masonry-item'), { square: true });
+        });
 
         // Listeners para abrir lightbox en cada imagen
         masonry.querySelectorAll('.modal__masonry-item').forEach(item => {

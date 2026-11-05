@@ -1,4 +1,5 @@
 import { attachLightboxImageControls } from './lightbox-image-controls.js';
+import { watchImageLoading } from '../utils/image-loading.js';
 
 /* ==========================================================
    LAB-MODAL.JS — Frontier Tech & Experimentos Showcase Modal
@@ -33,6 +34,7 @@ export class LabModal {
 
     // Visor Lightbox Compartido
     this.lightbox = document.querySelector('.modal__lightbox');
+    this.lightboxStage = this.lightbox?.querySelector('.modal__lightbox-stage');
     this.lightboxImg = this.lightbox?.querySelector('.modal__lightbox-img');
     this.lightboxCounter = this.lightbox?.querySelector('.modal__lightbox-counter');
     this.lightboxClose = this.lightbox?.querySelector('.modal__lightbox-close');
@@ -157,12 +159,9 @@ export class LabModal {
     this.lightboxImageControls?.reset();
     const src = this.photos[this.currentPhotoIndex];
     if (this.lightboxImg) {
-      this.lightboxImg.style.opacity = '0';
-      setTimeout(() => {
-        this.lightboxImg.src = src;
-        this.lightboxImg.alt = `${this.currentProject?.title || 'Experimento'} — Captura ${this.currentPhotoIndex + 1}`;
-        this.lightboxImg.style.opacity = '1';
-      }, 80);
+      this.lightboxImg.src = src;
+      this.lightboxImg.alt = `${this.currentProject?.title || 'Experimento'} — Captura ${this.currentPhotoIndex + 1}`;
+      watchImageLoading(this.lightboxImg, this.lightboxStage, { square: true });
     }
 
     if (this.lightboxCounter) {
@@ -237,7 +236,7 @@ export class LabModal {
         // Fallback a imagen de cover con scanline (clickable para lightbox)
         this.videoContainer.innerHTML = `
           <div class="lab-video-wrapper lab-scanline" role="button" tabindex="0" style="cursor:zoom-in;" title="Click para ampliar captura" aria-label="Ampliar captura principal">
-            <img src="${data.cover || data.coverPlaceholder}" alt="${data.title}" class="lab-video-fallback-img">
+            <img src="${data.cover || data.coverPlaceholder}" alt="${data.title}" class="lab-video-fallback-img" loading="lazy" decoding="async">
             <div class="lab-video-badge">
               <span>✦ Prototipo Interactivo (Zoom ↗)</span>
             </div>
@@ -245,6 +244,8 @@ export class LabModal {
         `;
         this.videoEl = null;
         const fallbackStage = this.videoContainer.querySelector('.lab-video-wrapper');
+        const fallbackImage = fallbackStage?.querySelector('.lab-video-fallback-img');
+        if (fallbackImage) watchImageLoading(fallbackImage, fallbackStage);
         fallbackStage?.addEventListener('click', () => this.openLightbox(0));
       }
     }
@@ -265,9 +266,13 @@ export class LabModal {
       if (this.photos.length > 0) {
         this.galleryEl.innerHTML = this.photos.map((imgSrc, i) => `
           <div class="lab-gallery-thumb" data-img-index="${i}" role="button" tabindex="0" aria-label="Ver captura ${i + 1} ampliada">
-            <img src="${imgSrc}" alt="${data.title} captura ${i + 1}" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
+            <img src="${imgSrc}" alt="${data.title} captura ${i + 1}" loading="lazy" decoding="async">
           </div>
         `).join('');
+
+        this.galleryEl.querySelectorAll('.lab-gallery-thumb img').forEach(image => {
+          watchImageLoading(image, image.closest('.lab-gallery-thumb'));
+        });
 
         this.galleryEl.querySelectorAll('.lab-gallery-thumb').forEach(thumb => {
           const idx = parseInt(thumb.dataset.imgIndex, 10);

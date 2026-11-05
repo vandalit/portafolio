@@ -1,3 +1,5 @@
+import { showImageLoading, watchImageLoading } from '../utils/image-loading.js';
+
 const TRACK_COPIES = 5;
 const IMPULSE_FRICTION_MS = 360;
 const MAX_IMPULSE_STEPS = 6;
@@ -55,6 +57,7 @@ export class CasesV6 {
     this._featuredDirection = 1;
     this._featuredMorph = null;
     this._featuredBackgroundRequest = null;
+    this._featuredImagesReady = false;
     this._decodedFeaturedImages = new Map();
     this._dividerPendingScrolls = new Set();
     this._dividerBoundaryPositions = {
@@ -73,6 +76,8 @@ export class CasesV6 {
       getComputedStyle(root).getPropertyValue('--cv6-exit-pulse-scale')
     ) || 0.88;
     this._renderTracks();
+    showImageLoading(root.querySelector('.cv6-board__art'));
+    showImageLoading(root.querySelector('.cv6-featured__art'));
     this._bind();
     this._updateFeatured();
     this._positionWindows();
@@ -120,7 +125,8 @@ export class CasesV6 {
         card.style.setProperty('--cv6-accent-color', this._getAccentColor(item));
       });
       track.querySelectorAll('.cv6-item__image').forEach(image => {
-        image.src = this.items[Number(image.closest('.cv6-item').dataset.index)].image;
+        image.dataset.src = this.items[Number(image.closest('.cv6-item').dataset.index)].image;
+        watchImageLoading(image, image.closest('.cv6-item'), { defer: true });
       });
     });
   }
@@ -461,12 +467,29 @@ export class CasesV6 {
     return CATEGORY_SIGILS[String(item?.category || '').trim().toLowerCase()] || '';
   }
 
+  setImageSources(sourceMap) {
+    this.items.forEach(item => {
+      item.image = sourceMap.get(item.image) || item.image;
+    });
+
+    this.root.querySelectorAll('.cv6-item__image').forEach(image => {
+      const item = this.items[Number(image.closest('.cv6-item').dataset.index)];
+      image.dataset.src = item.image;
+    });
+
+    this._featuredImagesReady = true;
+    this._decodedFeaturedImages.clear();
+    this._featuredBackgroundRequest = null;
+    this._updateFeaturedBackground(0);
+  }
+
   _decodeFeaturedImage(src) {
     if (!src) return Promise.resolve();
     const cached = this._decodedFeaturedImages.get(src);
     if (cached) return cached;
 
     const image = new Image();
+    image.fetchPriority = 'high';
     image.src = src;
     const decoded = typeof image.decode === 'function'
       ? image.decode()
@@ -489,6 +512,8 @@ export class CasesV6 {
   }
 
   _updateFeaturedBackground(progress, fromIndex = this.currentIndex, toIndex = mod(fromIndex + 1, this.items.length)) {
+    if (!this._featuredImagesReady) return;
+
     const requestKey = `${fromIndex}:${toIndex}`;
     let request = this._featuredBackgroundRequest;
     if (request?.key === requestKey) {
@@ -537,8 +562,12 @@ export class CasesV6 {
 
     imageLayers.forEach(({ active, incoming }) => {
       if (!active || !incoming) return;
-      if (active.getAttribute('src') !== activeSrc) active.src = activeSrc;
+      const activeChanged = active.getAttribute('src') !== activeSrc;
+      if (activeChanged) active.src = activeSrc;
       if (incoming.getAttribute('src') !== incomingSrc) incoming.src = incomingSrc;
+      if (activeChanged || !active.parentElement.classList.contains('image-loading-surface')) {
+        watchImageLoading(active, active.parentElement);
+      }
       incoming.style.opacity = String(request.progress);
     });
 
